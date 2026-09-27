@@ -418,6 +418,33 @@
       border-bottom: 1px solid var(--line);
     }
     .matchup-column-head span:nth-last-child(-n+2) { text-align: right; }
+
+    /* Team label used when the two matchup lineups stack vertically. */
+    .mobile-lineup-team {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(96,165,250,.075);
+      border-bottom: 1px solid var(--line);
+    }
+    .mobile-lineup-team-name {
+      min-width: 0;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .mobile-lineup-team-label {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
     details.bench { border-top: 1px solid var(--line); }
     details.bench summary { cursor: pointer; padding: 9px 12px; color: var(--muted); font-size: 12px; font-weight: 800; }
     .kv-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px 16px; }
@@ -561,6 +588,11 @@
         border-top: 1px solid var(--line);
       }
 
+      .mobile-lineup-team { display: flex; }
+      .lineup-side + .lineup-side .mobile-lineup-team {
+        border-top: 1px solid rgba(96,165,250,.20);
+      }
+
       .settings-grid { grid-template-columns: 1fr; }
     }
 
@@ -615,6 +647,12 @@
       .game-legend .small { flex-basis: 100%; }
 
       .matchup-card { border-radius: 12px; }
+      .mobile-lineup-team {
+        padding: 9px 9px;
+        background: rgba(96,165,250,.09);
+      }
+      .mobile-lineup-team-name { font-size: 12.5px; }
+
       .matchup-head {
         padding: 12px 10px;
         gap: 7px;
@@ -1913,8 +1951,19 @@
       const starters = matchup.starters || [];
       const starterSet = new Set(starters.map(String));
       const bench = (matchup.players || []).filter(id => !starterSet.has(String(id)));
+
+      const roster = (data.rosters || []).find(r => Number(r.roster_id) === Number(matchup.roster_id));
+      const owner = roster ? ownerForRoster(roster, data.users || []) : null;
+      const lineupTeamName = roster ? teamName(owner, roster) : `Roster ${matchup.roster_id}`;
+      const selectedRosterId = Number(els.myTeam.value || 0);
+      const isSelected = Number(matchup.roster_id) === selectedRosterId;
+
       return `
         <div class="lineup-side">
+          <div class="mobile-lineup-team">
+            <div class="mobile-lineup-team-name">${escapeHtml(lineupTeamName)} ${isSelected ? '<span class="pill me">SELECTED</span>' : ''}</div>
+            <div class="mobile-lineup-team-label">LINEUP</div>
+          </div>
           <div class="matchup-column-head"><span>Slot</span><span>Player</span><span>Pts</span><span>Orig</span><span>Live</span></div>
           ${starters.map((id, i) => renderMatchPlayer(matchup, id, startSlots[i] || '', data)).join('') || '<div class="small" style="padding:14px">No starters.</div>'}
           ${bench.length ? `<details class="bench"><summary>Bench (${bench.length})</summary>${bench.map(id => renderMatchPlayer(matchup, id, 'BN', data)).join('')}</details>` : ''}
