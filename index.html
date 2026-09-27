@@ -741,7 +741,7 @@
         <div class="eyebrow">Sleeper Fantasy Football</div>
         <h1 id="leagueTitle">Brojees Fantasy Menu</h1>
         <div class="subtitle" id="leagueSubtitle">
-          Live Sleeper league dashboard with auto-refresh, game-state colors, weekly matchups, and a compact export built for sharing with ChatGPT.
+          Live Sleeper league dashboard with auto-refresh, game-state colors, weekly matchups, and a JSON file export.
         </div>
       </div>
       <div class="hero-actions">
@@ -765,6 +765,7 @@
         <label for="autoRefresh">Auto Refresh</label>
         <select id="autoRefresh">
           <option value="0">Off</option>
+          <option value="0.25">Every 15 seconds</option>
           <option value="0.5">Every 30 seconds</option>
           <option value="1">Every 1 minute</option>
           <option value="2" selected>Every 2 minutes</option>
@@ -838,7 +839,7 @@
       <div class="panel">
         <div class="panel-head">
           <div>
-            <h3>ChatGPT Export Preview</h3>
+            <h3>JSON Export Preview</h3>
             <div class="small">This is the compact JSON created by the Export button. The full NFL player database is intentionally excluded.</div>
           </div>
           <button class="btn-ghost" id="copyBtn" disabled>Copy JSON</button>
@@ -2022,7 +2023,7 @@
         renderMatchups(app.data);
         app.exportSnapshot = buildExport(app.data);
         els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
-        showNotice(`Week ${week} matchup data loaded. Export for ChatGPT will now include this week.`, 'success');
+        showNotice(`Week ${week} matchup data loaded. Export will now include this week.`, 'success');
       } catch (err) {
         showNotice(`Could not load Week ${week}: ${err.message}`, 'error');
       } finally {
@@ -2235,7 +2236,7 @@
 
         const autoMinutes = Number(els.autoRefresh.value || 0);
         setStatus(autoMinutes ? `Live · every ${autoRefreshLabel(autoMinutes)}` : 'Up to date · auto refresh off', 'good');
-        showNotice('League data refreshed. Use Export for ChatGPT whenever you want to download the current league snapshot.', 'success');
+        showNotice('League data refreshed. Use Export whenever you want to download the current league snapshot.', 'success');
       } catch (err) {
         console.error(err);
         setStatus('Refresh failed', 'bad');
@@ -2256,7 +2257,7 @@
         .replace(/^_+|_+$/g, '');
       const date = new Date().toISOString().slice(0,10);
       downloadText(JSON.stringify(app.exportSnapshot, null, 2), `${leagueName || 'sleeper_league'}_chatgpt_${date}.json`);
-      showNotice('ChatGPT export downloaded. Upload that JSON file into this chat whenever you want current league analysis.', 'success');
+      showNotice('JSON export downloaded. Upload that JSON file into this chat whenever you want current league analysis.', 'success');
     }
 
     function restoreLastSnapshot() {
@@ -2308,7 +2309,7 @@
         await navigator.clipboard.writeText(JSON.stringify(app.exportSnapshot, null, 2));
         showNotice('Export JSON copied to the clipboard.', 'success');
       } catch (_) {
-        showNotice('Clipboard access was blocked by the browser. Use Export for ChatGPT instead.', 'error');
+        showNotice('Clipboard access was blocked by the browser. Use JSON Export instead.', 'error');
       }
     });
 
