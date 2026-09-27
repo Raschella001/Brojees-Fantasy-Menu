@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
-  <title>Sleeper League Dashboard</title>
+  <title>Brojees Fantasy Menu</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -739,14 +739,14 @@
     <section class="hero">
       <div>
         <div class="eyebrow">Sleeper Fantasy Football</div>
-        <h1 id="leagueTitle">League Dashboard</h1>
+        <h1 id="leagueTitle">Brojees Fantasy Menu</h1>
         <div class="subtitle" id="leagueSubtitle">
-          Live auto-refresh, game-state colors, weekly matchups, local JSON snapshots, and a compact export built for sharing with ChatGPT.
+          Live Sleeper league dashboard with auto-refresh, game-state colors, weekly matchups, and a compact export built for sharing with ChatGPT.
         </div>
       </div>
       <div class="hero-actions">
-        <button class="btn-primary" id="updateBtn">Update JSON File</button>
-        <button class="btn-secondary" id="exportBtn" disabled>Export for ChatGPT</button>
+        <button class="btn-primary" id="updateBtn">Refresh League</button>
+        <button class="btn-secondary" id="exportBtn" disabled>Export JSON</button>
       </div>
     </section>
 
@@ -791,7 +791,7 @@
 
     <section id="overview" class="tab active">
       <div class="empty" id="overviewEmpty">
-        League data refreshes automatically while this page is open. Use <strong>Update JSON File</strong> once to choose or re-authorize the local snapshot file.
+        League data refreshes automatically while this page is open. Use <strong>Refresh League</strong> any time you want an immediate update.
       </div>
       <div id="overviewContent" hidden></div>
     </section>
@@ -2217,24 +2217,15 @@
       hideNotice();
       els.updateBtn.disabled = true;
       els.exportBtn.disabled = true;
-      setStatus('Updating…', 'busy');
-      els.updateBtn.textContent = 'Updating…';
-
-      let fileHandle = null;
-      let pickerCancelled = false;
-
-      // File picker must be triggered directly by the button click in Chromium browsers.
-      if ('showSaveFilePicker' in window) {
-        try {
-          fileHandle = await chooseOrAuthorizeSnapshotFile();
-        } catch (err) {
-          if (err?.name === 'AbortError') pickerCancelled = true;
-          else console.warn('File picker unavailable:', err);
-        }
-      }
+      setStatus('Refreshing…', 'busy');
+      els.updateBtn.textContent = 'Refreshing…';
 
       try {
-        const data = await fetchLeagueData(leagueId);
+        const sameLeague = String(app.data?.league?.league_id || '') === String(leagueId);
+        const data = sameLeague
+          ? await fetchLiveRefreshData(leagueId, app.data)
+          : await fetchLeagueData(leagueId);
+
         app.data = data;
         renderAll(data);
 
@@ -2242,32 +2233,18 @@
         app.exportSnapshot = snapshot;
         els.rawJson.textContent = JSON.stringify(snapshot, null, 2);
 
-        let saveResult = null;
-        if (!pickerCancelled) {
-          saveResult = await writeSnapshotFile(snapshot, fileHandle);
-        }
-
         const autoMinutes = Number(els.autoRefresh.value || 0);
         setStatus(autoMinutes ? `Live · every ${autoRefreshLabel(autoMinutes)}` : 'Up to date · auto refresh off', 'good');
-        if (pickerCancelled) {
-          showNotice('League data refreshed. File selection was cancelled, so the local JSON file was not changed.', 'success');
-        } else if (saveResult === 'updated') {
-          showNotice('League refreshed and your selected JSON snapshot file was updated.', 'success');
-        } else {
-          showNotice('League refreshed. Your browser downloaded an updated JSON snapshot file.', 'success');
-        }
+        showNotice('League data refreshed. Use Export for ChatGPT whenever you want to download the current league snapshot.', 'success');
       } catch (err) {
         console.error(err);
-        setStatus('Update failed', 'bad');
-        const extra = location.protocol === 'file:'
-          ? ' If your browser blocks API requests from a local file, run this page through a small local web server (for example: py -m http.server 8000) and open http://localhost:8000/.'
-          : '';
-        showNotice(`Could not update the Sleeper data: ${err.message}.${extra}`, 'error');
+        setStatus('Refresh failed', 'bad');
+        showNotice(`Could not refresh Sleeper data: ${err.message}`, 'error');
       } finally {
         app.isRefreshing = false;
         els.updateBtn.disabled = false;
         els.exportBtn.disabled = !app.exportSnapshot;
-        els.updateBtn.textContent = 'Update JSON File';
+        els.updateBtn.textContent = 'Refresh League';
       }
     }
 
