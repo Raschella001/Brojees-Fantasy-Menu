@@ -478,6 +478,74 @@
     .small { font-size: 12px; color: var(--muted); }
     .accent { color: var(--accent); }
 
+    .patch-notes {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(19,26,43,.88);
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0,0,0,.12);
+    }
+    .patch-notes summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      user-select: none;
+    }
+    .patch-notes summary::-webkit-details-marker { display: none; }
+    .patch-notes summary::after {
+      content: "▾";
+      color: var(--muted);
+      font-size: 13px;
+      transition: transform .16s ease;
+    }
+    .patch-notes[open] summary::after { transform: rotate(180deg); }
+    .patch-notes-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-weight: 900;
+    }
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 7px;
+      border-radius: 999px;
+      color: #baf8df;
+      background: rgba(110,231,183,.10);
+      border: 1px solid rgba(110,231,183,.32);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .patch-notes-body {
+      border-top: 1px solid var(--line);
+      padding: 10px 14px 12px;
+    }
+    .patch-note-row {
+      display: grid;
+      grid-template-columns: 54px minmax(0,1fr);
+      gap: 9px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(38,50,74,.7);
+    }
+    .patch-note-row:last-child { border-bottom: 0; }
+    .patch-version {
+      color: var(--accent-2);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .patch-copy {
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
     @media (max-width: 1100px) {
       .card-grid { grid-template-columns: repeat(2, 1fr); }
       .roster-grid { grid-template-columns: repeat(2, 1fr); }
@@ -893,6 +961,14 @@
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+    const APP_VERSION = '1.8';
+    const PATCH_NOTES = [
+      { version: '1.8', note: 'Added a compact Patch Notes / What\'s New section to the Overview page.' },
+      { version: '1.7', note: 'Added team-name headers above each stacked lineup on mobile and tablet matchup views.' },
+      { version: '1.6', note: 'Added responsive layouts for desktop, Mac, tablets, phones, and folded/unfolded Galaxy Z Fold screens.' },
+      { version: '1.5', note: 'Shortened the displayed SUPERFLEX lineup tag to SFLEX. Full player-name visibility and reduced ORIG/LIVE projection font sizes.' },
+      { version: '1.4', note: 'Added original weekly projections, live-adjusted projections, and a 30-second auto-refresh option.' },
+    ];
 
     const els = {
       leagueId: document.getElementById('leagueId'),
@@ -1839,6 +1915,26 @@
       if (previous && options.some(o => String(o.id) === String(previous))) els.myTeam.value = String(previous);
     }
 
+    function patchNotesHtml() {
+      const rows = PATCH_NOTES.map((item, index) => `
+        <div class="patch-note-row">
+          <div class="patch-version">V${escapeHtml(item.version)}</div>
+          <div class="patch-copy">${escapeHtml(item.note)}</div>
+        </div>`).join('');
+
+      return `
+        <details class="patch-notes" open>
+          <summary>
+            <div class="patch-notes-title">
+              <span>What's New</span>
+              <span class="version-badge">V${escapeHtml(APP_VERSION)}</span>
+            </div>
+            <span class="small">Patch notes</span>
+          </summary>
+          <div class="patch-notes-body">${rows}</div>
+        </details>`;
+    }
+
     function renderOverview(data) {
       const { league, rosters, users, state } = data;
       const faabBudget = Number(league.settings?.waiver_budget ?? 0);
@@ -1892,6 +1988,7 @@
         <div class="card-grid">
           ${cards.map(c => `<div class="stat-card"><div class="stat-label">${escapeHtml(c[0])}</div><div class="stat-value">${escapeHtml(c[1])}</div><div class="stat-sub">${escapeHtml(c[2])}</div></div>`).join('')}
         </div>
+        ${patchNotesHtml()}
         <div class="panel">
           <div class="panel-head"><h2>Standings & Waivers</h2><span class="pill">${escapeHtml(scoring)}</span></div>
           <div class="table-wrap">
