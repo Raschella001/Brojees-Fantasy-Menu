@@ -834,6 +834,174 @@
     }
 
 
+    /* ===== V2.0 waiver wire / free agents ===== */
+    .waiver-panel { margin-top: 0; }
+    .waiver-head-copy { min-width: 0; }
+    .waiver-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.25fr) minmax(180px, .75fr) minmax(140px, .45fr);
+      gap: 10px;
+      align-items: end;
+      margin: 12px 0 10px;
+    }
+    .waiver-search-wrap { min-width: 0; }
+    .waiver-search-wrap label,
+    .waiver-control-field label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .waiver-search,
+    .waiver-control-field select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0c1322;
+      color: var(--text);
+      padding: 9px 11px;
+      outline: none;
+    }
+    .waiver-search:focus,
+    .waiver-control-field select:focus { border-color: var(--accent-2); }
+
+    .waiver-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin: 10px 0;
+    }
+    .waiver-pos-btn,
+    .waiver-top-btn {
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #111a2c;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .waiver-pos-btn.active,
+    .waiver-top-btn.active {
+      color: #d8fff0;
+      border-color: rgba(110,231,183,.42);
+      background: rgba(110,231,183,.12);
+    }
+    .waiver-top-btn { margin-left: auto; color: #c8ddff; }
+    .waiver-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+      align-items: center;
+      padding: 9px 10px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(12,19,34,.55);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .waiver-summary strong { color: var(--text); }
+
+    .waiver-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .waiver-table { min-width: 900px; background: rgba(10,16,29,.35); }
+    .waiver-table th { padding: 9px 8px; background: rgba(15,21,37,.85); position: sticky; top: 0; z-index: 1; }
+    .waiver-table td { padding: 9px 8px; }
+    .waiver-sort-btn {
+      min-height: 0;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+      text-transform: inherit;
+      letter-spacing: inherit;
+      white-space: nowrap;
+    }
+    .waiver-sort-btn:hover { transform: none; color: var(--text); }
+    .waiver-player-row { cursor: pointer; }
+    .waiver-player-row:hover { background: rgba(96,165,250,.065); }
+    .waiver-rank { color: var(--muted); font-weight: 900; text-align: center; width: 36px; }
+    .waiver-player-cell { min-width: 190px; }
+    .waiver-player-name { color: var(--text); font-weight: 900; }
+    .waiver-player-sub { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .waiver-proj { color: var(--accent-2); font-weight: 900; font-variant-numeric: tabular-nums; }
+    .waiver-depth { white-space: nowrap; }
+    .waiver-injury { font-weight: 800; }
+    .waiver-injury.healthy { color: #9eabc4; }
+    .waiver-injury.questionable { color: #fbbf24; }
+    .waiver-injury.out,
+    .waiver-injury.ir,
+    .waiver-injury.pup,
+    .waiver-injury.doubtful { color: #ff9aaa; }
+    .waiver-game { white-space: nowrap; }
+    .waiver-kickoff { color: #b8c4d9; font-size: 10px; white-space: nowrap; }
+    .waiver-mobile-list { display: none; gap: 8px; }
+    .waiver-mobile-card {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0d1423;
+      padding: 10px;
+      outline: none;
+    }
+    .waiver-mobile-card:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-2); }
+    .waiver-mobile-top {
+      display: grid;
+      grid-template-columns: 30px minmax(0,1fr) auto;
+      gap: 8px;
+      align-items: start;
+    }
+    .waiver-mobile-rank { color: var(--muted); font-size: 10px; font-weight: 900; padding-top: 2px; }
+    .waiver-mobile-name { font-size: 13px; font-weight: 900; line-height: 1.2; }
+    .waiver-mobile-meta { margin-top: 3px; color: var(--muted); font-size: 9.5px; line-height: 1.35; }
+    .waiver-mobile-proj { color: var(--accent-2); font-size: 16px; font-weight: 900; text-align: right; }
+    .waiver-mobile-proj-label { color: var(--muted); font-size: 7px; text-align: right; text-transform: uppercase; font-weight: 900; }
+    .waiver-mobile-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 10px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid #202c44;
+      color: var(--muted);
+      font-size: 9.5px;
+    }
+    .waiver-empty {
+      padding: 30px 14px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    @media (max-width: 820px) {
+      .waiver-controls { grid-template-columns: 1fr 1fr; }
+      .waiver-search-wrap { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 640px) {
+      .waiver-controls { grid-template-columns: 1fr; }
+      .waiver-search-wrap { grid-column: auto; }
+      .waiver-search, .waiver-control-field select { font-size: 16px; }
+      .waiver-filter-row { gap: 6px; }
+      .waiver-top-btn { margin-left: 0; }
+      .waiver-table-wrap { display: none; }
+      .waiver-mobile-list { display: grid; }
+      .waiver-summary { font-size: 10px; }
+    }
+
     /* ===== V1.9 player bio popup ===== */
     .player-row[data-player-id],
     .match-player[data-player-id] { cursor: pointer; outline: none; }
@@ -973,6 +1141,7 @@
     <nav class="tabs" aria-label="Dashboard sections">
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
+      <button class="tab-btn" data-tab="waivers">Waivers</button>
       <button class="tab-btn" data-tab="rosters">Rosters</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
       <button class="tab-btn" data-tab="raw">Raw Export</button>
@@ -1010,6 +1179,78 @@
         </div>
         <div class="empty" id="matchupsEmpty">Matchups will appear after an update.</div>
         <div class="matchup-grid" id="matchupGrid"></div>
+      </div>
+    </section>
+
+    <section id="waivers" class="tab">
+      <div class="panel waiver-panel">
+        <div class="panel-head">
+          <div class="waiver-head-copy">
+            <h2>Waiver Wire / Free Agents</h2>
+            <div class="small" id="waiverStatus">Available-player projections will load with the league update.</div>
+          </div>
+          <span class="pill" id="waiverWeekPill">Week —</span>
+        </div>
+
+        <div class="waiver-controls">
+          <div class="waiver-search-wrap">
+            <label for="waiverSearch">Search players</label>
+            <input class="waiver-search" id="waiverSearch" type="search" placeholder="Search name, NFL team, opponent…" autocomplete="off" />
+          </div>
+          <div class="waiver-control-field">
+            <label for="waiverSort">Sort</label>
+            <select id="waiverSort">
+              <option value="top">Top Available</option>
+              <option value="projection">Projection: High to Low</option>
+              <option value="depth">Depth Chart</option>
+              <option value="kickoff">Kickoff Time</option>
+              <option value="name">Player Name</option>
+              <option value="team">NFL Team</option>
+            </select>
+          </div>
+          <div class="waiver-control-field">
+            <label for="waiverLimit">Show</label>
+            <select id="waiverLimit">
+              <option value="25">Top 25</option>
+              <option value="50" selected>Top 50</option>
+              <option value="100">Top 100</option>
+              <option value="999">All Relevant</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="waiver-filter-row" aria-label="Position filters">
+          <button class="waiver-pos-btn active" type="button" data-waiver-position="ALL">ALL</button>
+          <button class="waiver-pos-btn" type="button" data-waiver-position="QB">QB</button>
+          <button class="waiver-pos-btn" type="button" data-waiver-position="RB">RB</button>
+          <button class="waiver-pos-btn" type="button" data-waiver-position="WR">WR</button>
+          <button class="waiver-pos-btn" type="button" data-waiver-position="TE">TE</button>
+          <button class="waiver-pos-btn" type="button" data-waiver-position="K">K</button>
+          <button class="waiver-top-btn active" id="waiverTopBtn" type="button">Top Available</button>
+        </div>
+
+        <div class="waiver-summary" id="waiverSummary">Refresh the league to load available players.</div>
+
+        <div class="waiver-table-wrap" id="waiverTableWrap">
+          <table class="waiver-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="name">Player</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="position">Pos</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="team">NFL</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="opponent">Opponent</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="kickoff">Kickoff</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="projection">Proj</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="depth">Depth</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="injury">Injury</button></th>
+              </tr>
+            </thead>
+            <tbody id="waiverTableBody"></tbody>
+          </table>
+        </div>
+        <div class="waiver-mobile-list" id="waiverMobileList"></div>
+        <div class="waiver-empty" id="waiverEmpty" hidden>No available players match these filters.</div>
       </div>
     </section>
 
@@ -1058,8 +1299,9 @@
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '1.9';
+    const APP_VERSION = '2.0';
     const PATCH_NOTES = [
+      { version: '2.0', note: 'Added a full Waiver Wire / Free Agents tab with position filters, search, sortable rankings, opponent/kickoff info, projections, injuries, depth chart, and player popup integration.' },
       { version: '1.9', note: 'Added selectable player card popups with player info, game status, weekly fantasy points, projections, and actual vs proj stats.' },
       { version: '1.8', note: 'Added a compact Patch Notes / What\'s New section to the Overview page.' },
       { version: '1.7', note: 'Added team-name headers above each stacked lineup on mobile and tablet matchup views.' },
@@ -1088,6 +1330,16 @@
       matchupWeek: document.getElementById('matchupWeek'),
       loadWeekBtn: document.getElementById('loadWeekBtn'),
       projectionStatus: document.getElementById('projectionStatus'),
+      waiverStatus: document.getElementById('waiverStatus'),
+      waiverWeekPill: document.getElementById('waiverWeekPill'),
+      waiverSearch: document.getElementById('waiverSearch'),
+      waiverSort: document.getElementById('waiverSort'),
+      waiverLimit: document.getElementById('waiverLimit'),
+      waiverTopBtn: document.getElementById('waiverTopBtn'),
+      waiverSummary: document.getElementById('waiverSummary'),
+      waiverTableBody: document.getElementById('waiverTableBody'),
+      waiverMobileList: document.getElementById('waiverMobileList'),
+      waiverEmpty: document.getElementById('waiverEmpty'),
       rostersEmpty: document.getElementById('rostersEmpty'),
       rosterGrid: document.getElementById('rosterGrid'),
       settingsEmpty: document.getElementById('settingsEmpty'),
@@ -1114,7 +1366,10 @@
       lastFetchAt: 0,
       isRefreshing: false,
       activePlayerId: null,
-      playerStatsCache: new Map()
+      playerStatsCache: new Map(),
+      waiverPosition: 'ALL',
+      waiverSortKey: 'top',
+      waiverSortDir: 'desc'
     };
 
     function showNotice(message, type = '') {
@@ -1168,6 +1423,7 @@
 
     function autoRefreshLabel(minutes) {
       const n = Number(minutes || 0);
+      if (n === 0.25) return '15 sec';
       if (n === 0.5) return '30 sec';
       if (n === 1) return '1 min';
       return `${n} min`;
@@ -1970,6 +2226,187 @@
       return { league, rosters, users, state, drafts, tradedPicks, matchups, transactions, draftPicks, projections: projections || {}, originalProjectionSnapshot, schedule: schedule || [], espnSchedule: espnSchedule || [], selectedWeek: week };
     }
 
+    function waiverRelevanceScore(player, data = app.data) {
+      const proj = Number(player?.projected_points ?? projectedPoints(player?.player_id, data));
+      const depth = Number(player?.depth_chart_order);
+      const statusText = String(player?.status || '').toLowerCase();
+      const injury = String(player?.injury_status || '').toUpperCase();
+
+      let score = Number.isFinite(proj) ? proj * 10 : 0;
+      if (depth === 1) score += 30;
+      else if (depth === 2) score += 18;
+      else if (depth === 3) score += 10;
+      else if (depth === 4) score += 4;
+      if (statusText === 'active') score += 5;
+      if (injury === 'IR' || injury === 'PUP') score -= 50;
+      else if (injury === 'OUT') score -= 20;
+      else if (injury === 'DOUBTFUL') score -= 8;
+      return score;
+    }
+
+    function waiverOpponent(playerId, data = app.data) {
+      const p = playerFromId(playerId);
+      const game = gameForTeam(p?.team, data);
+      if (!game) return 'BYE';
+      const team = normalizeNflTeam(p.team);
+      const home = normalizeNflTeam(game.home);
+      const away = normalizeNflTeam(game.away);
+      return home === team ? `vs ${away}` : `@ ${home}`;
+    }
+
+    function waiverInjuryClass(status) {
+      const raw = String(status || 'healthy').trim().toLowerCase();
+      if (!raw) return 'healthy';
+      if (raw === 'questionable' || raw === 'q') return 'questionable';
+      if (raw === 'doubtful' || raw === 'd') return 'doubtful';
+      if (raw === 'out' || raw === 'o') return 'out';
+      if (raw === 'ir') return 'ir';
+      if (raw === 'pup') return 'pup';
+      return 'healthy';
+    }
+
+    function waiverRows(data = app.data) {
+      if (!data) return [];
+      const pool = buildRelevantAvailablePlayers(data)?.players || [];
+      return pool.map(base => {
+        const full = { ...playerFromId(base.player_id), ...base };
+        const gameInfo = playerGameInfo(base.player_id, data);
+        const kickoff = playerKickoffInfo(base.player_id, data);
+        const opponent = waiverOpponent(base.player_id, data);
+        return {
+          ...full,
+          projected_points: Number.isFinite(Number(base.projected_points)) ? Number(base.projected_points) : null,
+          relevance_score: waiverRelevanceScore(full, data),
+          opponent,
+          kickoff,
+          kickoff_ts: kickoff?.iso ? new Date(kickoff.iso).getTime() : Number.POSITIVE_INFINITY,
+          game_info: gameInfo
+        };
+      });
+    }
+
+    function waiverSortIndicator(key) {
+      if (app.waiverSortKey !== key) return '';
+      return app.waiverSortDir === 'asc' ? ' ▲' : ' ▼';
+    }
+
+    function setWaiverSort(key, direction = null) {
+      if (!key) return;
+      if (app.waiverSortKey === key && direction === null) {
+        app.waiverSortDir = app.waiverSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        app.waiverSortKey = key;
+        app.waiverSortDir = direction || (['name','team','position','opponent','kickoff','depth'].includes(key) ? 'asc' : 'desc');
+      }
+      if (els.waiverSort && [...els.waiverSort.options].some(o => o.value === key)) els.waiverSort.value = key;
+      if (els.waiverTopBtn) els.waiverTopBtn.classList.toggle('active', key === 'top');
+      if (app.data) renderWaivers(app.data);
+    }
+
+    function compareWaiverRows(a, b, key) {
+      if (key === 'top') return (a.relevance_score - b.relevance_score) || ((a.projected_points ?? -999) - (b.projected_points ?? -999));
+      if (key === 'projection') return (a.projected_points ?? -999) - (b.projected_points ?? -999);
+      if (key === 'depth') return (Number(a.depth_chart_order) || 99) - (Number(b.depth_chart_order) || 99) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'kickoff') return (a.kickoff_ts - b.kickoff_ts) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'name') return String(a.full_name || '').localeCompare(String(b.full_name || ''));
+      if (key === 'team') return String(a.team || '').localeCompare(String(b.team || '')) || String(a.full_name || '').localeCompare(String(b.full_name || ''));
+      if (key === 'position') return String(a.position || '').localeCompare(String(b.position || '')) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'opponent') return String(a.opponent || '').localeCompare(String(b.opponent || '')) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'injury') return String(a.injury_status || '').localeCompare(String(b.injury_status || '')) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      return 0;
+    }
+
+    function waiverGameCell(row) {
+      const info = row.game_info;
+      const kickoff = row.kickoff?.display || '—';
+      const badge = gameStatusBadge(info);
+      return `<div class="waiver-kickoff">${escapeHtml(kickoff)} ${badge}</div>`;
+    }
+
+    function renderWaivers(data) {
+      if (!data || !els.waiverTableBody) return;
+      const week = Number(data?.selectedWeek || data?.state?.week || data?.state?.leg || 1);
+      const search = String(els.waiverSearch?.value || '').trim().toLowerCase();
+      const limit = Math.max(1, Number(els.waiverLimit?.value || 50));
+      const position = app.waiverPosition || 'ALL';
+      const rawRows = waiverRows(data);
+
+      let rows = rawRows.filter(row => {
+        if (position !== 'ALL' && String(row.position) !== position) return false;
+        if (!search) return true;
+        const haystack = [row.full_name, row.team, row.position, row.opponent, row.injury_status, row.depth_chart_position]
+          .filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(search);
+      });
+
+      const key = app.waiverSortKey || 'top';
+      rows.sort((a, b) => {
+        const result = compareWaiverRows(a, b, key);
+        return app.waiverSortDir === 'asc' ? result : -result;
+      });
+      rows = rows.slice(0, limit);
+
+      const projectionCount = rawRows.filter(r => Number.isFinite(Number(r.projected_points))).length;
+      els.waiverWeekPill.textContent = `Week ${week}`;
+      els.waiverStatus.textContent = `Relevant unrostered QB/RB/WR/TE/K players · ${projectionCount} with Week ${week} projections.`;
+      els.waiverSummary.innerHTML = `<strong>${rows.length}</strong> shown · <strong>${rawRows.length}</strong> relevant free agents · ${position === 'ALL' ? 'All positions' : escapeHtml(position)} · ${search ? `Search: <strong>${escapeHtml(els.waiverSearch.value)}</strong> · ` : ''}Top Available blends projection, depth chart, active status, and injury availability.`;
+
+      document.querySelectorAll('[data-waiver-position]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.waiverPosition === position);
+      });
+      if (els.waiverTopBtn) els.waiverTopBtn.classList.toggle('active', key === 'top');
+
+      document.querySelectorAll('[data-waiver-sort]').forEach(btn => {
+        const base = btn.dataset.waiverSort;
+        const labels = { name:'Player', position:'Pos', team:'NFL', opponent:'Opponent', kickoff:'Kickoff', projection:'Proj', depth:'Depth', injury:'Injury' };
+        btn.textContent = (labels[base] || base) + waiverSortIndicator(base);
+      });
+
+      const tableHtml = rows.map((row, index) => {
+        const injury = row.injury_status || 'Healthy';
+        const injuryClass = waiverInjuryClass(injury);
+        const depth = row.depth_chart_order ? `#${row.depth_chart_order}${row.depth_chart_position ? ` ${row.depth_chart_position}` : ''}` : (row.depth_chart_position || '—');
+        return `<tr class="waiver-player-row" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
+          <td class="waiver-rank">${index + 1}</td>
+          <td class="waiver-player-cell"><div class="waiver-player-name">${escapeHtml(row.full_name)}</div><div class="waiver-player-sub">${escapeHtml([row.team, row.position].filter(Boolean).join(' · '))}</div></td>
+          <td><span class="slot">${escapeHtml(row.position || '—')}</span></td>
+          <td>${escapeHtml(row.team || '—')}</td>
+          <td class="waiver-game">${escapeHtml(row.opponent || '—')}</td>
+          <td>${waiverGameCell(row)}</td>
+          <td class="waiver-proj">${row.projected_points === null ? '—' : numberOrDash(row.projected_points, 2)}</td>
+          <td class="waiver-depth">${escapeHtml(depth)}</td>
+          <td><span class="waiver-injury ${escapeHtml(injuryClass)}">${escapeHtml(injury)}</span></td>
+        </tr>`;
+      }).join('');
+
+      const mobileHtml = rows.map((row, index) => {
+        const injury = row.injury_status || 'Healthy';
+        const injuryClass = waiverInjuryClass(injury);
+        const depth = row.depth_chart_order ? `Depth #${row.depth_chart_order}${row.depth_chart_position ? ` ${row.depth_chart_position}` : ''}` : (row.depth_chart_position ? `Depth ${row.depth_chart_position}` : 'Depth —');
+        return `<article class="waiver-mobile-card waiver-player-row" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
+          <div class="waiver-mobile-top">
+            <div class="waiver-mobile-rank">#${index + 1}</div>
+            <div><div class="waiver-mobile-name">${escapeHtml(row.full_name)}</div><div class="waiver-mobile-meta">${escapeHtml([row.team, row.position, row.opponent].filter(Boolean).join(' · '))}</div></div>
+            <div><div class="waiver-mobile-proj">${row.projected_points === null ? '—' : numberOrDash(row.projected_points, 2)}</div><div class="waiver-mobile-proj-label">Proj</div></div>
+          </div>
+          <div class="waiver-mobile-details">
+            <span>${escapeHtml(depth)}</span>
+            <span class="waiver-injury ${escapeHtml(injuryClass)}">${escapeHtml(injury)}</span>
+            <span>${escapeHtml(row.kickoff?.display || 'Kickoff —')}</span>
+            ${gameStatusBadge(row.game_info)}
+          </div>
+        </article>`;
+      }).join('');
+
+      els.waiverTableBody.innerHTML = tableHtml;
+      els.waiverMobileList.innerHTML = mobileHtml;
+      const empty = rows.length === 0;
+      els.waiverEmpty.hidden = !empty;
+      const tableWrap = document.getElementById('waiverTableWrap');
+      if (tableWrap) tableWrap.style.visibility = empty ? 'hidden' : 'visible';
+      if (els.waiverMobileList) els.waiverMobileList.style.visibility = empty ? 'hidden' : 'visible';
+    }
+
     function buildRelevantAvailablePlayers(data) {
       const rosteredIds = new Set();
       for (const roster of data.rosters || []) {
@@ -2476,6 +2913,7 @@
         );
         app.originalProjectionSnapshot = app.data.originalProjectionSnapshot;
         renderMatchups(app.data);
+        renderWaivers(app.data);
         app.exportSnapshot = buildExport(app.data);
         els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
         showNotice(`Week ${week} matchup data loaded. Export will now include this week.`, 'success');
@@ -2558,6 +2996,7 @@
       renderTeamSelector(data);
       renderOverview(data);
       renderMatchups(data);
+      renderWaivers(data);
       renderRosters(data);
       renderSettings(data);
       app.exportSnapshot = buildExport(data);
@@ -2741,19 +3180,43 @@
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player');
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row');
       if (playerRow) openPlayerModal(playerRow.dataset.playerId);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player');
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row');
         if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId); }
       }
     });
     els.playerModalClose.addEventListener('click', closePlayerModal);
     els.playerModalBackdrop.addEventListener('click', event => { if (event.target === els.playerModalBackdrop) closePlayerModal(); });
     els.playerModalHeadshot.addEventListener('error', () => { els.playerModalHeadshot.style.display = 'none'; els.playerModalHeadshotFallback.style.display = 'grid'; });
+
+    document.querySelectorAll('[data-waiver-position]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        app.waiverPosition = btn.dataset.waiverPosition || 'ALL';
+        if (app.data) renderWaivers(app.data);
+      });
+    });
+    document.querySelectorAll('[data-waiver-sort]').forEach(btn => {
+      btn.addEventListener('click', () => setWaiverSort(btn.dataset.waiverSort));
+    });
+    els.waiverTopBtn.addEventListener('click', () => {
+      app.waiverSortKey = 'top';
+      app.waiverSortDir = 'desc';
+      els.waiverSort.value = 'top';
+      if (app.data) renderWaivers(app.data);
+    });
+    els.waiverSearch.addEventListener('input', () => { if (app.data) renderWaivers(app.data); });
+    els.waiverLimit.addEventListener('change', () => { if (app.data) renderWaivers(app.data); });
+    els.waiverSort.addEventListener('change', () => {
+      const key = els.waiverSort.value || 'top';
+      app.waiverSortKey = key;
+      app.waiverSortDir = ['name','team','kickoff','depth'].includes(key) ? 'asc' : 'desc';
+      if (app.data) renderWaivers(app.data);
+    });
 
     els.autoRefresh.addEventListener('change', () => startAutoRefresh({ runNow: false }));
 
