@@ -833,6 +833,88 @@
       .matchup-score { font-size: 18px; }
     }
 
+
+    /* ===== V1.9 player bio popup ===== */
+    .player-row[data-player-id],
+    .match-player[data-player-id] { cursor: pointer; outline: none; }
+    .player-row[data-player-id]:hover,
+    .match-player[data-player-id]:hover { background: rgba(96,165,250,.085); }
+    .player-row[data-player-id]:focus-visible,
+    .match-player[data-player-id]:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-2); }
+    body.modal-open { overflow: hidden; }
+
+    .player-modal-backdrop {
+      position: fixed; inset: 0; z-index: 9999; display: none;
+      align-items: center; justify-content: center;
+      padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      background: rgba(3,7,18,.76); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .player-modal-backdrop.open { display: flex; }
+    .player-modal {
+      width: min(720px, 100%); max-height: min(860px, calc(100dvh - 28px)); overflow: auto;
+      overscroll-behavior: contain; border: 1px solid #33476a; border-radius: 20px;
+      background: radial-gradient(circle at top right, rgba(96,165,250,.11), transparent 32%), #101827;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55); -webkit-overflow-scrolling: touch;
+    }
+    .player-modal-head {
+      position: sticky; top: 0; z-index: 2; display: grid;
+      grid-template-columns: 76px minmax(0,1fr) auto; gap: 14px; align-items: center;
+      padding: 16px; border-bottom: 1px solid var(--line); background: rgba(16,24,39,.96);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .player-headshot, .player-headshot-fallback {
+      width: 76px; height: 76px; border-radius: 15px; border: 1px solid #344764; background: #182238;
+    }
+    .player-headshot { object-fit: cover; object-position: center top; }
+    .player-headshot-fallback { display: none; place-items: center; color: var(--accent-2); font-size: 24px; font-weight: 900; }
+    .player-modal-name { margin: 0; font-size: clamp(20px, 4vw, 27px); line-height: 1.08; }
+    .player-modal-subtitle { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .player-modal-close {
+      align-self: start; min-width: 42px; min-height: 42px; padding: 0; display: grid; place-items: center;
+      border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: #182238; font-size: 22px; line-height: 1;
+    }
+    .player-modal-body { padding: 15px; }
+    .player-modal-section { margin-top: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(12,19,34,.65); }
+    .player-modal-section:first-child { margin-top: 0; }
+    .player-modal-section-title { margin: 0 0 10px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .player-fantasy-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
+    .player-fantasy-card { padding: 11px 9px; border: 1px solid #253550; border-radius: 11px; background: #0d1524; min-width: 0; }
+    .player-fantasy-label { color: var(--muted); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .player-fantasy-value { margin-top: 4px; font-size: 20px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .player-fantasy-card.actual .player-fantasy-value { color: var(--accent); }
+    .player-fantasy-card.original .player-fantasy-value { color: var(--accent-2); }
+    .player-fantasy-card.live .player-fantasy-value { color: #e9d5ff; }
+    .player-bio-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px 12px; }
+    .player-bio-item { min-width: 0; padding-bottom: 7px; border-bottom: 1px solid rgba(38,50,74,.65); }
+    .player-bio-key { color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .player-bio-value { margin-top: 2px; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
+    .player-game-strip { display: flex; flex-wrap: wrap; gap: 7px 10px; align-items: center; color: var(--muted); font-size: 12px; }
+    .player-game-strip strong { color: var(--text); }
+    .player-stat-table { width: 100%; min-width: 0; border-collapse: collapse; }
+    .player-stat-table th, .player-stat-table td { padding: 8px 6px; border-bottom: 1px solid #202d45; font-size: 11px; }
+    .player-stat-table th { color: var(--muted); font-size: 9px; }
+    .player-stat-table th:not(:first-child), .player-stat-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+    .player-stat-table tr:last-child td { border-bottom: 0; }
+    .player-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .player-modal-loading { padding: 18px 8px; text-align: center; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 640px) {
+      .player-modal-backdrop { align-items: flex-end; padding: 0; }
+      .player-modal { width: 100%; max-height: 92dvh; border-radius: 20px 20px 0 0; border-bottom: 0; }
+      .player-modal-head { grid-template-columns: 62px minmax(0,1fr) auto; padding: 13px max(12px, env(safe-area-inset-right)) 13px max(12px, env(safe-area-inset-left)); }
+      .player-headshot, .player-headshot-fallback { width: 62px; height: 62px; border-radius: 13px; }
+      .player-modal-body { padding: 12px max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+      .player-bio-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .player-fantasy-value { font-size: 17px; }
+    }
+    @media (max-width: 370px) {
+      .player-fantasy-grid { gap: 5px; }
+      .player-fantasy-card { padding: 9px 5px; }
+      .player-fantasy-value { font-size: 15px; }
+      .player-fantasy-label { font-size: 7.5px; }
+      .player-bio-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+    }
+
     @media (hover: none) and (pointer: coarse) {
       button:hover { transform: none; }
       tbody tr:hover { background: transparent; }
@@ -955,14 +1037,30 @@
     </section>
   </main>
 
+  <div class="player-modal-backdrop" id="playerModalBackdrop" aria-hidden="true">
+    <section class="player-modal" id="playerModal" role="dialog" aria-modal="true" aria-labelledby="playerModalName">
+      <header class="player-modal-head">
+        <img class="player-headshot" id="playerModalHeadshot" alt="" />
+        <div class="player-headshot-fallback" id="playerModalHeadshotFallback" aria-hidden="true">NFL</div>
+        <div>
+          <h2 class="player-modal-name" id="playerModalName">Player</h2>
+          <div class="player-modal-subtitle" id="playerModalSubtitle"></div>
+        </div>
+        <button class="player-modal-close" id="playerModalClose" type="button" aria-label="Close player details">×</button>
+      </header>
+      <div class="player-modal-body" id="playerModalBody"></div>
+    </section>
+  </div>
+
   <script>
     'use strict';
 
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '1.8';
+    const APP_VERSION = '1.9';
     const PATCH_NOTES = [
+      { version: '1.9', note: 'Added selectable player card popups with player info, game status, weekly fantasy points, projections, and actual vs proj stats.' },
       { version: '1.8', note: 'Added a compact Patch Notes / What\'s New section to the Overview page.' },
       { version: '1.7', note: 'Added team-name headers above each stacked lineup on mobile and tablet matchup views.' },
       { version: '1.6', note: 'Added responsive layouts for desktop, Mac, tablets, phones, and folded/unfolded Galaxy Z Fold screens.' },
@@ -994,7 +1092,15 @@
       rosterGrid: document.getElementById('rosterGrid'),
       settingsEmpty: document.getElementById('settingsEmpty'),
       settingsGrid: document.getElementById('settingsGrid'),
-      rawJson: document.getElementById('rawJson')
+      rawJson: document.getElementById('rawJson'),
+      playerModalBackdrop: document.getElementById('playerModalBackdrop'),
+      playerModal: document.getElementById('playerModal'),
+      playerModalClose: document.getElementById('playerModalClose'),
+      playerModalHeadshot: document.getElementById('playerModalHeadshot'),
+      playerModalHeadshotFallback: document.getElementById('playerModalHeadshotFallback'),
+      playerModalName: document.getElementById('playerModalName'),
+      playerModalSubtitle: document.getElementById('playerModalSubtitle'),
+      playerModalBody: document.getElementById('playerModalBody')
     };
 
     const app = {
@@ -1006,7 +1112,9 @@
       fileHandle: null,
       autoTimer: null,
       lastFetchAt: 0,
-      isRefreshing: false
+      isRefreshing: false,
+      activePlayerId: null,
+      playerStatsCache: new Map()
     };
 
     function showNotice(message, type = '') {
@@ -1116,7 +1224,14 @@
           status: p.status ?? null,
           injury_status: p.injury_status ?? null,
           practice_participation: p.practice_participation ?? null,
-          depth_chart_order: p.depth_chart_order ?? null
+          depth_chart_order: p.depth_chart_order ?? null,
+          depth_chart_position: p.depth_chart_position ?? null,
+          number: p.number ?? null,
+          age: p.age ?? null,
+          height: p.height ?? null,
+          weight: p.weight ?? null,
+          college: p.college ?? null,
+          years_exp: p.years_exp ?? null
         };
       }
       const looksLikeDefense = String(id).length <= 4 && /^[A-Z]+$/.test(String(id));
@@ -1128,11 +1243,205 @@
       };
     }
 
+    function matchupForPlayer(playerId, data = app.data) {
+      const id = String(playerId);
+      return (data?.matchups || []).find(m =>
+        (m?.players || []).some(pid => String(pid) === id) ||
+        (m?.starters || []).some(pid => String(pid) === id)
+      ) || null;
+    }
+
+    function playerRosterContext(playerId, data = app.data) {
+      const id = String(playerId);
+      for (const roster of data?.rosters || []) {
+        if ((roster.players || []).some(pid => String(pid) === id) ||
+            (roster.reserve || []).some(pid => String(pid) === id) ||
+            (roster.taxi || []).some(pid => String(pid) === id)) {
+          const owner = ownerForRoster(roster, data.users || []);
+          return { roster_id: roster.roster_id, team_name: teamName(owner, roster), owner_name: owner?.display_name || owner?.username || null };
+        }
+      }
+      return null;
+    }
+
+    function fantasyValueOrDash(value) {
+      return Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
+    }
+
+    function formatStatValue(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return '—';
+      return Number.isInteger(n) ? String(n) : n.toFixed(1);
+    }
+
+    function firstStat(stats, keys) {
+      for (const key of keys) {
+        const n = Number(stats?.[key]);
+        if (Number.isFinite(n)) return n;
+      }
+      return null;
+    }
+
+    function statRowsForPlayer(position, actualStats = {}, projectedStats = {}) {
+      const common = {
+        pass_cmp: ['pass_cmp'], pass_att: ['pass_att'], pass_yd: ['pass_yd'], pass_td: ['pass_td'], pass_int: ['pass_int'],
+        rush_att: ['rush_att'], rush_yd: ['rush_yd'], rush_td: ['rush_td'],
+        rec_tgt: ['rec_tgt','targets'], rec: ['rec'], rec_yd: ['rec_yd'], rec_td: ['rec_td'], fum_lost: ['fum_lost'],
+        fgm: ['fgm'], fga: ['fga'], xpm: ['xpm'], xpa: ['xpa'], sack: ['sack','sacks'], int: ['int','def_int'], fum_rec: ['fum_rec'], def_td: ['def_td'], pts_allow: ['pts_allow']
+      };
+      const defsByPos = {
+        QB: [['Completions',common.pass_cmp],['Pass Attempts',common.pass_att],['Pass Yards',common.pass_yd],['Pass TD',common.pass_td],['Interceptions',common.pass_int],['Rush Attempts',common.rush_att],['Rush Yards',common.rush_yd],['Rush TD',common.rush_td],['Fumbles Lost',common.fum_lost]],
+        RB: [['Rush Attempts',common.rush_att],['Rush Yards',common.rush_yd],['Rush TD',common.rush_td],['Targets',common.rec_tgt],['Receptions',common.rec],['Rec Yards',common.rec_yd],['Rec TD',common.rec_td],['Fumbles Lost',common.fum_lost]],
+        WR: [['Targets',common.rec_tgt],['Receptions',common.rec],['Rec Yards',common.rec_yd],['Rec TD',common.rec_td],['Rush Attempts',common.rush_att],['Rush Yards',common.rush_yd],['Rush TD',common.rush_td],['Fumbles Lost',common.fum_lost]],
+        TE: [['Targets',common.rec_tgt],['Receptions',common.rec],['Rec Yards',common.rec_yd],['Rec TD',common.rec_td],['Fumbles Lost',common.fum_lost]],
+        K: [['FG Made',common.fgm],['FG Attempts',common.fga],['XP Made',common.xpm],['XP Attempts',common.xpa]],
+        DEF: [['Sacks',common.sack],['Interceptions',common.int],['Fumble Recoveries',common.fum_rec],['Def TD',common.def_td],['Points Allowed',common.pts_allow]]
+      };
+      const defs = defsByPos[position] || [['Pass Yards',common.pass_yd],['Pass TD',common.pass_td],['Rush Yards',common.rush_yd],['Rush TD',common.rush_td],['Receptions',common.rec],['Rec Yards',common.rec_yd],['Rec TD',common.rec_td]];
+      const rows = defs.map(([label, keys]) => ({ label, actual: firstStat(actualStats, keys), projected: firstStat(projectedStats, keys) }))
+        .filter(row => row.actual !== null || row.projected !== null);
+      if (rows.length) return rows;
+      const ignored = new Set(['player_id','game_id','team','opponent','week','season','season_type']);
+      return [...new Set([...Object.keys(actualStats || {}), ...Object.keys(projectedStats || {})])]
+        .filter(k => !ignored.has(k) && !k.startsWith('pts_') && Number.isFinite(Number(actualStats?.[k] ?? projectedStats?.[k])))
+        .slice(0,10)
+        .map(key => ({ label: prettyKey(key), actual: Number.isFinite(Number(actualStats?.[key])) ? Number(actualStats[key]) : null, projected: Number.isFinite(Number(projectedStats?.[key])) ? Number(projectedStats[key]) : null }));
+    }
+
+    function extractPlayerWeekStats(raw, week) {
+      const targetWeek = Number(week);
+      if (!raw) return {};
+      if (Array.isArray(raw)) {
+        const row = raw.find(item => Number(item?.week ?? item?.season_week ?? item?.game_week) === targetWeek) || raw.find(item => Number(item?.metadata?.week) === targetWeek) || null;
+        return row?.stats || row || {};
+      }
+      if (typeof raw === 'object') {
+        const keyed = raw[String(targetWeek)] ?? raw[targetWeek];
+        if (keyed) return keyed?.stats || keyed;
+        const row = Object.values(raw).find(item => Number(item?.week ?? item?.season_week ?? item?.game_week) === targetWeek);
+        if (row) return row?.stats || row;
+        return raw?.stats || {};
+      }
+      return {};
+    }
+
+    async function fetchPlayerWeekStats(playerId, data = app.data, { force = false } = {}) {
+      if (!data) return {};
+      const season = Number(data?.state?.season || data?.league?.season || new Date().getFullYear());
+      const week = Number(data?.selectedWeek || data?.state?.week || data?.state?.leg || 1);
+      const seasonTypeRaw = String(data?.state?.season_type || data?.league?.season_type || 'regular').toLowerCase();
+      const seasonType = ['pre','post','regular'].includes(seasonTypeRaw) ? seasonTypeRaw : 'regular';
+      const key = `${season}:${seasonType}:${week}:${playerId}`;
+      if (!force && app.playerStatsCache.has(key)) return app.playerStatsCache.get(key);
+      let stats = {};
+      try {
+        const raw = await fetchJson(`https://api.sleeper.com/stats/nfl/player/${encodeURIComponent(playerId)}?season=${encodeURIComponent(season)}&season_type=${encodeURIComponent(seasonType)}&grouping=week`);
+        stats = extractPlayerWeekStats(raw, week);
+      } catch (_) {
+        try {
+          const raw = await fetchJson(`https://api.sleeper.com/stats/nfl/${encodeURIComponent(season)}/${encodeURIComponent(week)}?season_type=${encodeURIComponent(seasonType)}`);
+          if (Array.isArray(raw)) {
+            const row = raw.find(item => String(item?.player_id ?? item?.player?.player_id ?? item?.player?.id) === String(playerId));
+            stats = row?.stats || row || {};
+          } else if (raw && typeof raw === 'object') {
+            const row = raw[String(playerId)];
+            stats = row?.stats || row || {};
+          }
+        } catch (_) { stats = {}; }
+      }
+      app.playerStatsCache.set(key, stats || {});
+      return stats || {};
+    }
+
+    function playerBioItems(p) {
+      const items = [
+        ['NFL Team', p.team || '—'], ['Position', p.position || '—'], ['Jersey', p.number !== null && p.number !== undefined ? `#${p.number}` : '—'],
+        ['Age', p.age ?? '—'], ['Height', p.height || '—'], ['Weight', p.weight ? `${p.weight} lb` : '—'], ['College', p.college || '—'],
+        ['Experience', Number.isFinite(Number(p.years_exp)) ? `${p.years_exp} yr` : '—'],
+        ['Depth Chart', p.depth_chart_order ? `#${p.depth_chart_order}${p.depth_chart_position ? ` · ${p.depth_chart_position}` : ''}` : (p.depth_chart_position || '—')],
+        ['Player Status', p.status || '—'], ['Injury', p.injury_status || '—'], ['Practice', p.practice_participation || '—']
+      ];
+      return items.map(([key, value]) => `<div class="player-bio-item"><div class="player-bio-key">${escapeHtml(key)}</div><div class="player-bio-value">${escapeHtml(value)}</div></div>`).join('');
+    }
+
+    function renderPlayerModalBody(playerId, actualStats = null) {
+      const data = app.data;
+      const p = playerFromId(playerId);
+      const matchup = matchupForPlayer(playerId, data);
+      const rosterCtx = playerRosterContext(playerId, data);
+      const gameInfo = playerGameInfo(playerId, data);
+      const kickoff = playerKickoffInfo(playerId, data);
+      const original = originalProjectedPoints(playerId, data);
+      const actualFantasy = matchup ? actualPlayerPoints(matchup, playerId) : null;
+      const live = matchup ? adjustedPlayerProjection(matchup, playerId, data) : original;
+      const projectedStats = data?.projections?.[String(playerId)] || {};
+      const statsReady = actualStats !== null;
+      const statRows = statRowsForPlayer(p.position, actualStats || {}, projectedStats);
+      const sleeperGame = gameForTeam(p.team, data);
+      const opponent = sleeperGame ? (String(sleeperGame.home) === String(p.team) ? `vs ${sleeperGame.away}` : `@ ${sleeperGame.home}`) : '';
+      const week = Number(data?.selectedWeek || data?.state?.week || data?.state?.leg || 1);
+      const statTable = statsReady
+        ? (statRows.length ? `<table class="player-stat-table"><thead><tr><th>Week ${week} Stat</th><th>Actual</th><th>Projected</th></tr></thead><tbody>${statRows.map(row => `<tr><td>${escapeHtml(row.label)}</td><td>${formatStatValue(row.actual)}</td><td>${formatStatValue(row.projected)}</td></tr>`).join('')}</tbody></table>` : '<div class="player-modal-loading">No detailed stat line is available for this player yet.</div>')
+        : '<div class="player-modal-loading">Loading weekly stats…</div>';
+
+      return `
+        <section class="player-modal-section">
+          <div class="player-modal-section-title">Week ${week} Fantasy</div>
+          <div class="player-fantasy-grid">
+            <div class="player-fantasy-card actual"><div class="player-fantasy-label">Actual</div><div class="player-fantasy-value">${fantasyValueOrDash(actualFantasy)}</div></div>
+            <div class="player-fantasy-card original"><div class="player-fantasy-label">Original Proj</div><div class="player-fantasy-value">${fantasyValueOrDash(original)}</div></div>
+            <div class="player-fantasy-card live"><div class="player-fantasy-label">Live Proj</div><div class="player-fantasy-value">${fantasyValueOrDash(live)}</div></div>
+          </div>
+        </section>
+        <section class="player-modal-section">
+          <div class="player-modal-section-title">Game</div>
+          <div class="player-game-strip">${gameStatusBadge(gameInfo)} <strong>${escapeHtml(opponent || gameInfo.label)}</strong> ${kickoff.display ? `<span>${escapeHtml(kickoff.display)}</span>` : ''} ${rosterCtx ? `<span>Fantasy roster: <strong>${escapeHtml(rosterCtx.team_name)}</strong></span>` : '<span>Unrostered</span>'}</div>
+        </section>
+        <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p)}</div></section>
+        <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
+    }
+
+    async function openPlayerModal(playerId) {
+      if (!app.data || !playerId) return;
+      app.activePlayerId = String(playerId);
+      const p = playerFromId(playerId);
+      els.playerModalName.textContent = p.full_name || 'Player';
+      els.playerModalSubtitle.textContent = [p.team, p.position, p.injury_status].filter(Boolean).join(' · ');
+      els.playerModalHeadshot.style.display = '';
+      els.playerModalHeadshotFallback.style.display = 'none';
+      els.playerModalHeadshot.src = `https://sleepercdn.com/content/nfl/players/${encodeURIComponent(playerId)}.jpg`;
+      els.playerModalHeadshot.alt = `${p.full_name || 'Player'} headshot`;
+      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, null);
+      els.playerModalBackdrop.classList.add('open');
+      els.playerModalBackdrop.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      requestAnimationFrame(() => els.playerModalClose.focus());
+      const stats = await fetchPlayerWeekStats(playerId, app.data);
+      if (String(app.activePlayerId) !== String(playerId)) return;
+      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, stats);
+    }
+
+    function closePlayerModal() {
+      if (!els.playerModalBackdrop.classList.contains('open')) return;
+      app.activePlayerId = null;
+      els.playerModalBackdrop.classList.remove('open');
+      els.playerModalBackdrop.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+    }
+
+    async function refreshOpenPlayerStats(playerId) {
+      const statsContainer = document.getElementById('playerModalStats');
+      if (statsContainer) statsContainer.innerHTML = '<div class="player-modal-loading">Refreshing weekly stats…</div>';
+      const stats = await fetchPlayerWeekStats(playerId, app.data, { force: true });
+      if (String(app.activePlayerId) !== String(playerId)) return;
+      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, stats);
+    }
+
     function renderPlayerRow(playerId, slot = '') {
       const p = playerFromId(playerId);
       const injury = p.injury_status ? ` · ${p.injury_status}` : '';
       return `
-        <div class="player-row">
+        <div class="player-row" data-player-id="${escapeHtml(p.player_id)}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.full_name)} player details">
           <div class="slot">${escapeHtml(formatSlot(slot || p.position || '—'))}</div>
           <div class="player-name">${escapeHtml(p.full_name)}</div>
           <div class="player-meta ${p.injury_status ? 'injury' : ''}">${escapeHtml([p.team, p.position].filter(Boolean).join(' · '))}${escapeHtml(injury)}</div>
@@ -2025,7 +2334,7 @@
       const kickoffText = kickoff.display && gameInfo.key !== 'bye' ? ` · ${kickoff.display}` : '';
       const injuryText = p.injury_status ? ` · ${p.injury_status}` : '';
       return `
-        <div class="match-player">
+        <div class="match-player" data-player-id="${escapeHtml(p.player_id)}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.full_name)} player details">
           <div class="slot">${escapeHtml(formatSlot(slot || p.position || '—'))}</div>
           <div style="min-width:0">
             <div class="match-player-name">${escapeHtml(p.full_name)}</div>
@@ -2310,6 +2619,9 @@
 
         app.data = data;
         renderAll(data);
+        if (app.activePlayerId && els.playerModalBackdrop.classList.contains('open')) {
+          els.playerModalBody.innerHTML = renderPlayerModalBody(app.activePlayerId, {});
+        }
         await silentlyUpdateAuthorizedSnapshot(app.exportSnapshot);
         const minutes = Number(els.autoRefresh.value || 0);
         setStatus(minutes ? `Live · every ${autoRefreshLabel(minutes)}` : 'Up to date · auto refresh off', 'good');
@@ -2423,6 +2735,25 @@
         // Ignore invalid local cache.
       }
     }
+
+    document.addEventListener('click', event => {
+      const refreshBtn = event.target.closest('#refreshPlayerStatsBtn');
+      if (refreshBtn) {
+        event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
+      }
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player');
+      if (playerRow) openPlayerModal(playerRow.dataset.playerId);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
+      if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player');
+        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId); }
+      }
+    });
+    els.playerModalClose.addEventListener('click', closePlayerModal);
+    els.playerModalBackdrop.addEventListener('click', event => { if (event.target === els.playerModalBackdrop) closePlayerModal(); });
+    els.playerModalHeadshot.addEventListener('error', () => { els.playerModalHeadshot.style.display = 'none'; els.playerModalHeadshotFallback.style.display = 'grid'; });
 
     els.autoRefresh.addEventListener('change', () => startAutoRefresh({ runNow: false }));
 
