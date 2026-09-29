@@ -1002,6 +1002,317 @@
       .waiver-summary { font-size: 10px; }
     }
 
+
+    /* ===== V2.1 multi-source projections ===== */
+    .projection-panel { margin-top: 0; }
+    .projection-head-copy { min-width: 0; }
+    .projection-head-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .projection-provider-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .projection-provider {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(12,19,34,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .projection-provider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+      flex: 0 0 auto;
+    }
+    .projection-provider.loaded .projection-provider-dot { background: var(--good); }
+    .projection-provider.loading .projection-provider-dot { background: var(--warning); animation: livePulse 1.4s ease-in-out infinite; }
+    .projection-provider.error .projection-provider-dot { background: var(--danger); }
+    .projection-provider.unconfigured .projection-provider-dot { background: #64748b; }
+
+    .projection-config {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(12,19,34,.56);
+    }
+    .projection-config summary {
+      cursor: pointer;
+      color: #c8ddff;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .projection-config-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: end;
+    }
+    .projection-config-grid input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      background: #0c1322;
+      color: var(--text);
+      font: inherit;
+    }
+    .projection-config-grid input:focus { border-color: var(--accent-2); }
+
+    .projection-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, .7fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .projection-control-field label,
+    .projection-search-wrap label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .projection-search,
+    .projection-control-field select {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      background: #0c1322;
+      color: var(--text);
+    }
+    .projection-search:focus,
+    .projection-control-field select:focus { border-color: var(--accent-2); }
+
+    .projection-pos-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+    .projection-pos-btn {
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #111a2b;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .projection-pos-btn.active {
+      color: var(--text);
+      background: #1b2740;
+      border-color: #41658f;
+    }
+
+    .projection-summary {
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .projection-summary strong { color: var(--text); }
+
+    .projection-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+      gap: 10px;
+    }
+    .projection-player-card {
+      display: grid;
+      grid-template-columns: 54px minmax(0,1fr);
+      gap: 11px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,.07), transparent 36%),
+        rgba(13,20,35,.90);
+      cursor: pointer;
+      outline: none;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+      min-width: 0;
+    }
+    .projection-player-card:hover {
+      transform: translateY(-1px);
+      border-color: #3c5578;
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,.11), transparent 36%),
+        rgba(15,23,40,.96);
+    }
+    .projection-player-card:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-2); }
+    .projection-card-headshot,
+    .projection-card-headshot-fallback {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      border: 1px solid #34435f;
+      background: #182238;
+    }
+    .projection-card-headshot {
+      object-fit: cover;
+      object-position: center top;
+    }
+    .projection-card-headshot-fallback {
+      display: none;
+      place-items: center;
+      color: var(--accent-2);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .projection-card-main { min-width: 0; }
+    .projection-card-top {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .projection-card-name {
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .projection-card-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 9.5px;
+      line-height: 1.35;
+    }
+    .projection-consensus-badge {
+      flex: 0 0 auto;
+      text-align: right;
+    }
+    .projection-consensus-value {
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .projection-consensus-label {
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .projection-source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 6px;
+      margin-top: 9px;
+    }
+    .projection-source-tile {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid #263650;
+      border-radius: 9px;
+      background: rgba(8,13,24,.54);
+    }
+    .projection-source-name {
+      color: var(--muted);
+      font-size: 7.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .projection-source-value {
+      margin-top: 2px;
+      font-size: 13px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .projection-source-tile.sleeper .projection-source-value { color: var(--accent-2); }
+    .projection-source-tile.fantasypros .projection-source-value { color: #e9d5ff; }
+    .projection-card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 5px 10px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+    .projection-spread { color: #f8d48a; font-weight: 800; }
+    .projection-empty {
+      margin-top: 10px;
+      padding: 28px 18px;
+      border: 1px dashed #2a3955;
+      border-radius: 13px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(19,26,43,.45);
+    }
+
+    .modal-projection-sources {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 7px;
+    }
+    .modal-projection-source {
+      padding: 9px;
+      border: 1px solid #263650;
+      border-radius: 10px;
+      background: rgba(8,13,24,.48);
+    }
+    .modal-projection-source-label {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .modal-projection-source-value {
+      margin-top: 3px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .modal-projection-source.consensus .modal-projection-source-value { color: var(--accent); }
+
+    @media (max-width: 900px) {
+      .projection-controls { grid-template-columns: 1fr 1fr; }
+      .projection-search-wrap { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 640px) {
+      .projection-head-actions { width: 100%; justify-content: stretch; }
+      .projection-head-actions button { flex: 1; }
+      .projection-controls { grid-template-columns: 1fr; }
+      .projection-search-wrap { grid-column: auto; }
+      .projection-search,
+      .projection-control-field select,
+      .projection-config-grid input { font-size: 16px; }
+      .projection-config-grid { grid-template-columns: 1fr; }
+      .projection-config-grid button { width: 100%; }
+      .projection-card-grid { grid-template-columns: 1fr; }
+      .projection-player-card { grid-template-columns: 48px minmax(0,1fr); padding: 10px; }
+      .projection-card-headshot,
+      .projection-card-headshot-fallback { width: 48px; height: 48px; }
+      .modal-projection-sources { grid-template-columns: 1fr 1fr; }
+    }
+
     /* ===== V1.9 player bio popup ===== */
     .player-row[data-player-id],
     .match-player[data-player-id] { cursor: pointer; outline: none; }
@@ -1142,6 +1453,7 @@
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
       <button class="tab-btn" data-tab="waivers">Waivers</button>
+      <button class="tab-btn" data-tab="projections">Projections</button>
       <button class="tab-btn" data-tab="rosters">Rosters</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
       <button class="tab-btn" data-tab="raw">Raw Export</button>
@@ -1254,6 +1566,91 @@
       </div>
     </section>
 
+    <section id="projections" class="tab">
+      <div class="panel projection-panel">
+        <div class="panel-head">
+          <div class="projection-head-copy">
+            <h2>Multi-Source Projections</h2>
+            <div class="small" id="multiProjectionStatus">This tab loads projection-source data only when you open it.</div>
+          </div>
+          <div class="projection-head-actions">
+            <span class="pill" id="multiProjectionWeekPill">Week —</span>
+            <button class="btn-secondary" id="refreshMultiProjectionsBtn" type="button">Refresh Projections</button>
+          </div>
+        </div>
+
+        <div class="projection-provider-row" aria-label="Projection source status">
+          <span class="projection-provider unconfigured" id="projectionProviderSleeper"><span class="projection-provider-dot"></span><span>Sleeper · waiting</span></span>
+          <span class="projection-provider unconfigured" id="projectionProviderFantasyPros"><span class="projection-provider-dot"></span><span>FantasyPros · not configured</span></span>
+        </div>
+
+        <details class="projection-config" id="projectionConfig">
+          <summary>FantasyPros connection setup</summary>
+          <div class="small" style="margin-top:8px">
+            Enter the URL of your secure FantasyPros proxy. Do <strong>not</strong> put a FantasyPros API key in this webpage.
+            The URL is saved only in this browser.
+          </div>
+          <div class="projection-config-grid">
+            <div>
+              <label class="small" for="fantasyProsProxyUrl">Secure proxy URL</label>
+              <input id="fantasyProsProxyUrl" type="url" placeholder="https://your-worker.example.workers.dev/" autocomplete="off" />
+            </div>
+            <button class="btn-secondary" id="saveFantasyProsProxyBtn" type="button">Save & Load</button>
+          </div>
+        </details>
+
+        <div class="projection-controls">
+          <div class="projection-search-wrap">
+            <label for="multiProjectionSearch">Search players</label>
+            <input class="projection-search" id="multiProjectionSearch" type="search" placeholder="Search player, NFL team, opponent…" autocomplete="off" />
+          </div>
+          <div class="projection-control-field">
+            <label for="multiProjectionScope">Players</label>
+            <select id="multiProjectionScope">
+              <option value="all">All Relevant</option>
+              <option value="free_agents">Free Agents</option>
+              <option value="my_team">My Team</option>
+            </select>
+          </div>
+          <div class="projection-control-field">
+            <label for="multiProjectionSort">Sort</label>
+            <select id="multiProjectionSort">
+              <option value="consensus">Consensus: High to Low</option>
+              <option value="sleeper">Sleeper: High to Low</option>
+              <option value="fantasypros">FantasyPros: High to Low</option>
+              <option value="spread">Source Spread: High to Low</option>
+              <option value="name">Player Name</option>
+              <option value="team">NFL Team</option>
+            </select>
+          </div>
+          <div class="projection-control-field">
+            <label for="multiProjectionLimit">Show</label>
+            <select id="multiProjectionLimit">
+              <option value="25">Top 25</option>
+              <option value="50" selected>Top 50</option>
+              <option value="100">Top 100</option>
+              <option value="999">All Relevant</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="projection-pos-row" aria-label="Projection position filters">
+          <button class="projection-pos-btn active" type="button" data-projection-position="ALL">ALL</button>
+          <button class="projection-pos-btn" type="button" data-projection-position="QB">QB</button>
+          <button class="projection-pos-btn" type="button" data-projection-position="RB">RB</button>
+          <button class="projection-pos-btn" type="button" data-projection-position="WR">WR</button>
+          <button class="projection-pos-btn" type="button" data-projection-position="TE">TE</button>
+          <button class="projection-pos-btn" type="button" data-projection-position="K">K</button>
+        </div>
+
+        <div class="projection-summary" id="multiProjectionSummary">
+          Open this tab after refreshing the league to compare projections.
+        </div>
+        <div class="projection-card-grid" id="multiProjectionCards"></div>
+        <div class="projection-empty" id="multiProjectionEmpty" hidden>No players match these filters.</div>
+      </div>
+    </section>
+
     <section id="rosters" class="tab">
       <div class="empty" id="rostersEmpty">Roster data will appear after an update.</div>
       <div class="roster-grid" id="rosterGrid"></div>
@@ -1299,8 +1696,9 @@
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.0';
+    const APP_VERSION = '2.1';
     const PATCH_NOTES = [
+      { version: '2.1', note: 'Added a lazy-loaded multi-source Projections tab with Sleeper + optional FantasyPros, custom league scoring, consensus projections, source spread, filters, player cards, and popup comparison.' },
       { version: '2.0', note: 'Added a full Waiver Wire / Free Agents tab with position filters, search, sortable rankings, opponent/kickoff info, projections, injuries, depth chart, and player popup integration.' },
       { version: '1.9', note: 'Added selectable player card popups with player info, game status, weekly fantasy points, projections, and actual vs proj stats.' },
       { version: '1.8', note: 'Added a compact Patch Notes / What\'s New section to the Overview page.' },
@@ -1340,6 +1738,20 @@
       waiverTableBody: document.getElementById('waiverTableBody'),
       waiverMobileList: document.getElementById('waiverMobileList'),
       waiverEmpty: document.getElementById('waiverEmpty'),
+      multiProjectionStatus: document.getElementById('multiProjectionStatus'),
+      multiProjectionWeekPill: document.getElementById('multiProjectionWeekPill'),
+      projectionProviderSleeper: document.getElementById('projectionProviderSleeper'),
+      projectionProviderFantasyPros: document.getElementById('projectionProviderFantasyPros'),
+      refreshMultiProjectionsBtn: document.getElementById('refreshMultiProjectionsBtn'),
+      fantasyProsProxyUrl: document.getElementById('fantasyProsProxyUrl'),
+      saveFantasyProsProxyBtn: document.getElementById('saveFantasyProsProxyBtn'),
+      multiProjectionSearch: document.getElementById('multiProjectionSearch'),
+      multiProjectionScope: document.getElementById('multiProjectionScope'),
+      multiProjectionSort: document.getElementById('multiProjectionSort'),
+      multiProjectionLimit: document.getElementById('multiProjectionLimit'),
+      multiProjectionSummary: document.getElementById('multiProjectionSummary'),
+      multiProjectionCards: document.getElementById('multiProjectionCards'),
+      multiProjectionEmpty: document.getElementById('multiProjectionEmpty'),
       rostersEmpty: document.getElementById('rostersEmpty'),
       rosterGrid: document.getElementById('rosterGrid'),
       settingsEmpty: document.getElementById('settingsEmpty'),
@@ -1369,7 +1781,19 @@
       playerStatsCache: new Map(),
       waiverPosition: 'ALL',
       waiverSortKey: 'top',
-      waiverSortDir: 'desc'
+      waiverSortDir: 'desc',
+      projectionPosition: 'ALL',
+      projectionHub: {
+        loaded: false,
+        loading: false,
+        season: null,
+        week: null,
+        loadedAt: 0,
+        sources: {
+          sleeper: { status: 'waiting', label: 'Sleeper', points: {}, stats: {}, count: 0, error: null },
+          fantasypros: { status: 'unconfigured', label: 'FantasyPros', points: {}, stats: {}, count: 0, error: null }
+        }
+      }
     };
 
     function showNotice(message, type = '') {
@@ -1423,6 +1847,7 @@
 
     function autoRefreshLabel(minutes) {
       const n = Number(minutes || 0);
+      if (n === 0.25) return '15 sec';
       if (n === 0.25) return '15 sec';
       if (n === 0.5) return '30 sec';
       if (n === 1) return '1 min';
@@ -1649,6 +2074,7 @@
             <div class="player-fantasy-card live"><div class="player-fantasy-label">Live Proj</div><div class="player-fantasy-value">${fantasyValueOrDash(live)}</div></div>
           </div>
         </section>
+        ${playerProjectionComparisonHtml(playerId)}
         <section class="player-modal-section">
           <div class="player-modal-section-title">Game</div>
           <div class="player-game-strip">${gameStatusBadge(gameInfo)} <strong>${escapeHtml(opponent || gameInfo.label)}</strong> ${kickoff.display ? `<span>${escapeHtml(kickoff.display)}</span>` : ''} ${rosterCtx ? `<span>Fantasy roster: <strong>${escapeHtml(rosterCtx.team_name)}</strong></span>` : '<span>Unrostered</span>'}</div>
@@ -2407,6 +2833,480 @@
       if (els.waiverMobileList) els.waiverMobileList.style.visibility = empty ? 'hidden' : 'visible';
     }
 
+    function projectionProviderStatus(el, status, text) {
+      if (!el) return;
+      el.className = `projection-provider ${status || 'unconfigured'}`;
+      const label = el.querySelector('span:last-child');
+      if (label) label.textContent = text;
+    }
+
+    function projectionSeasonWeek(data = app.data) {
+      return {
+        season: Number(data?.state?.season || data?.league?.season || new Date().getFullYear()),
+        week: Number(data?.selectedWeek || data?.state?.week || data?.state?.leg || 1)
+      };
+    }
+
+    function normalizeProjectionName(name) {
+      return String(name || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\b(jr|sr|ii|iii|iv)\b\.?/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function normalizeProjectionStatKeys(stats = {}) {
+      const out = {};
+      const aliases = {
+        pass_yds: 'pass_yd', passing_yards: 'pass_yd', passyards: 'pass_yd',
+        pass_tds: 'pass_td', passing_tds: 'pass_td', passing_touchdowns: 'pass_td',
+        pass_ints: 'pass_int', interceptions_thrown: 'pass_int',
+        rush_yds: 'rush_yd', rushing_yards: 'rush_yd',
+        rush_tds: 'rush_td', rushing_tds: 'rush_td', rushing_touchdowns: 'rush_td',
+        rec_yds: 'rec_yd', receiving_yards: 'rec_yd',
+        rec_tds: 'rec_td', receiving_tds: 'rec_td', receiving_touchdowns: 'rec_td',
+        receptions: 'rec', targets: 'rec_tgt',
+        fumbles_lost: 'fum_lost',
+        two_pt_conversions: 'two_pt', two_point_conversions: 'two_pt',
+        fg_made: 'fgm', field_goals_made: 'fgm',
+        fg_attempts: 'fga', field_goals_attempted: 'fga',
+        xp_made: 'xpm', extra_points_made: 'xpm',
+        xp_attempts: 'xpa', extra_points_attempted: 'xpa'
+      };
+
+      for (const [rawKey, rawValue] of Object.entries(stats || {})) {
+        const key = String(rawKey || '').trim().toLowerCase();
+        const mapped = aliases[key] || key;
+        const value = Number(rawValue);
+        if (Number.isFinite(value)) out[mapped] = value;
+      }
+      return out;
+    }
+
+    function scoreProjectionStats(stats, scoring = app.data?.league?.scoring_settings || {}) {
+      return projectedPointsFromMap('__projection_source__', { __projection_source__: normalizeProjectionStatKeys(stats) }, scoring);
+    }
+
+    function playerProjectionLookupMaps() {
+      const byNameTeam = new Map();
+      const byName = new Map();
+      const nameCounts = new Map();
+
+      for (const [id, raw] of Object.entries(app.playerMap || {})) {
+        const p = playerFromId(id);
+        const name = normalizeProjectionName(p.full_name);
+        if (!name) continue;
+        const team = normalizeNflTeam(p.team || '');
+        const key = `${name}|${team}`;
+        byNameTeam.set(key, String(id));
+        nameCounts.set(name, (nameCounts.get(name) || 0) + 1);
+        if (!byName.has(name)) byName.set(name, String(id));
+      }
+
+      return { byNameTeam, byName, nameCounts };
+    }
+
+    function projectionRowsFromPayload(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (!raw || typeof raw !== 'object') return [];
+      if (Array.isArray(raw.projections)) return raw.projections;
+      if (Array.isArray(raw.players)) return raw.players;
+      if (Array.isArray(raw.data)) return raw.data;
+      if (Array.isArray(raw.results)) return raw.results;
+      return [];
+    }
+
+    function normalizeExternalProjectionPayload(raw, data = app.data) {
+      const rows = projectionRowsFromPayload(raw);
+      const lookup = playerProjectionLookupMaps();
+      const points = {};
+      const statsByPlayer = {};
+      let matched = 0;
+
+      for (const row of rows) {
+        const directId = row?.sleeper_id ?? row?.sleeper_player_id ?? row?.sleeperPlayerId ?? null;
+        let playerId = directId && app.playerMap[String(directId)] ? String(directId) : null;
+
+        const name = row?.full_name || row?.name || row?.player_name ||
+          [row?.first_name, row?.last_name].filter(Boolean).join(' ');
+        const team = normalizeNflTeam(row?.team || row?.team_id || row?.team_abbr || row?.team_abbreviation || '');
+        const normalizedName = normalizeProjectionName(name);
+
+        if (!playerId && normalizedName) {
+          playerId = lookup.byNameTeam.get(`${normalizedName}|${team}`) || null;
+          if (!playerId && lookup.nameCounts.get(normalizedName) === 1) playerId = lookup.byName.get(normalizedName) || null;
+        }
+        if (!playerId) continue;
+
+        let stats = row?.stats || row?.projection || row?.projected_stats || row?.projectedStats || {};
+        if (Array.isArray(stats)) stats = stats[0] || {};
+        const normalizedStats = normalizeProjectionStatKeys(stats);
+        const score = scoreProjectionStats(normalizedStats, data?.league?.scoring_settings || {});
+        if (!Number.isFinite(score)) continue;
+
+        points[String(playerId)] = score;
+        statsByPlayer[String(playerId)] = normalizedStats;
+        matched++;
+      }
+
+      return { points, stats: statsByPlayer, count: matched };
+    }
+
+    function buildSleeperProjectionSource(data = app.data) {
+      const points = {};
+      const stats = {};
+      for (const [id, rawStats] of Object.entries(data?.projections || {})) {
+        const score = projectedPointsFromMap(id, data.projections, data?.league?.scoring_settings || {});
+        if (!Number.isFinite(score)) continue;
+        points[String(id)] = score;
+        stats[String(id)] = normalizeProjectionStatKeys(rawStats || {});
+      }
+      return { points, stats, count: Object.keys(points).length };
+    }
+
+    function fantasyProsProxyUrl() {
+      return String(localStorage.getItem('brojees_fantasypros_proxy_url') || '').trim();
+    }
+
+    async function fetchFantasyProsProjectionSource(data = app.data) {
+      const baseUrl = fantasyProsProxyUrl();
+      if (!baseUrl) throw new Error('FantasyPros proxy is not configured.');
+
+      const { season, week } = projectionSeasonWeek(data);
+      const url = new URL(baseUrl);
+      url.searchParams.set('season', String(season));
+      url.searchParams.set('week', String(week));
+      url.searchParams.set('positions', 'QB:RB:WR:TE:K');
+
+      const raw = await fetchJson(url.toString());
+      return normalizeExternalProjectionPayload(raw, data);
+    }
+
+    function resetProjectionHubIfWeekChanged(data = app.data) {
+      if (!data) return;
+      const { season, week } = projectionSeasonWeek(data);
+      if (app.projectionHub.season === season && app.projectionHub.week === week) return;
+
+      app.projectionHub = {
+        loaded: false,
+        loading: false,
+        season,
+        week,
+        loadedAt: 0,
+        sources: {
+          sleeper: { status: 'waiting', label: 'Sleeper', points: {}, stats: {}, count: 0, error: null },
+          fantasypros: {
+            status: fantasyProsProxyUrl() ? 'waiting' : 'unconfigured',
+            label: 'FantasyPros',
+            points: {}, stats: {}, count: 0, error: null
+          }
+        }
+      };
+      if (els.multiProjectionCards) els.multiProjectionCards.innerHTML = '';
+      if (els.multiProjectionSummary) els.multiProjectionSummary.textContent = 'Open this tab to load projection comparisons.';
+    }
+
+    function projectionCandidatePlayerIds(data = app.data) {
+      const ids = new Set();
+      for (const roster of data?.rosters || []) {
+        for (const id of roster.players || []) ids.add(String(id));
+        for (const id of roster.reserve || []) ids.add(String(id));
+        for (const id of roster.taxi || []) ids.add(String(id));
+      }
+      for (const player of buildRelevantAvailablePlayers(data)?.players || []) ids.add(String(player.player_id));
+      return [...ids];
+    }
+
+    function projectionPlayerScope(playerId, data = app.data) {
+      const roster = playerRosterContext(playerId, data);
+      if (!roster) return 'free_agents';
+      const selectedId = Number(els.myTeam.value || 0);
+      return Number(roster.roster_id) === selectedId ? 'my_team' : 'rostered';
+    }
+
+    function projectionComparisonForPlayer(playerId, data = app.data) {
+      const sourcePairs = [
+        ['sleeper', app.projectionHub?.sources?.sleeper],
+        ['fantasypros', app.projectionHub?.sources?.fantasypros]
+      ];
+      const values = {};
+      const available = [];
+
+      for (const [key, source] of sourcePairs) {
+        const value = Number(source?.points?.[String(playerId)]);
+        values[key] = Number.isFinite(value) ? value : null;
+        if (Number.isFinite(value)) available.push(value);
+      }
+
+      const consensus = available.length
+        ? Math.round((available.reduce((a,b) => a + b, 0) / available.length) * 100) / 100
+        : null;
+      const spread = available.length >= 2
+        ? Math.round((Math.max(...available) - Math.min(...available)) * 100) / 100
+        : null;
+
+      return {
+        sleeper: values.sleeper,
+        fantasypros: values.fantasypros,
+        consensus,
+        spread,
+        source_count: available.length
+      };
+    }
+
+    function projectionOpponentAndKickoff(playerId, data = app.data) {
+      const opponent = waiverOpponent(playerId, data);
+      const kickoff = playerKickoffInfo(playerId, data);
+      const gameInfo = playerGameInfo(playerId, data);
+      return { opponent, kickoff, gameInfo };
+    }
+
+    function projectionHubRows(data = app.data) {
+      return projectionCandidatePlayerIds(data).map(id => {
+        const p = playerFromId(id);
+        const comp = projectionComparisonForPlayer(id, data);
+        const game = projectionOpponentAndKickoff(id, data);
+        const scope = projectionPlayerScope(id, data);
+        return {
+          player_id: String(id),
+          full_name: p.full_name,
+          position: p.position,
+          team: p.team,
+          injury_status: p.injury_status,
+          scope,
+          roster: playerRosterContext(id, data),
+          sleeper: comp.sleeper,
+          fantasypros: comp.fantasypros,
+          consensus: comp.consensus,
+          spread: comp.spread,
+          source_count: comp.source_count,
+          opponent: game.opponent,
+          kickoff: game.kickoff,
+          game_info: game.gameInfo
+        };
+      }).filter(row => ['QB','RB','WR','TE','K'].includes(row.position));
+    }
+
+    function projectionSourceTile(name, value, cls) {
+      return `<div class="projection-source-tile ${escapeHtml(cls)}">
+        <div class="projection-source-name">${escapeHtml(name)}</div>
+        <div class="projection-source-value">${Number.isFinite(Number(value)) ? numberOrDash(value, 2) : '—'}</div>
+      </div>`;
+    }
+
+    function projectionCardHtml(row, index) {
+      const kickoff = row.kickoff?.display || (row.game_info?.key === 'bye' ? 'Bye' : 'Time unavailable');
+      const rosterText = row.scope === 'free_agents'
+        ? 'Free Agent'
+        : (row.roster?.team_name || 'Rostered');
+      const injury = row.injury_status ? ` · ${row.injury_status}` : '';
+      const spreadText = Number.isFinite(row.spread) ? numberOrDash(row.spread, 2) : '—';
+      const consensusText = Number.isFinite(row.consensus) ? numberOrDash(row.consensus, 2) : '—';
+      const img = `https://sleepercdn.com/content/nfl/players/${encodeURIComponent(row.player_id)}.jpg`;
+
+      return `<article class="projection-player-card" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
+        <div>
+          <img class="projection-card-headshot" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
+          <div class="projection-card-headshot-fallback">${escapeHtml(row.position || 'NFL')}</div>
+        </div>
+        <div class="projection-card-main">
+          <div class="projection-card-top">
+            <div>
+              <div class="projection-card-name">#${index + 1} · ${escapeHtml(row.full_name)}</div>
+              <div class="projection-card-meta">${escapeHtml([row.team, row.position, row.opponent].filter(Boolean).join(' · '))}${escapeHtml(injury)}</div>
+            </div>
+            <div class="projection-consensus-badge">
+              <div class="projection-consensus-value">${consensusText}</div>
+              <div class="projection-consensus-label">Consensus</div>
+            </div>
+          </div>
+          <div class="projection-source-grid">
+            ${projectionSourceTile('Sleeper', row.sleeper, 'sleeper')}
+            ${projectionSourceTile('FantasyPros', row.fantasypros, 'fantasypros')}
+          </div>
+          <div class="projection-card-footer">
+            <span>${escapeHtml(rosterText)} · ${escapeHtml(kickoff)} ${gameStatusBadge(row.game_info)}</span>
+            <span><strong>${row.source_count}</strong> source${row.source_count === 1 ? '' : 's'} · <span class="projection-spread">Spread ${spreadText}</span></span>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function renderProjectionProviderStatuses() {
+      const sleeper = app.projectionHub.sources.sleeper;
+      const fp = app.projectionHub.sources.fantasypros;
+
+      projectionProviderStatus(
+        els.projectionProviderSleeper,
+        sleeper.status === 'loaded' ? 'loaded' : sleeper.status === 'loading' ? 'loading' : sleeper.status === 'error' ? 'error' : 'unconfigured',
+        `Sleeper · ${sleeper.status === 'loaded' ? `${sleeper.count} players` : sleeper.status}`
+      );
+
+      const fpText = fp.status === 'loaded'
+        ? `FantasyPros · ${fp.count} matched`
+        : fp.status === 'unconfigured'
+          ? 'FantasyPros · not configured'
+          : fp.status === 'error'
+            ? `FantasyPros · ${fp.error || 'error'}`
+            : `FantasyPros · ${fp.status}`;
+
+      projectionProviderStatus(
+        els.projectionProviderFantasyPros,
+        fp.status === 'loaded' ? 'loaded' : fp.status === 'loading' ? 'loading' : fp.status === 'error' ? 'error' : 'unconfigured',
+        fpText
+      );
+    }
+
+    function renderMultiProjections(data = app.data) {
+      if (!data || !els.multiProjectionCards) return;
+      resetProjectionHubIfWeekChanged(data);
+      renderProjectionProviderStatuses();
+
+      const { week } = projectionSeasonWeek(data);
+      els.multiProjectionWeekPill.textContent = `Week ${week}`;
+
+      const search = String(els.multiProjectionSearch?.value || '').trim().toLowerCase();
+      const scope = els.multiProjectionScope?.value || 'all';
+      const sort = els.multiProjectionSort?.value || 'consensus';
+      const limit = Math.max(1, Number(els.multiProjectionLimit?.value || 50));
+      const position = app.projectionPosition || 'ALL';
+
+      let rows = projectionHubRows(data).filter(row => {
+        if (position !== 'ALL' && row.position !== position) return false;
+        if (scope === 'free_agents' && row.scope !== 'free_agents') return false;
+        if (scope === 'my_team' && row.scope !== 'my_team') return false;
+        if (search) {
+          const haystack = [row.full_name, row.team, row.position, row.opponent, row.roster?.team_name].filter(Boolean).join(' ').toLowerCase();
+          if (!haystack.includes(search)) return false;
+        }
+        return row.source_count > 0;
+      });
+
+      const numericDesc = key => (a,b) => (Number(b[key] ?? -9999) - Number(a[key] ?? -9999)) || a.full_name.localeCompare(b.full_name);
+      if (sort === 'sleeper') rows.sort(numericDesc('sleeper'));
+      else if (sort === 'fantasypros') rows.sort(numericDesc('fantasypros'));
+      else if (sort === 'spread') rows.sort(numericDesc('spread'));
+      else if (sort === 'name') rows.sort((a,b) => a.full_name.localeCompare(b.full_name));
+      else if (sort === 'team') rows.sort((a,b) => String(a.team || '').localeCompare(String(b.team || '')) || a.full_name.localeCompare(b.full_name));
+      else rows.sort(numericDesc('consensus'));
+
+      const totalFiltered = rows.length;
+      rows = rows.slice(0, limit);
+
+      const sourceLoadedCount = ['sleeper','fantasypros'].filter(key => app.projectionHub.sources[key]?.status === 'loaded').length;
+      els.multiProjectionSummary.innerHTML =
+        `<strong>${rows.length}</strong> shown · <strong>${totalFiltered}</strong> matching players · ` +
+        `<strong>${sourceLoadedCount}</strong> projection source${sourceLoadedCount === 1 ? '' : 's'} loaded · ` +
+        `Consensus is the average of available source projections after applying this league's Sleeper scoring settings.`;
+
+      els.multiProjectionCards.innerHTML = rows.map(projectionCardHtml).join('');
+      els.multiProjectionEmpty.hidden = rows.length > 0;
+
+      document.querySelectorAll('[data-projection-position]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.projectionPosition === position);
+      });
+
+      const loadedAt = app.projectionHub.loadedAt ? new Date(app.projectionHub.loadedAt).toLocaleTimeString() : null;
+      els.multiProjectionStatus.textContent = app.projectionHub.loading
+        ? 'Loading projection sources…'
+        : loadedAt
+          ? `Lazy-loaded projection comparison · last loaded ${loadedAt}. External sources are not called by normal league auto-refresh.`
+          : 'This tab loads projection-source data only when you open it.';
+    }
+
+    async function loadMultiProjectionSources({ force = false } = {}) {
+      if (!app.data || app.projectionHub.loading) return;
+      resetProjectionHubIfWeekChanged(app.data);
+
+      if (app.projectionHub.loaded && !force) {
+        renderMultiProjections(app.data);
+        return;
+      }
+
+      app.projectionHub.loading = true;
+      els.refreshMultiProjectionsBtn.disabled = true;
+      els.refreshMultiProjectionsBtn.textContent = 'Loading…';
+
+      try {
+        const sleeper = buildSleeperProjectionSource(app.data);
+        app.projectionHub.sources.sleeper = {
+          status: 'loaded', label: 'Sleeper',
+          points: sleeper.points, stats: sleeper.stats, count: sleeper.count, error: null
+        };
+
+        const proxy = fantasyProsProxyUrl();
+        if (proxy) {
+          app.projectionHub.sources.fantasypros = {
+            ...app.projectionHub.sources.fantasypros,
+            status: 'loading', error: null
+          };
+        } else {
+          app.projectionHub.sources.fantasypros = {
+            status: 'unconfigured', label: 'FantasyPros',
+            points: {}, stats: {}, count: 0, error: null
+          };
+        }
+        renderMultiProjections(app.data);
+
+        if (proxy) {
+          try {
+            const fp = await fetchFantasyProsProjectionSource(app.data);
+            app.projectionHub.sources.fantasypros = {
+              status: 'loaded', label: 'FantasyPros',
+              points: fp.points, stats: fp.stats, count: fp.count, error: null
+            };
+          } catch (err) {
+            console.warn('FantasyPros projection load failed:', err);
+            app.projectionHub.sources.fantasypros = {
+              status: 'error', label: 'FantasyPros',
+              points: {}, stats: {}, count: 0, error: err.message || 'Load failed'
+            };
+          }
+        }
+
+        const { season, week } = projectionSeasonWeek(app.data);
+        app.projectionHub.loaded = true;
+        app.projectionHub.season = season;
+        app.projectionHub.week = week;
+        app.projectionHub.loadedAt = Date.now();
+      } finally {
+        app.projectionHub.loading = false;
+        els.refreshMultiProjectionsBtn.disabled = false;
+        els.refreshMultiProjectionsBtn.textContent = 'Refresh Projections';
+        renderMultiProjections(app.data);
+      }
+    }
+
+    function playerProjectionComparisonHtml(playerId) {
+      if (!app.projectionHub?.loaded) return '';
+      const comp = projectionComparisonForPlayer(playerId, app.data);
+      if (!comp.source_count) return '';
+
+      return `<section class="player-modal-section">
+        <div class="player-modal-section-title">Projection Comparison</div>
+        <div class="modal-projection-sources">
+          <div class="modal-projection-source">
+            <div class="modal-projection-source-label">Sleeper</div>
+            <div class="modal-projection-source-value">${Number.isFinite(comp.sleeper) ? numberOrDash(comp.sleeper, 2) : '—'}</div>
+          </div>
+          <div class="modal-projection-source">
+            <div class="modal-projection-source-label">FantasyPros</div>
+            <div class="modal-projection-source-value">${Number.isFinite(comp.fantasypros) ? numberOrDash(comp.fantasypros, 2) : '—'}</div>
+          </div>
+          <div class="modal-projection-source consensus">
+            <div class="modal-projection-source-label">Brojees Consensus</div>
+            <div class="modal-projection-source-value">${Number.isFinite(comp.consensus) ? numberOrDash(comp.consensus, 2) : '—'}</div>
+          </div>
+          <div class="modal-projection-source">
+            <div class="modal-projection-source-label">Source Spread</div>
+            <div class="modal-projection-source-value">${Number.isFinite(comp.spread) ? numberOrDash(comp.spread, 2) : '—'}</div>
+          </div>
+        </div>
+        <div class="small" style="margin-top:8px">${comp.source_count} source${comp.source_count === 1 ? '' : 's'} available · all source stats are rescored using this league's Sleeper scoring settings.</div>
+      </section>`;
+    }
+
     function buildRelevantAvailablePlayers(data) {
       const rosteredIds = new Set();
       for (const roster of data.rosters || []) {
@@ -2997,6 +3897,7 @@
       renderOverview(data);
       renderMatchups(data);
       renderWaivers(data);
+      resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
       renderSettings(data);
       app.exportSnapshot = buildExport(data);
@@ -3180,13 +4081,13 @@
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row');
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card');
       if (playerRow) openPlayerModal(playerRow.dataset.playerId);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row');
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card');
         if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId); }
       }
     });
@@ -3216,6 +4117,43 @@
       app.waiverSortKey = key;
       app.waiverSortDir = ['name','team','kickoff','depth'].includes(key) ? 'asc' : 'desc';
       if (app.data) renderWaivers(app.data);
+    });
+
+    document.querySelectorAll('[data-projection-position]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        app.projectionPosition = btn.dataset.projectionPosition || 'ALL';
+        if (app.projectionHub.loaded) renderMultiProjections(app.data);
+      });
+    });
+
+    ['input','change'].forEach(eventName => {
+      els.multiProjectionSearch.addEventListener(eventName, () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
+    });
+    els.multiProjectionScope.addEventListener('change', () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
+    els.multiProjectionSort.addEventListener('change', () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
+    els.multiProjectionLimit.addEventListener('change', () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
+
+    els.refreshMultiProjectionsBtn.addEventListener('click', () => loadMultiProjectionSources({ force: true }));
+
+    els.saveFantasyProsProxyBtn.addEventListener('click', () => {
+      const value = String(els.fantasyProsProxyUrl.value || '').trim();
+      if (value) {
+        try {
+          new URL(value);
+        } catch (_) {
+          showNotice('Enter a valid HTTPS FantasyPros proxy URL.', 'error');
+          return;
+        }
+        localStorage.setItem('brojees_fantasypros_proxy_url', value);
+      } else {
+        localStorage.removeItem('brojees_fantasypros_proxy_url');
+      }
+      app.projectionHub.loaded = false;
+      app.projectionHub.sources.fantasypros = {
+        status: value ? 'waiting' : 'unconfigured',
+        label: 'FantasyPros', points: {}, stats: {}, count: 0, error: null
+      };
+      loadMultiProjectionSources({ force: true });
     });
 
     els.autoRefresh.addEventListener('change', () => startAutoRefresh({ runNow: false }));
@@ -3259,6 +4197,7 @@
       renderOverview(app.data);
       renderMatchups(app.data);
       renderRosters(app.data);
+      if (app.projectionHub.loaded) renderMultiProjections(app.data);
       app.exportSnapshot = buildExport(app.data);
       els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
     });
@@ -3267,8 +4206,18 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
+
+        if (btn.dataset.tab === 'projections') {
+          if (!app.data) {
+            els.multiProjectionStatus.textContent = 'Refresh the league first, then reopen this tab.';
+            return;
+          }
+          loadMultiProjectionSources({ force: false });
+        }
       });
     });
+
+    els.fantasyProsProxyUrl.value = fantasyProsProxyUrl();
 
     const savedAutoMinutes = localStorage.getItem('sleeper_auto_refresh_minutes');
     if (savedAutoMinutes !== null && [...els.autoRefresh.options].some(o => o.value === savedAutoMinutes)) {
