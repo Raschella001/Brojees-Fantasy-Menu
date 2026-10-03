@@ -1042,6 +1042,21 @@
     .projection-provider.loading .projection-provider-dot { background: var(--warning); animation: livePulse 1.4s ease-in-out infinite; }
     .projection-provider.error .projection-provider-dot { background: var(--danger); }
     .projection-provider.unconfigured .projection-provider-dot { background: #64748b; }
+    .projection-provider.warning .projection-provider-dot { background: var(--warning); }
+    .projection-provider.warning { color: #fde68a; border-color: rgba(251,191,36,.35); }
+
+    .projection-diagnostics.has-warning > summary::after { content: ' · needs a look'; color: var(--warning); }
+    .projection-diag-body { display: grid; gap: 9px; margin-top: 10px; }
+    .projection-diag-row { color: var(--muted); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+    .projection-diag-row strong { color: var(--text); }
+    .projection-diag-row.warn, .projection-diag-row.warn strong { color: #fde68a; }
+    .projection-diag-row.bad, .projection-diag-row.bad strong { color: #fecdd3; }
+    .projection-diag-more summary { cursor: pointer; color: #c8ddff; font-size: 11px; font-weight: 800; min-height: 32px; display: flex; align-items: center; }
+    .projection-diag-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+    .projection-diag-chip { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(8,13,24,.5); color: #c8ddff; font-size: 10.5px; font-weight: 800; }
+    .projection-diag-chip.warn { border-color: rgba(251,191,36,.45); color: #fde68a; }
+    .stat-est { margin-left: 2px; color: var(--warning); font-weight: 900; cursor: help; }
+    .modal-projection-assumptions .player-stat-table td:last-child { white-space: nowrap; }
 
     .projection-config {
       margin: 0 0 12px;
@@ -1587,8 +1602,8 @@
         <details class="projection-config" id="projectionConfig">
           <summary>FantasyPros connection setup</summary>
           <div class="small" style="margin-top:8px">
-            Enter the URL of your secure FantasyPros proxy. Do <strong>not</strong> put a FantasyPros API key in this webpage.
-            The URL is saved only in this browser.
+            Enter the URL of your secure FantasyPros proxy (Cloudflare Worker). Do <strong>not</strong> put a FantasyPros API key in this webpage.
+            The URL is saved only in this browser. The Worker only answers this site and caches each week's pull, so opening this tab doesn't spend FantasyPros quota every time.
           </div>
           <div class="projection-config-grid">
             <div>
@@ -1596,6 +1611,13 @@
               <input id="fantasyProsProxyUrl" type="url" placeholder="https://your-worker.example.workers.dev/" autocomplete="off" />
             </div>
             <button class="btn-secondary" id="saveFantasyProsProxyBtn" type="button">Save & Load</button>
+          </div>
+        </details>
+
+        <details class="projection-config projection-diagnostics" id="projectionDiagnostics">
+          <summary>Source diagnostics</summary>
+          <div class="projection-diag-body" id="projectionDiagnosticsBody">
+            <div class="projection-diag-row">Open this tab to load projection sources.</div>
           </div>
         </details>
 
@@ -1696,8 +1718,9 @@
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.1';
+    const APP_VERSION = '2.2';
     const PATCH_NOTES = [
+      { version: '2.2', note: 'Hardened FantasyPros projections: broader stat-name mapping, FG distance / bonus / first-down gaps filled for league scoring, smarter name matching, Source diagnostics panel, "Why they differ" stat table in player popups, and a locked-down, cached Worker proxy (v2.2).' },
       { version: '2.1', note: 'Added a lazy-loaded multi-source Projections tab with Sleeper + optional FantasyPros, custom league scoring, consensus projections, source spread, filters, player cards, and popup comparison.' },
       { version: '2.0', note: 'Added a full Waiver Wire / Free Agents tab with position filters, search, sortable rankings, opponent/kickoff info, projections, injuries, depth chart, and player popup integration.' },
       { version: '1.9', note: 'Added selectable player card popups with player info, game status, weekly fantasy points, projections, and actual vs proj stats.' },
@@ -1745,6 +1768,8 @@
       refreshMultiProjectionsBtn: document.getElementById('refreshMultiProjectionsBtn'),
       fantasyProsProxyUrl: document.getElementById('fantasyProsProxyUrl'),
       saveFantasyProsProxyBtn: document.getElementById('saveFantasyProsProxyBtn'),
+      projectionDiagnostics: document.getElementById('projectionDiagnostics'),
+      projectionDiagnosticsBody: document.getElementById('projectionDiagnosticsBody'),
       multiProjectionSearch: document.getElementById('multiProjectionSearch'),
       multiProjectionScope: document.getElementById('multiProjectionScope'),
       multiProjectionSort: document.getElementById('multiProjectionSort'),
@@ -2856,55 +2881,253 @@
         .replace(/[^a-z0-9]/g, '');
     }
 
+    // ---- V2.2: external projection stat mapping, gap filling and diagnostics ----
+
+    // Provider stat names -> Sleeper stat names. An exact Sleeper-style key in the
+    // provider data always wins over an alias that maps to the same stat.
+    const PROJECTION_STAT_ALIASES = {
+      // Passing
+      pass_yds: 'pass_yd', pass_yards: 'pass_yd', passing_yards: 'pass_yd', passing_yds: 'pass_yd', passyards: 'pass_yd',
+      pass_tds: 'pass_td', pass_touchdowns: 'pass_td', passing_tds: 'pass_td', passing_touchdowns: 'pass_td',
+      pass_ints: 'pass_int', ints: 'pass_int', interceptions: 'pass_int', interceptions_thrown: 'pass_int', pass_interceptions: 'pass_int',
+      pass_atts: 'pass_att', pass_attempts: 'pass_att', passing_attempts: 'pass_att',
+      pass_cmps: 'pass_cmp', pass_comp: 'pass_cmp', pass_comps: 'pass_cmp', pass_completions: 'pass_cmp', passing_completions: 'pass_cmp', completions: 'pass_cmp',
+      // Rushing
+      rush_yds: 'rush_yd', rush_yards: 'rush_yd', rushing_yards: 'rush_yd', rushing_yds: 'rush_yd',
+      rush_tds: 'rush_td', rush_touchdowns: 'rush_td', rushing_tds: 'rush_td', rushing_touchdowns: 'rush_td',
+      rush_atts: 'rush_att', rush_attempts: 'rush_att', rushing_attempts: 'rush_att', carries: 'rush_att',
+      // Receiving
+      rec_rec: 'rec', recs: 'rec', receptions: 'rec', rec_receptions: 'rec', catches: 'rec',
+      rec_yds: 'rec_yd', rec_yards: 'rec_yd', receiving_yards: 'rec_yd', receiving_yds: 'rec_yd',
+      rec_tds: 'rec_td', rec_touchdowns: 'rec_td', receiving_tds: 'rec_td', receiving_touchdowns: 'rec_td',
+      targets: 'rec_tgt', tgts: 'rec_tgt', rec_tgts: 'rec_tgt', rec_targets: 'rec_tgt', rec_att: 'rec_tgt',
+      // Misc
+      fumbles: 'fum_lost', fumbles_lost: 'fum_lost', fum_lst: 'fum_lost', fl: 'fum_lost',
+      two_pt_conversions: 'two_pt', two_point_conversions: 'two_pt',
+      // Kicking
+      fg: 'fgm', fgs: 'fgm', fg_made: 'fgm', field_goals: 'fgm', field_goals_made: 'fgm',
+      fg_att: 'fga', fg_atts: 'fga', fg_attempts: 'fga', field_goals_attempted: 'fga',
+      xpt: 'xpm', xp: 'xpm', xpts: 'xpm', xp_made: 'xpm', extra_points: 'xpm', extra_points_made: 'xpm',
+      xp_att: 'xpa', xpt_att: 'xpa', xp_attempts: 'xpa', extra_points_attempted: 'xpa'
+    };
+
+    // Sleeper stat names we understand even when this league scores them as 0.
+    const PROJECTION_KNOWN_STATS = new Set([
+      'pass_att','pass_cmp','pass_inc','pass_yd','pass_td','pass_int','pass_2pt','pass_sack','pass_fd','pass_int_td',
+      'rush_att','rush_yd','rush_td','rush_2pt','rush_fd',
+      'rec','rec_tgt','rec_yd','rec_td','rec_2pt','rec_fd',
+      'fum','fum_lost','two_pt',
+      'fgm','fga','fgmiss','fgm_yds','fgm_0_19','fgm_20_29','fgm_30_39','fgm_40_49','fgm_50p','fgm_50_59','fgm_60p',
+      'fgmiss_0_19','fgmiss_20_29','fgmiss_30_39','fgmiss_40_49','fgmiss_50p','xpm','xpa','xpmiss',
+      'gp','gs'
+    ]);
+
+    // A provider's own fantasy-point totals. Ignored: we rescore with league settings.
+    const PROJECTION_PROVIDER_POINT_KEYS = /^(points?|pts|fpts|fantasy_?points?)(_.*)?$/;
+
+    // Core stats are never filled in from Sleeper. If a provider lacks one, that is a
+    // mapping problem and is reported in diagnostics instead of hidden.
+    const PROJECTION_CORE_STATS = new Set([
+      'pass_att','pass_cmp','pass_yd','pass_td','pass_int',
+      'rush_att','rush_yd','rush_td',
+      'rec','rec_yd','rec_td','fum_lost',
+      'fgm','fga','xpm','xpa'
+    ]);
+
+    // Rough league-wide share of made/missed field goals by distance. Only used when
+    // Sleeper has no projection for that kicker to borrow a distance split from.
+    const DEFAULT_FG_MADE_SHARE = { fgm_0_19: 0.01, fgm_20_29: 0.25, fgm_30_39: 0.27, fgm_40_49: 0.28, fgm_50p: 0.19, fgm_50_59: 0.18, fgm_60p: 0.01 };
+    const DEFAULT_FG_MISS_SHARE = { fgmiss_0_19: 0, fgmiss_20_29: 0.05, fgmiss_30_39: 0.15, fgmiss_40_49: 0.35, fgmiss_50p: 0.45 };
+    const DEFAULT_FG_AVG_DISTANCE = 38;
+
+    const PROJECTION_STAT_LABELS = {
+      pass_att: 'Pass Att', pass_cmp: 'Completions', pass_inc: 'Incompletions', pass_yd: 'Pass Yds', pass_td: 'Pass TD',
+      pass_int: 'INT', pass_2pt: 'Pass 2PT', pass_fd: 'Pass 1st Downs', pass_sack: 'Sacks Taken', pass_int_td: 'Pick-Six',
+      rush_att: 'Carries', rush_yd: 'Rush Yds', rush_td: 'Rush TD', rush_fd: 'Rush 1st Downs', rush_2pt: 'Rush 2PT',
+      rec: 'Receptions', rec_tgt: 'Targets', rec_yd: 'Rec Yds', rec_td: 'Rec TD', rec_fd: 'Rec 1st Downs', rec_2pt: 'Rec 2PT',
+      fum: 'Fumbles', fum_lost: 'Fumbles Lost',
+      fgm: 'FG Made', fga: 'FG Att', fgmiss: 'FG Missed', fgm_yds: 'FG Yards',
+      fgm_0_19: 'FG 0-19', fgm_20_29: 'FG 20-29', fgm_30_39: 'FG 30-39', fgm_40_49: 'FG 40-49',
+      fgm_50p: 'FG 50+', fgm_50_59: 'FG 50-59', fgm_60p: 'FG 60+',
+      fgmiss_0_19: 'FG Miss 0-19', fgmiss_20_29: 'FG Miss 20-29', fgmiss_30_39: 'FG Miss 30-39', fgmiss_40_49: 'FG Miss 40-49', fgmiss_50p: 'FG Miss 50+',
+      xpm: 'XP Made', xpa: 'XP Att', xpmiss: 'XP Missed',
+      bonus_rec_te: 'TE Rec Bonus', bonus_rec_rb: 'RB Rec Bonus', bonus_rec_wr: 'WR Rec Bonus'
+    };
+
+    function projectionStatLabel(key) {
+      return PROJECTION_STAT_LABELS[key] || prettyKey(key);
+    }
+
     function normalizeProjectionStatKeys(stats = {}) {
       const out = {};
-      const aliases = {
-        pass_yds: 'pass_yd', passing_yards: 'pass_yd', passyards: 'pass_yd',
-        pass_tds: 'pass_td', passing_tds: 'pass_td', passing_touchdowns: 'pass_td',
-        pass_ints: 'pass_int', interceptions_thrown: 'pass_int',
-        rush_yds: 'rush_yd', rushing_yards: 'rush_yd',
-        rush_tds: 'rush_td', rushing_tds: 'rush_td', rushing_touchdowns: 'rush_td',
-        rec_yds: 'rec_yd', receiving_yards: 'rec_yd',
-        rec_tds: 'rec_td', receiving_tds: 'rec_td', receiving_touchdowns: 'rec_td',
-        receptions: 'rec', targets: 'rec_tgt',
-        fumbles_lost: 'fum_lost',
-        two_pt_conversions: 'two_pt', two_point_conversions: 'two_pt',
-        fg_made: 'fgm', field_goals_made: 'fgm',
-        fg_attempts: 'fga', field_goals_attempted: 'fga',
-        xp_made: 'xpm', extra_points_made: 'xpm',
-        xp_attempts: 'xpa', extra_points_attempted: 'xpa'
-      };
-
+      const entries = [];
       for (const [rawKey, rawValue] of Object.entries(stats || {})) {
+        if (rawValue === null || rawValue === '' || typeof rawValue === 'boolean') continue;
         const key = String(rawKey || '').trim().toLowerCase();
-        const mapped = aliases[key] || key;
         const value = Number(rawValue);
-        if (Number.isFinite(value)) out[mapped] = value;
+        if (key && Number.isFinite(value)) entries.push([key, value]);
+      }
+      for (const [key, value] of entries) {
+        if (!PROJECTION_STAT_ALIASES[key]) out[key] = value;
+      }
+      for (const [key, value] of entries) {
+        const mapped = PROJECTION_STAT_ALIASES[key];
+        if (mapped && !(mapped in out)) out[mapped] = value;
       }
       return out;
+    }
+
+    // Stats that feed a scored stat indirectly (FG made -> FG distance buckets, FG att ->
+    // FG missed, receptions -> TE premium...). These are "used", not "ignored".
+    function projectionIndirectlyUsedStats(scoring = {}) {
+      const used = new Set();
+      for (const [key, mult] of Object.entries(scoring || {})) {
+        if (Number(mult || 0) === 0) continue;
+        for (const driver of projectionGapDrivers(key) || []) used.add(driver);
+        if (key === 'fgmiss') { used.add('fga'); used.add('fgm'); }
+        if (key === 'xpmiss') { used.add('xpa'); used.add('xpm'); }
+        if (key === 'pass_inc') { used.add('pass_att'); used.add('pass_cmp'); }
+      }
+      return used;
+    }
+
+    function classifyProjectionStatKey(rawKey, scoring = {}, indirect = null) {
+      const key = String(rawKey || '').trim().toLowerCase();
+      const mapped = PROJECTION_STAT_ALIASES[key] || key;
+      if (PROJECTION_PROVIDER_POINT_KEYS.test(key)) return { kind: 'provider_points', mapped: null };
+      if (Number(scoring?.[mapped] || 0) !== 0) return { kind: 'scored', mapped };
+      if (indirect && indirect.has(mapped)) return { kind: 'scored', mapped, indirect: true };
+      if (PROJECTION_KNOWN_STATS.has(mapped) || Object.prototype.hasOwnProperty.call(scoring || {}, mapped)) return { kind: 'unscored', mapped };
+      return { kind: 'unrecognized', mapped };
+    }
+
+    // Which provider stat(s) a secondary stat scales with. null = never filled.
+    function projectionGapDrivers(key) {
+      if (/^fgm_(0_19|20_29|30_39|40_49|50p|50_59|60p)$/.test(key) || key === 'fgm_yds') return ['fgm'];
+      if (/^fgmiss_/.test(key) || key === 'fgmiss') return ['fga'];
+      if (key === 'xpmiss') return ['xpa'];
+      if (key === 'pass_inc') return ['pass_att'];
+      if (key === 'pass_fd' || /^bonus_pass_yd_/.test(key)) return ['pass_yd'];
+      if (key === 'rush_fd' || /^bonus_rush_yd_/.test(key)) return ['rush_yd'];
+      if (key === 'rec_fd' || /^bonus_rec_yd_/.test(key)) return ['rec_yd'];
+      if (/^bonus_rush_rec_yd_/.test(key)) return ['rush_yd', 'rec_yd'];
+      if (/^bonus_rec_(te|rb|wr)$/.test(key) || /^rec_\d+_\d+$/.test(key) || /^rec_\d+p$/.test(key) || key === 'rec_tgt') return ['rec'];
+      if (/^bonus_pass_cmp_/.test(key)) return ['pass_cmp'];
+      if (/^bonus_rush_att_/.test(key)) return ['rush_att'];
+      const longTd = key.match(/^(pass|rush|rec)_td_\d+p$/);
+      if (longTd) return [`${longTd[1]}_td`];
+      if (key === 'pass_sack') return ['pass_att'];
+      if (key === 'pass_int_td') return ['pass_int'];
+      if (key === 'fum') return ['fum_lost'];
+      if (/_2pt$/.test(key) || /^bonus_/.test(key)) return [];   // copy Sleeper's value
+      return null;
+    }
+
+    function roundProjectionStat(n) {
+      return Math.round(n * 1000) / 1000;
+    }
+
+    // Fill stats this league scores that a provider does not publish (FG distance
+    // buckets, first downs, yardage bonuses, TE premium, misses...). Exact math is used
+    // where possible; otherwise Sleeper's rate for the same player is scaled to the
+    // provider's volume. Every filled value is recorded so the UI can mark it.
+    function fillProjectionStatGaps(stats, { position = '', sleeperStats = null, scoring = {} } = {}) {
+      const out = { ...stats };
+      const adjustments = {};
+      const has = key => Number.isFinite(Number(out[key]));
+      const scored = key => Number(scoring?.[key] || 0) !== 0;
+      const set = (key, value, method) => {
+        if (!Number.isFinite(value)) return;
+        out[key] = roundProjectionStat(Math.max(0, value));
+        adjustments[key] = method;
+      };
+
+      // Exact derivations.
+      if (scored('pass_inc') && !has('pass_inc') && has('pass_att') && has('pass_cmp')) set('pass_inc', out.pass_att - out.pass_cmp, 'derived');
+      if (scored('fgmiss') && !has('fgmiss') && has('fga') && has('fgm')) set('fgmiss', out.fga - out.fgm, 'derived');
+      if (scored('xpmiss') && !has('xpmiss') && has('xpa') && has('xpm')) set('xpmiss', out.xpa - out.xpm, 'derived');
+
+      const sl = sleeperStats ? normalizeProjectionStatKeys(sleeperStats) : null;
+      const scoredKeys = Object.keys(scoring || {}).filter(key => scored(key) && !PROJECTION_CORE_STATS.has(key));
+
+      for (const key of scoredKeys) {
+        if (has(key)) continue;
+        const drivers = projectionGapDrivers(key);
+        if (drivers === null) continue;
+
+        if (sl && Number.isFinite(Number(sl[key])) && Number(sl[key]) !== 0) {
+          if (!drivers.length) { set(key, Number(sl[key]), 'copied'); continue; }
+          const slDriver = drivers.reduce((sum, d) => sum + (Number(sl[d]) || 0), 0);
+          const extDriverKnown = drivers.some(d => has(d));
+          if (slDriver > 0 && extDriverKnown) {
+            const extDriver = drivers.reduce((sum, d) => sum + (Number(out[d]) || 0), 0);
+            set(key, Number(sl[key]) * (extDriver / slDriver), 'scaled');
+          }
+          continue;
+        }
+
+        // No Sleeper projection to borrow from: league-average kicker split.
+        if (!sl && String(position).toUpperCase() === 'K') {
+          if (DEFAULT_FG_MADE_SHARE[key] != null && has('fgm')) set(key, out.fgm * DEFAULT_FG_MADE_SHARE[key], 'default');
+          else if (key === 'fgm_yds' && has('fgm')) set(key, out.fgm * DEFAULT_FG_AVG_DISTANCE, 'default');
+          else if (DEFAULT_FG_MISS_SHARE[key] != null && has('fga') && has('fgm')) set(key, Math.max(0, out.fga - out.fgm) * DEFAULT_FG_MISS_SHARE[key], 'default');
+        }
+      }
+
+      return { stats: out, adjustments };
     }
 
     function scoreProjectionStats(stats, scoring = app.data?.league?.scoring_settings || {}) {
       return projectedPointsFromMap('__projection_source__', { __projection_source__: normalizeProjectionStatKeys(stats) }, scoring);
     }
 
-    function playerProjectionLookupMaps() {
-      const byNameTeam = new Map();
-      const byName = new Map();
-      const nameCounts = new Map();
+    const PROJECTION_FANTASY_POSITIONS = new Set(['QB','RB','WR','TE','K']);
 
-      for (const [id, raw] of Object.entries(app.playerMap || {})) {
+    function playerProjectionLookupMaps() {
+      const byNameTeamPos = new Map();
+      const byNameTeam = new Map();
+      const byNamePos = new Map();
+      const byName = new Map();
+      const counts = { nameTeam: new Map(), namePos: new Map(), name: new Map() };
+      const add = (map, countMap, key, id) => {
+        countMap.set(key, (countMap.get(key) || 0) + 1);
+        if (!map.has(key)) map.set(key, id);
+      };
+
+      for (const id of Object.keys(app.playerMap || {})) {
         const p = playerFromId(id);
+        const team = normalizeNflTeam(p.team || '');
+        if (!team) continue;   // retired / unsigned players only create name collisions
+        const positions = new Set(
+          [p.position, ...(p.fantasy_positions || [])]
+            .map(x => String(x || '').toUpperCase())
+            .filter(x => PROJECTION_FANTASY_POSITIONS.has(x))
+        );
+        if (!positions.size) continue;
         const name = normalizeProjectionName(p.full_name);
         if (!name) continue;
-        const team = normalizeNflTeam(p.team || '');
-        const key = `${name}|${team}`;
-        byNameTeam.set(key, String(id));
-        nameCounts.set(name, (nameCounts.get(name) || 0) + 1);
-        if (!byName.has(name)) byName.set(name, String(id));
+        const pid = String(id);
+        for (const pos of positions) {
+          if (!byNameTeamPos.has(`${name}|${team}|${pos}`)) byNameTeamPos.set(`${name}|${team}|${pos}`, pid);
+          add(byNamePos, counts.namePos, `${name}|${pos}`, pid);
+        }
+        add(byNameTeam, counts.nameTeam, `${name}|${team}`, pid);
+        add(byName, counts.name, name, pid);
       }
 
-      return { byNameTeam, byName, nameCounts };
+      return { byNameTeamPos, byNameTeam, byNamePos, byName, counts };
+    }
+
+    function matchProjectionPlayer(lookup, name, team, position) {
+      if (!name) return null;
+      if (team && position) {
+        const id = lookup.byNameTeamPos.get(`${name}|${team}|${position}`);
+        if (id) return id;
+      }
+      if (team && lookup.counts.nameTeam.get(`${name}|${team}`) === 1) return lookup.byNameTeam.get(`${name}|${team}`);
+      if (position && lookup.counts.namePos.get(`${name}|${position}`) === 1) return lookup.byNamePos.get(`${name}|${position}`);
+      if (lookup.counts.name.get(name) === 1) return lookup.byName.get(name);
+      return null;
     }
 
     function projectionRowsFromPayload(raw) {
@@ -2917,14 +3140,34 @@
       return [];
     }
 
+    function emptyProjectionDiagnostics(rowCount = 0) {
+      return {
+        rows: rowCount,
+        matched: 0,
+        unmatched: 0,
+        unmatched_sample: [],
+        duplicates: 0,
+        unscorable: 0,
+        keys: {},            // raw provider key -> { kind, mapped, count }
+        missing_core: {},    // scored core stat Sleeper has but provider lacks -> player count
+        unfilled: {},        // scored secondary stat Sleeper has that could not be filled -> player count
+        adjusted: {}         // filled stat -> { derived, scaled, copied, default }
+      };
+    }
+
     function normalizeExternalProjectionPayload(raw, data = app.data) {
       const rows = projectionRowsFromPayload(raw);
       const lookup = playerProjectionLookupMaps();
+      const scoring = data?.league?.scoring_settings || {};
+      const sleeperRaw = data?.projections || {};
       const points = {};
       const statsByPlayer = {};
-      let matched = 0;
+      const adjustmentsByPlayer = {};
+      const diag = emptyProjectionDiagnostics(rows.length);
+      const indirect = projectionIndirectlyUsedStats(scoring);
 
       for (const row of rows) {
+        const rowPos = String(row?.position || row?.position_id || row?.pos || '').toUpperCase();
         const directId = row?.sleeper_id ?? row?.sleeper_player_id ?? row?.sleeperPlayerId ?? null;
         let playerId = directId && app.playerMap[String(directId)] ? String(directId) : null;
 
@@ -2933,24 +3176,65 @@
         const team = normalizeNflTeam(row?.team || row?.team_id || row?.team_abbr || row?.team_abbreviation || '');
         const normalizedName = normalizeProjectionName(name);
 
-        if (!playerId && normalizedName) {
-          playerId = lookup.byNameTeam.get(`${normalizedName}|${team}`) || null;
-          if (!playerId && lookup.nameCounts.get(normalizedName) === 1) playerId = lookup.byName.get(normalizedName) || null;
-        }
-        if (!playerId) continue;
-
         let stats = row?.stats || row?.projection || row?.projected_stats || row?.projectedStats || {};
         if (Array.isArray(stats)) stats = stats[0] || {};
-        const normalizedStats = normalizeProjectionStatKeys(stats);
-        const score = scoreProjectionStats(normalizedStats, data?.league?.scoring_settings || {});
-        if (!Number.isFinite(score)) continue;
 
-        points[String(playerId)] = score;
-        statsByPlayer[String(playerId)] = normalizedStats;
-        matched++;
+        for (const rawKey of Object.keys(stats || {})) {
+          const info = classifyProjectionStatKey(rawKey, scoring, indirect);
+          const slot = diag.keys[rawKey] || (diag.keys[rawKey] = { ...info, count: 0 });
+          slot.count++;
+        }
+
+        if (!playerId) playerId = matchProjectionPlayer(lookup, normalizedName, team, rowPos);
+        if (!playerId) {
+          diag.unmatched++;
+          if (diag.unmatched_sample.length < 40) {
+            diag.unmatched_sample.push(`${name || 'Unknown'}${rowPos || team ? ` (${[rowPos, team].filter(Boolean).join(' ')})` : ''}`);
+          }
+          continue;
+        }
+        if (Object.prototype.hasOwnProperty.call(points, playerId)) { diag.duplicates++; continue; }
+
+        const position = rowPos || playerFromId(playerId).position;
+        const sleeperStats = sleeperRaw[playerId] || null;
+        const normalizedStats = normalizeProjectionStatKeys(stats);
+
+        if (sleeperStats) {
+          const sl = normalizeProjectionStatKeys(sleeperStats);
+          for (const key of PROJECTION_CORE_STATS) {
+            if (Number(scoring?.[key] || 0) === 0) continue;
+            if (Number(sl[key] || 0) !== 0 && !Number.isFinite(Number(normalizedStats[key]))) {
+              diag.missing_core[key] = (diag.missing_core[key] || 0) + 1;
+            }
+          }
+        }
+
+        const filled = fillProjectionStatGaps(normalizedStats, { position, sleeperStats, scoring });
+        for (const [key, method] of Object.entries(filled.adjustments)) {
+          const slot = diag.adjusted[key] || (diag.adjusted[key] = { derived: 0, scaled: 0, copied: 0, default: 0 });
+          slot[method] = (slot[method] || 0) + 1;
+        }
+
+        if (sleeperStats) {
+          const sl = normalizeProjectionStatKeys(sleeperStats);
+          for (const [key, mult] of Object.entries(scoring || {})) {
+            if (Number(mult || 0) === 0 || PROJECTION_CORE_STATS.has(key)) continue;
+            if (Number(sl[key] || 0) !== 0 && !Number.isFinite(Number(filled.stats[key]))) {
+              diag.unfilled[key] = (diag.unfilled[key] || 0) + 1;
+            }
+          }
+        }
+
+        const score = scoreProjectionStats(filled.stats, scoring);
+        if (!Number.isFinite(score)) { diag.unscorable++; continue; }
+
+        points[playerId] = score;
+        statsByPlayer[playerId] = filled.stats;
+        if (Object.keys(filled.adjustments).length) adjustmentsByPlayer[playerId] = filled.adjustments;
+        diag.matched++;
       }
 
-      return { points, stats: statsByPlayer, count: matched };
+      return { points, stats: statsByPlayer, adjustments: adjustmentsByPlayer, count: diag.matched, diagnostics: diag };
     }
 
     function buildSleeperProjectionSource(data = app.data) {
@@ -2969,6 +3253,26 @@
       return String(localStorage.getItem('brojees_fantasypros_proxy_url') || '').trim();
     }
 
+    async function fetchProjectionProxyJson(url, timeoutMs = 25000) {
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+      try {
+        const response = await fetch(url, { cache: 'no-store', signal: controller?.signal });
+        let body = null;
+        try { body = await response.json(); } catch (_) { body = null; }
+        if (!response.ok) throw new Error(body?.error || `Proxy returned HTTP ${response.status}`);
+        if (!body || typeof body !== 'object') throw new Error('Proxy returned an unreadable response.');
+        if (body.error && !Array.isArray(body.projections)) throw new Error(body.error);
+        return body;
+      } catch (err) {
+        if (err?.name === 'AbortError') throw new Error(`Proxy did not respond within ${Math.round(timeoutMs / 1000)} seconds.`);
+        if (err instanceof TypeError) throw new Error('Could not reach the proxy (network or CORS). Check the URL and the Worker\'s allowed origins.');
+        throw err;
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    }
+
     async function fetchFantasyProsProjectionSource(data = app.data) {
       const baseUrl = fantasyProsProxyUrl();
       if (!baseUrl) throw new Error('FantasyPros proxy is not configured.');
@@ -2979,8 +3283,14 @@
       url.searchParams.set('week', String(week));
       url.searchParams.set('positions', 'QB:RB:WR:TE:K');
 
-      const raw = await fetchJson(url.toString());
-      return normalizeExternalProjectionPayload(raw, data);
+      const raw = await fetchProjectionProxyJson(url.toString());
+      const normalized = normalizeExternalProjectionPayload(raw, data);
+      return {
+        ...normalized,
+        meta: raw?.meta || null,
+        worker_version: raw?.worker_version || null,
+        fetched_at: raw?.fetched_at || null
+      };
     }
 
     function resetProjectionHubIfWeekChanged(data = app.data) {
@@ -3133,6 +3443,30 @@
       </article>`;
     }
 
+    function formatProjectionAge(seconds) {
+      const s = Number(seconds);
+      if (!Number.isFinite(s)) return 'unknown age';
+      if (s < 60) return 'just now';
+      if (s < 3600) return `${Math.round(s / 60)} min ago`;
+      return `${Math.round(s / 360) / 10} hr ago`;
+    }
+
+    function fantasyProsWarnings(fp) {
+      const warnings = [];
+      const diag = fp?.diagnostics;
+      const meta = fp?.meta;
+      if (meta?.cache === 'STALE') warnings.push('showing older cached data');
+      const posErrors = Object.keys(meta?.position_errors || {});
+      if (posErrors.length) warnings.push(`${posErrors.join('/')} unavailable`);
+      if (diag) {
+        const unknown = Object.values(diag.keys || {}).filter(k => k.kind === 'unrecognized').length;
+        if (unknown) warnings.push(`${unknown} unknown stat${unknown === 1 ? '' : 's'}`);
+        const missingCore = Object.keys(diag.missing_core || {}).length;
+        if (missingCore) warnings.push(`${missingCore} missing stat${missingCore === 1 ? '' : 's'}`);
+      }
+      return warnings;
+    }
+
     function renderProjectionProviderStatuses() {
       const sleeper = app.projectionHub.sources.sleeper;
       const fp = app.projectionHub.sources.fantasypros;
@@ -3143,8 +3477,9 @@
         `Sleeper · ${sleeper.status === 'loaded' ? `${sleeper.count} players` : sleeper.status}`
       );
 
+      const warnings = fp.status === 'loaded' ? fantasyProsWarnings(fp) : [];
       const fpText = fp.status === 'loaded'
-        ? `FantasyPros · ${fp.count} matched`
+        ? `FantasyPros · ${fp.count} matched${warnings.length ? ` · ${warnings.length} warning${warnings.length === 1 ? '' : 's'}` : ''}`
         : fp.status === 'unconfigured'
           ? 'FantasyPros · not configured'
           : fp.status === 'error'
@@ -3153,9 +3488,103 @@
 
       projectionProviderStatus(
         els.projectionProviderFantasyPros,
-        fp.status === 'loaded' ? 'loaded' : fp.status === 'loading' ? 'loading' : fp.status === 'error' ? 'error' : 'unconfigured',
+        fp.status === 'loaded' ? (warnings.length ? 'warning' : 'loaded') : fp.status === 'loading' ? 'loading' : fp.status === 'error' ? 'error' : 'unconfigured',
         fpText
       );
+      if (els.projectionProviderFantasyPros) {
+        els.projectionProviderFantasyPros.title = warnings.length ? `Open Source diagnostics: ${warnings.join(', ')}` : '';
+      }
+      renderProjectionDiagnostics();
+    }
+
+    function projectionDiagChips(items, cls = '') {
+      if (!items.length) return '';
+      return `<div class="projection-diag-chips">${items.map(item => `<span class="projection-diag-chip ${cls}">${escapeHtml(item)}</span>`).join('')}</div>`;
+    }
+
+    function renderProjectionDiagnostics() {
+      if (!els.projectionDiagnosticsBody) return;
+      const fp = app.projectionHub?.sources?.fantasypros || {};
+      const sleeper = app.projectionHub?.sources?.sleeper || {};
+      const rows = [];
+      const row = (html, cls = '') => rows.push(`<div class="projection-diag-row ${cls}">${html}</div>`);
+
+      row(`<strong>Sleeper</strong> · ${sleeper.status === 'loaded' ? `${sleeper.count} players projected, scored with this league's settings.` : escapeHtml(sleeper.status || 'waiting')}`);
+
+      if (fp.status === 'unconfigured') {
+        row('<strong>FantasyPros</strong> · not configured. Add your Worker URL in FantasyPros connection setup.');
+      } else if (fp.status === 'error') {
+        row(`<strong>FantasyPros</strong> · ${escapeHtml(fp.error || 'Load failed')}`, 'bad');
+      } else if (fp.status !== 'loaded') {
+        row(`<strong>FantasyPros</strong> · ${escapeHtml(fp.status || 'waiting')}`);
+      } else {
+        const meta = fp.meta || {};
+        const diag = fp.diagnostics || emptyProjectionDiagnostics();
+        const scoring = app.data?.league?.scoring_settings || {};
+
+        const proxyBits = [];
+        if (fp.worker_version) proxyBits.push(`Worker v${escapeHtml(fp.worker_version)}`);
+        else proxyBits.push('Worker v2.1 or older (update recommended)');
+        if (meta.cache) proxyBits.push(`cache ${escapeHtml(meta.cache)}${meta.layer ? ` (${escapeHtml(meta.layer)})` : ''}`);
+        if (Number.isFinite(Number(meta.age_seconds))) proxyBits.push(`FantasyPros data pulled ${formatProjectionAge(meta.age_seconds)}`);
+        if (meta.shared_cache === false) proxyBits.push('no shared KV cache');
+        row(`<strong>FantasyPros proxy</strong> · ${proxyBits.join(' · ')}`, meta.cache === 'STALE' ? 'warn' : '');
+        if (meta.cache === 'STALE' && meta.stale_reason) row(`FantasyPros is not answering right now (${escapeHtml(meta.stale_reason)}). Showing the last good pull.`, 'warn');
+
+        const posErrors = Object.entries(meta.position_errors || {});
+        if (posErrors.length) row(`<strong>Positions unavailable</strong> · ${posErrors.map(([pos, msg]) => `${escapeHtml(pos)}: ${escapeHtml(msg)}`).join(' · ')}`, 'warn');
+
+        row(`<strong>Players</strong> · ${diag.rows} received · ${diag.matched} matched to Sleeper · ${diag.unmatched} unmatched${diag.duplicates ? ` · ${diag.duplicates} duplicates skipped` : ''}${diag.unscorable ? ` · ${diag.unscorable} had no scorable stats` : ''}`);
+        if (diag.unmatched_sample.length) {
+          rows.push(`<details class="projection-diag-more"><summary>Unmatched names (${diag.unmatched})</summary>${projectionDiagChips(diag.unmatched_sample)}</details>`);
+        }
+
+        const keyEntries = Object.entries(diag.keys || {});
+        const byKind = kind => keyEntries.filter(([, info]) => info.kind === kind).sort((a, b) => b[1].count - a[1].count);
+
+        const unknown = byKind('unrecognized');
+        if (unknown.length) {
+          row(`<strong>Unknown stat names</strong> · not mapped, so they score 0. Tell Claude these names to map them.${projectionDiagChips(unknown.map(([key, info]) => `${key} · ${info.count}`), 'warn')}`, 'warn');
+        }
+
+        const missingCore = Object.entries(diag.missing_core || {}).sort((a, b) => b[1] - a[1]);
+        if (missingCore.length) {
+          row(`<strong>Scored stats missing from FantasyPros</strong> · Sleeper projects these but FantasyPros sent nothing we recognize, so FantasyPros is low for these players.${projectionDiagChips(missingCore.map(([key, n]) => `${projectionStatLabel(key)} · ${n} players`), 'warn')}`, 'warn');
+        }
+
+        const scoredKeys = byKind('scored');
+        if (scoredKeys.length) {
+          row(`<strong>Stats used</strong>${projectionDiagChips(scoredKeys.map(([key, info]) => `${key === info.mapped ? projectionStatLabel(key) : `${key} → ${projectionStatLabel(info.mapped)}`}${info.indirect ? ' (for estimates)' : ''}`))}`);
+        }
+
+        const adjusted = Object.entries(diag.adjusted || {});
+        if (adjusted.length) {
+          const methodText = { derived: 'exact math', scaled: 'Sleeper rate scaled to FP volume', copied: 'copied from Sleeper', default: 'league-average estimate' };
+          const items = adjusted.map(([key, counts]) => {
+            const parts = Object.entries(counts).filter(([, n]) => n > 0).map(([m, n]) => `${methodText[m] || m} ×${n}`);
+            return `${projectionStatLabel(key)} · ${parts.join(', ')}`;
+          });
+          row(`<strong>Filled in for this league's scoring</strong> · FantasyPros doesn't publish these, so they're estimated (marked ≈ in player popups).${projectionDiagChips(items)}`);
+        }
+
+        const unfilled = Object.entries(diag.unfilled || {}).sort((a, b) => b[1] - a[1]);
+        if (unfilled.length) {
+          row(`<strong>Left at 0</strong> · scored by this league, projected by Sleeper, but not available from FantasyPros.${projectionDiagChips(unfilled.map(([key, n]) => `${projectionStatLabel(key)} · ${n}`))}`);
+        }
+
+        const ignored = byKind('provider_points').concat(byKind('unscored'));
+        if (ignored.length) {
+          row(`<strong>Ignored</strong> · FantasyPros' own point totals and stats this league scores as 0.${projectionDiagChips(ignored.map(([key]) => key))}`);
+        }
+
+        if (!Object.keys(scoring).length) row('League scoring settings are not loaded yet. Refresh the league.', 'warn');
+      }
+
+      els.projectionDiagnosticsBody.innerHTML = rows.join('');
+      if (els.projectionDiagnostics) {
+        const warn = fp.status === 'error' || (fp.status === 'loaded' && fantasyProsWarnings(fp).length > 0);
+        els.projectionDiagnostics.classList.toggle('has-warning', warn);
+      }
     }
 
     function renderMultiProjections(data = app.data) {
@@ -3208,10 +3637,12 @@
       });
 
       const loadedAt = app.projectionHub.loadedAt ? new Date(app.projectionHub.loadedAt).toLocaleTimeString() : null;
+      const fpMeta = app.projectionHub.sources.fantasypros?.status === 'loaded' ? app.projectionHub.sources.fantasypros.meta : null;
+      const fpAge = fpMeta && Number.isFinite(Number(fpMeta.age_seconds)) ? ` FantasyPros data pulled ${formatProjectionAge(fpMeta.age_seconds)}.` : '';
       els.multiProjectionStatus.textContent = app.projectionHub.loading
         ? 'Loading projection sources…'
         : loadedAt
-          ? `Lazy-loaded projection comparison · last loaded ${loadedAt}. External sources are not called by normal league auto-refresh.`
+          ? `Lazy-loaded projection comparison · last loaded ${loadedAt}.${fpAge} External sources are not called by normal league auto-refresh.`
           : 'This tab loads projection-source data only when you open it.';
     }
 
@@ -3254,7 +3685,9 @@
             const fp = await fetchFantasyProsProjectionSource(app.data);
             app.projectionHub.sources.fantasypros = {
               status: 'loaded', label: 'FantasyPros',
-              points: fp.points, stats: fp.stats, count: fp.count, error: null
+              points: fp.points, stats: fp.stats, count: fp.count, error: null,
+              adjustments: fp.adjustments, diagnostics: fp.diagnostics,
+              meta: fp.meta, worker_version: fp.worker_version, fetched_at: fp.fetched_at
             };
           } catch (err) {
             console.warn('FantasyPros projection load failed:', err);
@@ -3276,6 +3709,54 @@
         els.refreshMultiProjectionsBtn.textContent = 'Refresh Projections';
         renderMultiProjections(app.data);
       }
+    }
+
+    function formatProjectionStatValue(value) {
+      if (value === null || value === undefined || value === '') return '—';
+      const n = Number(value);
+      if (!Number.isFinite(n)) return '—';
+      return Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2);
+    }
+
+    function playerProjectionStatAssumptionsHtml(playerId) {
+      const pid = String(playerId);
+      const scoring = app.data?.league?.scoring_settings || {};
+      const sl = app.projectionHub?.sources?.sleeper?.stats?.[pid];
+      const fp = app.projectionHub?.sources?.fantasypros?.stats?.[pid];
+      if (!sl || !fp) return '';
+      const adjustments = app.projectionHub?.sources?.fantasypros?.adjustments?.[pid] || {};
+
+      const keys = new Set([...Object.keys(sl), ...Object.keys(fp)].filter(key => Number(scoring[key] || 0) !== 0));
+      const rows = [...keys].map(key => {
+        const mult = Number(scoring[key]);
+        const a = Number(sl[key]);
+        const b = Number(fp[key]);
+        const slValue = Number.isFinite(a) ? a : null;
+        const fpValue = Number.isFinite(b) ? b : null;
+        const delta = Math.round((((fpValue ?? 0) - (slValue ?? 0)) * mult) * 100) / 100;
+        return { key, slValue, fpValue, delta, method: adjustments[key] || null };
+      }).filter(row => (row.slValue || 0) !== 0 || (row.fpValue || 0) !== 0);
+
+      if (!rows.length) return '';
+      rows.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta) || projectionStatLabel(x.key).localeCompare(projectionStatLabel(y.key)));
+      const shown = rows.slice(0, 14);
+      const methodTitle = { derived: 'Calculated exactly from FantasyPros attempts/makes', scaled: "Sleeper's rate scaled to FantasyPros volume", copied: "FantasyPros doesn't publish this; Sleeper's value used", default: 'League-average estimate' };
+      const anyEstimated = shown.some(row => row.method && row.method !== 'derived');
+
+      const body = shown.map(row => {
+        const deltaCls = row.delta > 0.005 ? 'up' : row.delta < -0.005 ? 'down' : 'flat';
+        const deltaText = Math.abs(row.delta) < 0.005 ? '0.00' : `${row.delta > 0 ? '+' : ''}${row.delta.toFixed(2)}`;
+        const mark = row.method && row.method !== 'derived'
+          ? `<span class="stat-est" title="${escapeHtml(methodTitle[row.method] || 'Estimated')}">≈</span>`
+          : '';
+        return `<tr><td>${escapeHtml(projectionStatLabel(row.key))}</td><td>${formatProjectionStatValue(row.slValue)}</td><td>${formatProjectionStatValue(row.fpValue)}${mark}</td><td><span class="projection-delta ${deltaCls}">${deltaText}</span></td></tr>`;
+      }).join('');
+
+      return `<div class="modal-projection-assumptions">
+        <div class="player-modal-section-title" style="margin-top:12px">Why they differ</div>
+        <table class="player-stat-table"><thead><tr><th>Scored stat</th><th>Sleeper</th><th>FPros</th><th>FP Δ pts</th></tr></thead><tbody>${body}</tbody></table>
+        <div class="small" style="margin-top:6px">FP Δ pts = how many league points FantasyPros' number adds or removes vs Sleeper for that stat.${anyEstimated ? ' ≈ = not published by FantasyPros, estimated for this league\'s scoring.' : ''}</div>
+      </div>`;
     }
 
     function playerProjectionComparisonHtml(playerId) {
@@ -3304,6 +3785,7 @@
           </div>
         </div>
         <div class="small" style="margin-top:8px">${comp.source_count} source${comp.source_count === 1 ? '' : 's'} available · all source stats are rescored using this league's Sleeper scoring settings.</div>
+        ${playerProjectionStatAssumptionsHtml(playerId)}
       </section>`;
     }
 
@@ -4126,8 +4608,15 @@
       });
     });
 
-    ['input','change'].forEach(eventName => {
-      els.multiProjectionSearch.addEventListener(eventName, () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
+    // Only re-render when the text actually changed. A plain 'change' listener fired on
+    // blur and rebuilt the cards mid-tap, so the first tap after searching did nothing.
+    let lastProjectionSearch = els.multiProjectionSearch.value;
+    ['input','change','search'].forEach(eventName => {
+      els.multiProjectionSearch.addEventListener(eventName, () => {
+        if (els.multiProjectionSearch.value === lastProjectionSearch) return;
+        lastProjectionSearch = els.multiProjectionSearch.value;
+        if (app.projectionHub.loaded) renderMultiProjections(app.data);
+      });
     });
     els.multiProjectionScope.addEventListener('change', () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
     els.multiProjectionSort.addEventListener('change', () => { if (app.projectionHub.loaded) renderMultiProjections(app.data); });
@@ -4138,13 +4627,19 @@
     els.saveFantasyProsProxyBtn.addEventListener('click', () => {
       const value = String(els.fantasyProsProxyUrl.value || '').trim();
       if (value) {
+        let parsed = null;
         try {
-          new URL(value);
+          parsed = new URL(value);
         } catch (_) {
+          parsed = null;
+        }
+        const isLocalTest = parsed && parsed.protocol === 'http:' && /^(localhost|127\.0\.0\.1)$/.test(parsed.hostname);
+        if (!parsed || (parsed.protocol !== 'https:' && !isLocalTest)) {
           showNotice('Enter a valid HTTPS FantasyPros proxy URL.', 'error');
           return;
         }
         localStorage.setItem('brojees_fantasypros_proxy_url', value);
+        hideNotice();
       } else {
         localStorage.removeItem('brojees_fantasypros_proxy_url');
       }
