@@ -1598,8 +1598,7 @@
         </div>
 
         <div class="projection-attribution">
-          <strong>ESPN Fantasy</strong> is used as the second free projection source through the Brojees Cloudflare Worker.
-          ESPN's fantasy projection endpoint is unofficial/undocumented and may change. Brojees uses the raw projected stat line and re-scores it with this Sleeper league's scoring settings rather than using ESPN's displayed fantasy-point total.
+          <strong>Projection scoring method:</strong> each external source keeps its own projected stats wherever available. If a scored category is missing, Brojees fills only that missing category from Sleeper, then applies this league's Sleeper scoring settings. Cards show only the final adjusted score for each provider. ESPN's fantasy projection endpoint is unofficial/undocumented and may change.
         </div>
 
         <details class="projection-config" id="projectionConfig">
@@ -1714,8 +1713,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.3';
+    const APP_VERSION = '2.3.1';
     const PATCH_NOTES = [
+      { version: '2.3.1', note: 'External projection sources now use their own projected stats first and fill only missing scored categories from Sleeper before applying the league scoring settings. The UI continues to show only each provider\'s final Brojees-adjusted score.' },
       { version: '2.3', note: 'Removed the limited sample projection source and replaced it with the free ESPN Fantasy projection feed through the Brojees Cloudflare Worker. Consensus now compares Sleeper + ESPN using this league\'s scoring settings.' },
       { version: '2.2', note: 'Prepared the external projection-source framework, secure Worker pattern, scoring-coverage notes, and improved external-stat normalization.' },
       { version: '2.1', note: 'Added a lazy-loaded multi-source Projections tab with custom league scoring, consensus projections, source spread, filters, player cards, and popup comparison.' },
@@ -2918,6 +2918,33 @@
       return projectedPointsFromMap('__projection_source__', { __projection_source__: normalizeProjectionStatKeys(stats) }, scoring);
     }
 
+    function mergeProviderStatsWithSleeperFallback(providerStats = {}, sleeperStats = {}, scoring = app.data?.league?.scoring_settings || {}) {
+      const provider = normalizeProjectionStatKeys(providerStats);
+      const sleeper = normalizeProjectionStatKeys(sleeperStats);
+      const merged = { ...provider };
+      const fallbackKeys = [];
+
+      // Provider data always wins. Sleeper is used only when the external source
+      // does not provide a finite value for a scoring category enabled in this league.
+      for (const [key, multiplierRaw] of Object.entries(scoring || {})) {
+        const multiplier = Number(multiplierRaw);
+        if (!Number.isFinite(multiplier) || multiplier === 0) continue;
+
+        const hasProviderValue =
+          Object.prototype.hasOwnProperty.call(merged, key) &&
+          Number.isFinite(Number(merged[key]));
+        if (hasProviderValue) continue;
+
+        const sleeperValue = Number(sleeper?.[key]);
+        if (!Number.isFinite(sleeperValue)) continue;
+
+        merged[key] = sleeperValue;
+        fallbackKeys.push(key);
+      }
+
+      return { stats: merged, fallbackKeys };
+    }
+
 
     function projectionUnsupportedScoringKeys(statsByPlayer = {}, scoring = app.data?.league?.scoring_settings || {}) {
       const available = new Set();
@@ -2987,12 +3014,19 @@
 
         let stats = row?.stats || row?.projection || row?.projected_stats || row?.projectedStats || {};
         if (Array.isArray(stats)) stats = stats[0] || {};
+
         const normalizedStats = normalizeProjectionStatKeys(stats);
-        const score = scoreProjectionStats(normalizedStats, data?.league?.scoring_settings || {});
+        const sleeperStats = normalizeProjectionStatKeys(data?.projections?.[String(playerId)] || {});
+        const merged = mergeProviderStatsWithSleeperFallback(
+          normalizedStats,
+          sleeperStats,
+          data?.league?.scoring_settings || {}
+        );
+        const score = scoreProjectionStats(merged.stats, data?.league?.scoring_settings || {});
         if (!Number.isFinite(score)) continue;
 
         points[String(playerId)] = score;
-        statsByPlayer[String(playerId)] = normalizedStats;
+        statsByPlayer[String(playerId)] = merged.stats;
         matched++;
       }
 
@@ -3243,12 +3277,12 @@
       const sourceLoadedCount = ['sleeper','espn'].filter(key => app.projectionHub.sources[key]?.status === 'loaded').length;
       const espnUnsupported = app.projectionHub.sources.espn?.unsupported_scoring_keys || [];
       const coverageNote = espnUnsupported.length
-        ? ` · ESPN raw projections do not directly map every enabled Sleeper scoring category: <strong>${espnUnsupported.map(escapeHtml).join(', ')}</strong>`
+        ? ` · Even after Sleeper fallback, no projection value was available for: <strong>${espnUnsupported.map(escapeHtml).join(', ')}</strong>`
         : '';
       els.multiProjectionSummary.innerHTML =
         `<strong>${rows.length}</strong> shown · <strong>${totalFiltered}</strong> matching players · ` +
         `<strong>${sourceLoadedCount}</strong> projection source${sourceLoadedCount === 1 ? '' : 's'} loaded · ` +
-        `Consensus averages the available source projections after re-scoring the raw stats that each source provides with this league's Sleeper settings.${coverageNote}`;
+        `Consensus averages each provider's final Brojees-adjusted score. External sources keep their own stats first and use Sleeper only for missing scored categories.${coverageNote}`;
 
       els.multiProjectionCards.innerHTML = rows.map(projectionCardHtml).join('');
       els.multiProjectionEmpty.hidden = rows.length > 0;
@@ -3353,7 +3387,7 @@
             <div class="modal-projection-source-value">${Number.isFinite(comp.spread) ? numberOrDash(comp.spread, 2) : '—'}</div>
           </div>
         </div>
-        <div class="small" style="margin-top:8px">${comp.source_count} source${comp.source_count === 1 ? '' : 's'} available · available source stats are rescored using this league's Sleeper scoring settings; unavailable source stat categories are excluded.</div>
+        <div class="small" style="margin-top:8px">${comp.source_count} source${comp.source_count === 1 ? '' : 's'} available · each external provider keeps its own projected stats first, with Sleeper used only to fill missing scored categories before league scoring is applied.</div>
       </section>`;
     }
 
