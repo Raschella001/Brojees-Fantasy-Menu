@@ -1259,7 +1259,7 @@
       font-variant-numeric: tabular-nums;
     }
     .projection-source-tile.sleeper .projection-source-value { color: var(--accent-2); }
-    .projection-source-tile.fantasypros .projection-source-value { color: #e9d5ff; }
+    .projection-source-tile.espn .projection-source-value { color: #f8d48a; }
     .projection-card-footer {
       display: flex;
       flex-wrap: wrap;
@@ -1594,27 +1594,25 @@
 
         <div class="projection-provider-row" aria-label="Projection source status">
           <span class="projection-provider unconfigured" id="projectionProviderSleeper"><span class="projection-provider-dot"></span><span>Sleeper · waiting</span></span>
-          <span class="projection-provider unconfigured" id="projectionProviderFantasyPros"><span class="projection-provider-dot"></span><span>FantasyPros · not configured</span></span>
+          <span class="projection-provider unconfigured" id="projectionProviderEspn"><span class="projection-provider-dot"></span><span>ESPN · waiting</span></span>
         </div>
 
         <div class="projection-attribution">
-          <strong>FantasyPros</strong> is credited as an external projection-data source. FantasyPros player images are not used.
-          This dashboard re-scores available raw projection statistics with the Brojees Sleeper scoring settings; scoring categories not supplied by an external source cannot be included in that source's custom projection.
-          <a href="https://www.fantasypros.com/" target="_blank" rel="noopener noreferrer">FantasyPros</a>
+          <strong>ESPN Fantasy</strong> is used as the second free projection source through the Brojees Cloudflare Worker.
+          ESPN's fantasy projection endpoint is unofficial/undocumented and may change. Brojees uses the raw projected stat line and re-scores it with this Sleeper league's scoring settings rather than using ESPN's displayed fantasy-point total.
         </div>
 
         <details class="projection-config" id="projectionConfig">
-          <summary>FantasyPros connection setup</summary>
+          <summary>ESPN projection connection</summary>
           <div class="small" style="margin-top:8px">
-            Enter the URL of your secure Cloudflare FantasyPros proxy. Do <strong>not</strong> put a FantasyPros API key in this webpage.
-            The URL is saved only in this browser. The Worker caches FantasyPros responses so league members do not burn API quota by loading the same week repeatedly.
+            The public Brojees ESPN Worker is used by default and does not require an API key. You only need to change this URL if the Worker address changes.
           </div>
           <div class="projection-config-grid">
             <div>
-              <label class="small" for="fantasyProsProxyUrl">Secure proxy URL</label>
-              <input id="fantasyProsProxyUrl" type="url" placeholder="https://your-worker.example.workers.dev/" autocomplete="off" />
+              <label class="small" for="espnProjectionProxyUrl">ESPN Worker URL</label>
+              <input id="espnProjectionProxyUrl" type="url" placeholder="https://brojees-espn-proxy.example.workers.dev/" autocomplete="off" />
             </div>
-            <button class="btn-secondary" id="saveFantasyProsProxyBtn" type="button">Save & Load</button>
+            <button class="btn-secondary" id="saveEspnProjectionProxyBtn" type="button">Save & Load</button>
           </div>
         </details>
 
@@ -1636,7 +1634,7 @@
             <select id="multiProjectionSort">
               <option value="consensus">Consensus: High to Low</option>
               <option value="sleeper">Sleeper: High to Low</option>
-              <option value="fantasypros">FantasyPros: High to Low</option>
+              <option value="espn">ESPN: High to Low</option>
               <option value="spread">Source Spread: High to Low</option>
               <option value="name">Player Name</option>
               <option value="team">NFL Team</option>
@@ -1714,11 +1712,13 @@
 
     const API = 'https://api.sleeper.app/v1';
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
+    const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.2';
+    const APP_VERSION = '2.3';
     const PATCH_NOTES = [
-      { version: '2.2', note: 'Finalized the secure FantasyPros integration: corrected the official API endpoint, added source attribution and scoring-coverage notes, improved FantasyPros stat normalization, and prepared a cached single-call Cloudflare Worker to protect API quota.' },
-      { version: '2.1', note: 'Added a lazy-loaded multi-source Projections tab with Sleeper + optional FantasyPros, custom league scoring, consensus projections, source spread, filters, player cards, and popup comparison.' },
+      { version: '2.3', note: 'Removed the limited sample projection source and replaced it with the free ESPN Fantasy projection feed through the Brojees Cloudflare Worker. Consensus now compares Sleeper + ESPN using this league\'s scoring settings.' },
+      { version: '2.2', note: 'Prepared the external projection-source framework, secure Worker pattern, scoring-coverage notes, and improved external-stat normalization.' },
+      { version: '2.1', note: 'Added a lazy-loaded multi-source Projections tab with custom league scoring, consensus projections, source spread, filters, player cards, and popup comparison.' },
       { version: '2.0', note: 'Added a full Waiver Wire / Free Agents tab with position filters, search, sortable rankings, opponent/kickoff info, projections, injuries, depth chart, and player popup integration.' },
       { version: '1.9', note: 'Added selectable player card popups with player info, game status, weekly fantasy points, projections, and actual vs proj stats.' },
       { version: '1.8', note: 'Added a compact Patch Notes / What\'s New section to the Overview page.' },
@@ -1761,10 +1761,10 @@
       multiProjectionStatus: document.getElementById('multiProjectionStatus'),
       multiProjectionWeekPill: document.getElementById('multiProjectionWeekPill'),
       projectionProviderSleeper: document.getElementById('projectionProviderSleeper'),
-      projectionProviderFantasyPros: document.getElementById('projectionProviderFantasyPros'),
+      projectionProviderEspn: document.getElementById('projectionProviderEspn'),
       refreshMultiProjectionsBtn: document.getElementById('refreshMultiProjectionsBtn'),
-      fantasyProsProxyUrl: document.getElementById('fantasyProsProxyUrl'),
-      saveFantasyProsProxyBtn: document.getElementById('saveFantasyProsProxyBtn'),
+      espnProjectionProxyUrl: document.getElementById('espnProjectionProxyUrl'),
+      saveEspnProjectionProxyBtn: document.getElementById('saveEspnProjectionProxyBtn'),
       multiProjectionSearch: document.getElementById('multiProjectionSearch'),
       multiProjectionScope: document.getElementById('multiProjectionScope'),
       multiProjectionSort: document.getElementById('multiProjectionSort'),
@@ -1811,7 +1811,7 @@
         loadedAt: 0,
         sources: {
           sleeper: { status: 'waiting', label: 'Sleeper', points: {}, stats: {}, count: 0, error: null },
-          fantasypros: { status: 'unconfigured', label: 'FantasyPros', points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: null }
+          espn: { status: 'waiting', label: 'ESPN', points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: null }
         }
       }
     };
@@ -2879,8 +2879,8 @@
     function normalizeProjectionStatKeys(stats = {}) {
       const out = {};
       // Normalize external-provider stat names to the stat keys used by Sleeper
-      // scoring_settings. FantasyPros currently exposes names such as pass_yds,
-      // rush_yds and rec_rec rather than Sleeper's pass_yd/rush_yd/rec keys.
+      // scoring_settings. External sources can expose alternate names such as pass_yds,
+      // rush_yds, rec_rec, or PAT/field-goal names rather than Sleeper's keys.
       const aliases = {
         pass_yds: 'pass_yd', passing_yards: 'pass_yd', passyards: 'pass_yd',
         pass_tds: 'pass_td', passing_tds: 'pass_td', passing_touchdowns: 'pass_td',
@@ -2893,9 +2893,15 @@
         targets: 'rec_tgt', rec_targets: 'rec_tgt',
         fumbles: 'fum', fumbles_lost: 'fum_lost',
         fg_made: 'fgm', field_goals_made: 'fgm',
-        fg_attempts: 'fga', field_goals_attempted: 'fga',
-        xp_made: 'xpm', extra_points_made: 'xpm',
-        xp_attempts: 'xpa', extra_points_attempted: 'xpa',
+        fg_att: 'fga', fg_attempts: 'fga', field_goals_attempted: 'fga',
+        fg_miss: 'fgmiss', field_goals_missed: 'fgmiss',
+        fg_40_49: 'fgm_40_49',
+        fg_50_plus: 'fgm_50p',
+        fg_50_59: 'fgm_50_59',
+        fg_60_plus: 'fgm_60p',
+        xp_made: 'xpm', extra_points_made: 'xpm', pat_made: 'xpm',
+        xp_attempts: 'xpa', extra_points_attempted: 'xpa', pat_att: 'xpa',
+        xp_miss: 'xpmiss', extra_points_missed: 'xpmiss', pat_miss: 'xpmiss',
         xpt_made: 'xpm', xpt_attempts: 'xpa'
       };
 
@@ -3005,19 +3011,19 @@
       return { points, stats, count: Object.keys(points).length };
     }
 
-    function fantasyProsProxyUrl() {
-      return String(localStorage.getItem('brojees_fantasypros_proxy_url') || '').trim();
+    function espnProjectionProxyUrl() {
+      return String(localStorage.getItem('brojees_espn_projection_proxy_url') || DEFAULT_ESPN_PROJECTION_PROXY_URL).trim();
     }
 
-    async function fetchFantasyProsProjectionSource(data = app.data) {
-      const baseUrl = fantasyProsProxyUrl();
-      if (!baseUrl) throw new Error('FantasyPros proxy is not configured.');
+    async function fetchEspnProjectionSource(data = app.data) {
+      const baseUrl = espnProjectionProxyUrl();
+      if (!baseUrl) throw new Error('ESPN projection Worker is not configured.');
 
       const { season, week } = projectionSeasonWeek(data);
       const url = new URL(baseUrl);
       url.searchParams.set('season', String(season));
       url.searchParams.set('week', String(week));
-      url.searchParams.set('positions', 'QB:RB:WR:TE:K');
+      url.searchParams.set('limit', '500');
 
       const raw = await fetchJson(url.toString());
       return normalizeExternalProjectionPayload(raw, data);
@@ -3036,9 +3042,9 @@
         loadedAt: 0,
         sources: {
           sleeper: { status: 'waiting', label: 'Sleeper', points: {}, stats: {}, count: 0, error: null },
-          fantasypros: {
-            status: fantasyProsProxyUrl() ? 'waiting' : 'unconfigured',
-            label: 'FantasyPros',
+          espn: {
+            status: espnProjectionProxyUrl() ? 'waiting' : 'unconfigured',
+            label: 'ESPN',
             points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: null
           }
         }
@@ -3068,7 +3074,7 @@
     function projectionComparisonForPlayer(playerId, data = app.data) {
       const sourcePairs = [
         ['sleeper', app.projectionHub?.sources?.sleeper],
-        ['fantasypros', app.projectionHub?.sources?.fantasypros]
+        ['espn', app.projectionHub?.sources?.espn]
       ];
       const values = {};
       const available = [];
@@ -3088,7 +3094,7 @@
 
       return {
         sleeper: values.sleeper,
-        fantasypros: values.fantasypros,
+        espn: values.espn,
         consensus,
         spread,
         source_count: available.length
@@ -3117,7 +3123,7 @@
           scope,
           roster: playerRosterContext(id, data),
           sleeper: comp.sleeper,
-          fantasypros: comp.fantasypros,
+          espn: comp.espn,
           consensus: comp.consensus,
           spread: comp.spread,
           source_count: comp.source_count,
@@ -3163,7 +3169,7 @@
           </div>
           <div class="projection-source-grid">
             ${projectionSourceTile('Sleeper', row.sleeper, 'sleeper')}
-            ${projectionSourceTile('FantasyPros', row.fantasypros, 'fantasypros')}
+            ${projectionSourceTile('ESPN', row.espn, 'espn')}
           </div>
           <div class="projection-card-footer">
             <span>${escapeHtml(rosterText)} · ${escapeHtml(kickoff)} ${gameStatusBadge(row.game_info)}</span>
@@ -3175,7 +3181,7 @@
 
     function renderProjectionProviderStatuses() {
       const sleeper = app.projectionHub.sources.sleeper;
-      const fp = app.projectionHub.sources.fantasypros;
+      const espn = app.projectionHub.sources.espn;
 
       projectionProviderStatus(
         els.projectionProviderSleeper,
@@ -3183,18 +3189,18 @@
         `Sleeper · ${sleeper.status === 'loaded' ? `${sleeper.count} players` : sleeper.status}`
       );
 
-      const fpText = fp.status === 'loaded'
-        ? `FantasyPros · ${fp.count} matched`
-        : fp.status === 'unconfigured'
-          ? 'FantasyPros · not configured'
-          : fp.status === 'error'
-            ? `FantasyPros · ${fp.error || 'error'}`
-            : `FantasyPros · ${fp.status}`;
+      const espnText = espn.status === 'loaded'
+        ? `ESPN · ${espn.count} matched`
+        : espn.status === 'unconfigured'
+          ? 'ESPN · not configured'
+          : espn.status === 'error'
+            ? `ESPN · ${espn.error || 'error'}`
+            : `ESPN · ${espn.status}`;
 
       projectionProviderStatus(
-        els.projectionProviderFantasyPros,
-        fp.status === 'loaded' ? 'loaded' : fp.status === 'loading' ? 'loading' : fp.status === 'error' ? 'error' : 'unconfigured',
-        fpText
+        els.projectionProviderEspn,
+        espn.status === 'loaded' ? 'loaded' : espn.status === 'loading' ? 'loading' : espn.status === 'error' ? 'error' : 'unconfigured',
+        espnText
       );
     }
 
@@ -3225,7 +3231,7 @@
 
       const numericDesc = key => (a,b) => (Number(b[key] ?? -9999) - Number(a[key] ?? -9999)) || a.full_name.localeCompare(b.full_name);
       if (sort === 'sleeper') rows.sort(numericDesc('sleeper'));
-      else if (sort === 'fantasypros') rows.sort(numericDesc('fantasypros'));
+      else if (sort === 'espn') rows.sort(numericDesc('espn'));
       else if (sort === 'spread') rows.sort(numericDesc('spread'));
       else if (sort === 'name') rows.sort((a,b) => a.full_name.localeCompare(b.full_name));
       else if (sort === 'team') rows.sort((a,b) => String(a.team || '').localeCompare(String(b.team || '')) || a.full_name.localeCompare(b.full_name));
@@ -3234,10 +3240,10 @@
       const totalFiltered = rows.length;
       rows = rows.slice(0, limit);
 
-      const sourceLoadedCount = ['sleeper','fantasypros'].filter(key => app.projectionHub.sources[key]?.status === 'loaded').length;
-      const fpUnsupported = app.projectionHub.sources.fantasypros?.unsupported_scoring_keys || [];
-      const coverageNote = fpUnsupported.length
-        ? ` · FantasyPros does not publish enough raw data to directly score: <strong>${fpUnsupported.map(escapeHtml).join(', ')}</strong>`
+      const sourceLoadedCount = ['sleeper','espn'].filter(key => app.projectionHub.sources[key]?.status === 'loaded').length;
+      const espnUnsupported = app.projectionHub.sources.espn?.unsupported_scoring_keys || [];
+      const coverageNote = espnUnsupported.length
+        ? ` · ESPN raw projections do not directly map every enabled Sleeper scoring category: <strong>${espnUnsupported.map(escapeHtml).join(', ')}</strong>`
         : '';
       els.multiProjectionSummary.innerHTML =
         `<strong>${rows.length}</strong> shown · <strong>${totalFiltered}</strong> matching players · ` +
@@ -3279,15 +3285,15 @@
           points: sleeper.points, stats: sleeper.stats, count: sleeper.count, error: null
         };
 
-        const proxy = fantasyProsProxyUrl();
+        const proxy = espnProjectionProxyUrl();
         if (proxy) {
-          app.projectionHub.sources.fantasypros = {
-            ...app.projectionHub.sources.fantasypros,
+          app.projectionHub.sources.espn = {
+            ...app.projectionHub.sources.espn,
             status: 'loading', error: null
           };
         } else {
-          app.projectionHub.sources.fantasypros = {
-            status: 'unconfigured', label: 'FantasyPros',
+          app.projectionHub.sources.espn = {
+            status: 'unconfigured', label: 'ESPN',
             points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: null
           };
         }
@@ -3295,16 +3301,16 @@
 
         if (proxy) {
           try {
-            const fp = await fetchFantasyProsProjectionSource(app.data);
-            app.projectionHub.sources.fantasypros = {
-              status: 'loaded', label: 'FantasyPros',
-              points: fp.points, stats: fp.stats, count: fp.count, unsupported_scoring_keys: fp.unsupported_scoring_keys || [], error: null
+            const espn = await fetchEspnProjectionSource(app.data);
+            app.projectionHub.sources.espn = {
+              status: 'loaded', label: 'ESPN',
+              points: espn.points, stats: espn.stats, count: espn.count, unsupported_scoring_keys: espn.unsupported_scoring_keys || [], error: null
             };
           } catch (err) {
-            console.warn('FantasyPros projection load failed:', err);
-            app.projectionHub.sources.fantasypros = {
-              status: 'error', label: 'FantasyPros',
-              points: {}, stats: {}, count: 0, error: err.message || 'Load failed'
+            console.warn('ESPN projection load failed:', err);
+            app.projectionHub.sources.espn = {
+              status: 'error', label: 'ESPN',
+              points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: err.message || 'Load failed'
             };
           }
         }
@@ -3335,8 +3341,8 @@
             <div class="modal-projection-source-value">${Number.isFinite(comp.sleeper) ? numberOrDash(comp.sleeper, 2) : '—'}</div>
           </div>
           <div class="modal-projection-source">
-            <div class="modal-projection-source-label">FantasyPros</div>
-            <div class="modal-projection-source-value">${Number.isFinite(comp.fantasypros) ? numberOrDash(comp.fantasypros, 2) : '—'}</div>
+            <div class="modal-projection-source-label">ESPN</div>
+            <div class="modal-projection-source-value">${Number.isFinite(comp.espn) ? numberOrDash(comp.espn, 2) : '—'}</div>
           </div>
           <div class="modal-projection-source consensus">
             <div class="modal-projection-source-label">Brojees Consensus</div>
@@ -4179,25 +4185,25 @@
 
     els.refreshMultiProjectionsBtn.addEventListener('click', () => loadMultiProjectionSources({ force: true }));
 
-    els.saveFantasyProsProxyBtn.addEventListener('click', () => {
-      const value = String(els.fantasyProsProxyUrl.value || '').trim();
+    els.saveEspnProjectionProxyBtn.addEventListener('click', () => {
+      const value = String(els.espnProjectionProxyUrl.value || '').trim();
       if (value) {
         try {
           const parsed = new URL(value);
           const localDev = ['localhost','127.0.0.1'].includes(parsed.hostname);
           if (parsed.protocol !== 'https:' && !localDev) throw new Error('HTTPS required');
         } catch (_) {
-          showNotice('Enter a valid HTTPS FantasyPros proxy URL.', 'error');
+          showNotice('Enter a valid HTTPS ESPN Worker URL.', 'error');
           return;
         }
-        localStorage.setItem('brojees_fantasypros_proxy_url', value);
+        localStorage.setItem('brojees_espn_projection_proxy_url', value);
       } else {
-        localStorage.removeItem('brojees_fantasypros_proxy_url');
+        localStorage.removeItem('brojees_espn_projection_proxy_url');
       }
       app.projectionHub.loaded = false;
-      app.projectionHub.sources.fantasypros = {
-        status: value ? 'waiting' : 'unconfigured',
-        label: 'FantasyPros', points: {}, stats: {}, count: 0, error: null
+      app.projectionHub.sources.espn = {
+        status: espnProjectionProxyUrl() ? 'waiting' : 'unconfigured',
+        label: 'ESPN', points: {}, stats: {}, count: 0, unsupported_scoring_keys: [], error: null
       };
       loadMultiProjectionSources({ force: true });
     });
@@ -4263,7 +4269,7 @@
       });
     });
 
-    els.fantasyProsProxyUrl.value = fantasyProsProxyUrl();
+    els.espnProjectionProxyUrl.value = espnProjectionProxyUrl();
 
     const savedAutoMinutes = localStorage.getItem('sleeper_auto_refresh_minutes');
     if (savedAutoMinutes !== null && [...els.autoRefresh.options].some(o => o.value === savedAutoMinutes)) {
