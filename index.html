@@ -834,6 +834,153 @@
     }
 
 
+
+    /* ===== V2.4 transactions + live player game score ===== */
+    .transaction-panel { margin-top: 0; }
+    .transaction-controls {
+      display: grid;
+      grid-template-columns: minmax(130px, 180px) minmax(180px, 240px) auto;
+      gap: 10px;
+      align-items: end;
+      margin: 12px 0 10px;
+    }
+    .transaction-controls .field { min-width: 0; }
+    .transaction-summary {
+      margin: 8px 0 12px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(12,19,34,.55);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .transaction-summary strong { color: var(--text); }
+    .transaction-feed { display: grid; gap: 10px; }
+    .transaction-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(13,20,35,.9);
+      overflow: hidden;
+    }
+    .transaction-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 11px 12px;
+      background: rgba(12,19,34,.7);
+      border-bottom: 1px solid #202d45;
+    }
+    .transaction-type-row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .transaction-type {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #365175;
+      background: rgba(96,165,250,.10);
+      color: #c8ddff;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .transaction-type.trade { border-color: rgba(167,139,250,.4); background: rgba(167,139,250,.1); color: #ddd6fe; }
+    .transaction-type.waiver { border-color: rgba(251,191,36,.38); background: rgba(251,191,36,.09); color: #fde68a; }
+    .transaction-type.free_agent { border-color: rgba(52,211,153,.38); background: rgba(52,211,153,.09); color: #bbf7d0; }
+    .transaction-type.commissioner { border-color: rgba(251,113,133,.38); background: rgba(251,113,133,.09); color: #fecdd3; }
+    .transaction-teams { color: var(--text); font-size: 12px; font-weight: 900; }
+    .transaction-meta { color: var(--muted); font-size: 9.5px; text-align: right; line-height: 1.4; }
+    .transaction-card-body { padding: 11px 12px 12px; display: grid; gap: 9px; }
+    .transaction-section-label {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 5px;
+    }
+    .transaction-items { display: flex; flex-wrap: wrap; gap: 6px; }
+    .transaction-player,
+    .transaction-pick,
+    .transaction-faab {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 29px;
+      padding: 5px 8px;
+      border-radius: 9px;
+      border: 1px solid #263650;
+      background: #0c1322;
+      color: var(--text);
+      font-size: 10px;
+      line-height: 1.2;
+    }
+    .transaction-player { cursor: pointer; }
+    .transaction-player:hover { border-color: #41658f; background: #111b2f; }
+    .transaction-player.add .transaction-sign { color: var(--good); }
+    .transaction-player.drop .transaction-sign { color: var(--danger); }
+    .transaction-sign { font-weight: 1000; font-size: 12px; }
+    .transaction-destination { color: var(--muted); font-size: 9px; }
+    .transaction-empty {
+      padding: 30px 14px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .player-live-score {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border: 1px solid rgba(251,191,36,.30);
+      border-radius: 11px;
+      background: rgba(251,191,36,.065);
+    }
+    .player-live-score-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .player-live-score-status {
+      color: #fde68a;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .player-live-score-game {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+      gap: 9px;
+      align-items: center;
+    }
+    .player-live-score-team {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .player-live-score-team.right { text-align: right; }
+    .player-live-score-team.player-team { color: var(--text); }
+    .player-live-score-num {
+      color: #fde68a;
+      font-size: 20px;
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 640px) {
+      .transaction-controls { grid-template-columns: 1fr; }
+      .transaction-card-head { flex-direction: column; }
+      .transaction-meta { text-align: left; }
+    }
+
     /* ===== V2.0 waiver wire / free agents ===== */
     .waiver-panel { margin-top: 0; }
     .waiver-head-copy { min-width: 0; }
@@ -1465,6 +1612,7 @@
     <nav class="tabs" aria-label="Dashboard sections">
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
+      <button class="tab-btn" data-tab="transactions">Transactions</button>
       <button class="tab-btn" data-tab="waivers">Waivers</button>
       <button class="tab-btn" data-tab="projections">Projections</button>
       <button class="tab-btn" data-tab="rosters">Rosters</button>
@@ -1504,6 +1652,40 @@
         </div>
         <div class="empty" id="matchupsEmpty">Matchups will appear after an update.</div>
         <div class="matchup-grid" id="matchupGrid"></div>
+      </div>
+    </section>
+
+    <section id="transactions" class="tab">
+      <div class="panel transaction-panel">
+        <div class="panel-head">
+          <div>
+            <h2>League Transactions</h2>
+            <div class="small" id="transactionStatus">Adds, drops, waiver claims, trades, FAAB movement, and draft-pick movement from Sleeper.</div>
+          </div>
+          <span class="pill" id="transactionWeekPill">Week —</span>
+        </div>
+
+        <div class="transaction-controls">
+          <div class="field">
+            <label for="transactionWeek">Week</label>
+            <select id="transactionWeek"></select>
+          </div>
+          <div class="field">
+            <label for="transactionFilter">Type</label>
+            <select id="transactionFilter">
+              <option value="all">All Transactions</option>
+              <option value="trade">Trades</option>
+              <option value="waiver">Waiver Claims</option>
+              <option value="free_agent">Free-Agent Adds</option>
+              <option value="commissioner">Commissioner</option>
+            </select>
+          </div>
+          <button class="btn-secondary" id="loadTransactionsBtn" type="button" disabled>Load Week</button>
+        </div>
+
+        <div class="transaction-summary" id="transactionSummary">Refresh the league to load transactions.</div>
+        <div class="transaction-feed" id="transactionFeed"></div>
+        <div class="transaction-empty" id="transactionEmpty" hidden>No transactions match this view.</div>
       </div>
     </section>
 
@@ -1713,8 +1895,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.3.1';
+    const APP_VERSION = '2.4';
     const PATCH_NOTES = [
+      { version: '2.4', note: 'Added a responsive Transactions tab for weekly Sleeper activity and live NFL game scores inside player popups while a player\'s game is in progress.' },
       { version: '2.3.1', note: 'External projection sources now use their own projected stats first and fill only missing scored categories from Sleeper before applying the league scoring settings. The UI continues to show only each provider\'s final Brojees-adjusted score.' },
       { version: '2.3', note: 'Removed the limited sample projection source and replaced it with the free ESPN Fantasy projection feed through the Brojees Cloudflare Worker. Consensus now compares Sleeper + ESPN using this league\'s scoring settings.' },
       { version: '2.2', note: 'Prepared the external projection-source framework, secure Worker pattern, scoring-coverage notes, and improved external-stat normalization.' },
@@ -1758,6 +1941,14 @@
       waiverTableBody: document.getElementById('waiverTableBody'),
       waiverMobileList: document.getElementById('waiverMobileList'),
       waiverEmpty: document.getElementById('waiverEmpty'),
+      transactionStatus: document.getElementById('transactionStatus'),
+      transactionWeekPill: document.getElementById('transactionWeekPill'),
+      transactionWeek: document.getElementById('transactionWeek'),
+      transactionFilter: document.getElementById('transactionFilter'),
+      loadTransactionsBtn: document.getElementById('loadTransactionsBtn'),
+      transactionSummary: document.getElementById('transactionSummary'),
+      transactionFeed: document.getElementById('transactionFeed'),
+      transactionEmpty: document.getElementById('transactionEmpty'),
       multiProjectionStatus: document.getElementById('multiProjectionStatus'),
       multiProjectionWeekPill: document.getElementById('multiProjectionWeekPill'),
       projectionProviderSleeper: document.getElementById('projectionProviderSleeper'),
@@ -1798,7 +1989,11 @@
       lastFetchAt: 0,
       isRefreshing: false,
       activePlayerId: null,
+      activePlayerStats: null,
       playerStatsCache: new Map(),
+      transactionWeek: null,
+      transactionRows: [],
+      transactionFilter: 'all',
       waiverPosition: 'ALL',
       waiverSortKey: 'top',
       waiverSortDir: 'desc',
@@ -2065,6 +2260,34 @@
       return items.map(([key, value]) => `<div class="player-bio-item"><div class="player-bio-key">${escapeHtml(key)}</div><div class="player-bio-value">${escapeHtml(value)}</div></div>`).join('');
     }
 
+    function livePlayerGameScoreHtml(playerId, data = app.data) {
+      const p = playerFromId(playerId);
+      const info = playerGameInfo(playerId, data);
+      const game = espnGameForTeam(p?.team, data);
+      if (info?.key !== 'live' || !game) return '';
+
+      const home = normalizeNflTeam(game.home);
+      const away = normalizeNflTeam(game.away);
+      const playerTeam = normalizeNflTeam(p?.team);
+      const homeScore = game.home_score ?? '—';
+      const awayScore = game.away_score ?? '—';
+      const status = game.status_detail ||
+        [Number(game.period) ? `Q${game.period}` : '', game.display_clock || ''].filter(Boolean).join(' · ') ||
+        'Live';
+
+      return `<div class="player-live-score">
+        <div class="player-live-score-head">
+          <span class="game-status-badge live">LIVE</span>
+          <span class="player-live-score-status">${escapeHtml(status)}</span>
+        </div>
+        <div class="player-live-score-game">
+          <div class="player-live-score-team ${away === playerTeam ? 'player-team' : ''}">${escapeHtml(away || 'Away')}</div>
+          <div class="player-live-score-num">${escapeHtml(awayScore)} – ${escapeHtml(homeScore)}</div>
+          <div class="player-live-score-team right ${home === playerTeam ? 'player-team' : ''}">${escapeHtml(home || 'Home')}</div>
+        </div>
+      </div>`;
+    }
+
     function renderPlayerModalBody(playerId, actualStats = null) {
       const data = app.data;
       const p = playerFromId(playerId);
@@ -2098,6 +2321,7 @@
         <section class="player-modal-section">
           <div class="player-modal-section-title">Game</div>
           <div class="player-game-strip">${gameStatusBadge(gameInfo)} <strong>${escapeHtml(opponent || gameInfo.label)}</strong> ${kickoff.display ? `<span>${escapeHtml(kickoff.display)}</span>` : ''} ${rosterCtx ? `<span>Fantasy roster: <strong>${escapeHtml(rosterCtx.team_name)}</strong></span>` : '<span>Unrostered</span>'}</div>
+          <div id="playerLiveGameScore">${livePlayerGameScoreHtml(playerId, data)}</div>
         </section>
         <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p)}</div></section>
         <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
@@ -2106,6 +2330,7 @@
     async function openPlayerModal(playerId) {
       if (!app.data || !playerId) return;
       app.activePlayerId = String(playerId);
+      app.activePlayerStats = null;
       const p = playerFromId(playerId);
       els.playerModalName.textContent = p.full_name || 'Player';
       els.playerModalSubtitle.textContent = [p.team, p.position, p.injury_status].filter(Boolean).join(' · ');
@@ -2120,12 +2345,14 @@
       requestAnimationFrame(() => els.playerModalClose.focus());
       const stats = await fetchPlayerWeekStats(playerId, app.data);
       if (String(app.activePlayerId) !== String(playerId)) return;
-      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, stats);
+      app.activePlayerStats = stats || {};
+      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, app.activePlayerStats);
     }
 
     function closePlayerModal() {
       if (!els.playerModalBackdrop.classList.contains('open')) return;
       app.activePlayerId = null;
+      app.activePlayerStats = null;
       els.playerModalBackdrop.classList.remove('open');
       els.playerModalBackdrop.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
@@ -2136,7 +2363,8 @@
       if (statsContainer) statsContainer.innerHTML = '<div class="player-modal-loading">Refreshing weekly stats…</div>';
       const stats = await fetchPlayerWeekStats(playerId, app.data, { force: true });
       if (String(app.activePlayerId) !== String(playerId)) return;
-      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, stats);
+      app.activePlayerStats = stats || {};
+      els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, app.activePlayerStats);
     }
 
     function renderPlayerRow(playerId, slot = '') {
@@ -2451,13 +2679,17 @@
       return (raw?.events || []).map(event => {
         const competition = event?.competitions?.[0] || {};
         const competitors = competition?.competitors || [];
-        const home = competitors.find(c => c?.homeAway === 'home')?.team?.abbreviation || null;
-        const away = competitors.find(c => c?.homeAway === 'away')?.team?.abbreviation || null;
+        const homeCompetitor = competitors.find(c => c?.homeAway === 'home') || null;
+        const awayCompetitor = competitors.find(c => c?.homeAway === 'away') || null;
+        const home = homeCompetitor?.team?.abbreviation || null;
+        const away = awayCompetitor?.team?.abbreviation || null;
         return {
           event_id: event?.id ?? null,
           date: event?.date ?? competition?.date ?? null,
           home: normalizeNflTeam(home),
           away: normalizeNflTeam(away),
+          home_score: homeCompetitor?.score ?? null,
+          away_score: awayCompetitor?.score ?? null,
           status: competition?.status?.type?.name ?? event?.status?.type?.name ?? null,
           status_state: competition?.status?.type?.state ?? event?.status?.type?.state ?? null,
           status_detail: competition?.status?.type?.shortDetail ?? event?.status?.type?.shortDetail ?? null,
@@ -3888,6 +4120,8 @@
         ]);
         app.data.matchups = matchups;
         app.data.transactions = transactions;
+        app.transactionWeek = week;
+        app.transactionRows = Array.isArray(transactions) ? transactions : [];
         app.data.projections = projections || {};
         app.data.espnSchedule = espnSchedule || [];
         app.data.selectedWeek = week;
@@ -3897,6 +4131,7 @@
         );
         app.originalProjectionSnapshot = app.data.originalProjectionSnapshot;
         renderMatchups(app.data);
+        renderTransactions(app.data);
         renderWaivers(app.data);
         app.exportSnapshot = buildExport(app.data);
         els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
@@ -3906,6 +4141,165 @@
       } finally {
         els.loadWeekBtn.disabled = false;
         els.loadWeekBtn.textContent = 'Load Week';
+      }
+    }
+
+    function transactionRosterName(rosterId, data = app.data) {
+      const roster = (data?.rosters || []).find(r => Number(r.roster_id) === Number(rosterId));
+      if (!roster) return `Roster ${rosterId}`;
+      return teamName(ownerForRoster(roster, data?.users || []), roster);
+    }
+
+    function transactionCreatedDate(value) {
+      let ts = Number(value);
+      if (!Number.isFinite(ts) || ts <= 0) return null;
+      if (ts < 1e12) ts *= 1000;
+      const d = new Date(ts);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function transactionTypeLabel(type) {
+      const map = {
+        trade: 'Trade',
+        waiver: 'Waiver Claim',
+        free_agent: 'Free Agent',
+        commissioner: 'Commissioner'
+      };
+      return map[String(type || '').toLowerCase()] || prettyKey(type || 'Transaction');
+    }
+
+    function transactionPlayerChip(playerId, rosterId, kind, data = app.data) {
+      const p = playerFromId(playerId);
+      const destination = rosterId !== null && rosterId !== undefined
+        ? transactionRosterName(rosterId, data)
+        : '';
+      const sign = kind === 'add' ? '+' : '−';
+      return `<span class="transaction-player ${kind}" data-player-id="${escapeHtml(playerId)}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.full_name)} player details">
+        <span class="transaction-sign">${sign}</span>
+        <span>${escapeHtml(p.full_name)}</span>
+        <span class="transaction-destination">${destination ? `${kind === 'add' ? '→' : 'from'} ${escapeHtml(destination)}` : ''}</span>
+      </span>`;
+    }
+
+    function transactionDraftPickChip(pick, data = app.data) {
+      const season = pick?.season ?? '—';
+      const round = pick?.round ?? '—';
+      const ownerId = pick?.owner_id ?? pick?.roster_id ?? null;
+      const previousId = pick?.previous_owner_id ?? null;
+      const owner = ownerId !== null ? transactionRosterName(ownerId, data) : '';
+      const previous = previousId !== null ? transactionRosterName(previousId, data) : '';
+      const move = previous && owner && previous !== owner ? `${previous} → ${owner}` : owner;
+      return `<span class="transaction-pick">${escapeHtml(`${season} Round ${round}`)}${move ? `<span class="transaction-destination">${escapeHtml(move)}</span>` : ''}</span>`;
+    }
+
+    function transactionFaabChips(tx, data = app.data) {
+      const chips = [];
+      const bid = Number(tx?.settings?.waiver_bid);
+      if (Number.isFinite(bid) && bid > 0) {
+        const targetRoster = Object.values(tx?.adds || {})[0] ?? tx?.roster_ids?.[0] ?? null;
+        const team = targetRoster !== null ? transactionRosterName(targetRoster, data) : '';
+        chips.push(`<span class="transaction-faab">$${bid} FAAB${team ? `<span class="transaction-destination">${escapeHtml(team)}</span>` : ''}</span>`);
+      }
+      for (const item of tx?.waiver_budget || []) {
+        const amount = Number(item?.amount);
+        if (!Number.isFinite(amount) || amount === 0) continue;
+        const sender = item?.sender !== undefined ? transactionRosterName(item.sender, data) : '';
+        const receiver = item?.receiver !== undefined ? transactionRosterName(item.receiver, data) : '';
+        chips.push(`<span class="transaction-faab">$${Math.abs(amount)} FAAB<span class="transaction-destination">${escapeHtml([sender, receiver].filter(Boolean).join(' → '))}</span></span>`);
+      }
+      return chips;
+    }
+
+    function transactionCardHtml(tx, data = app.data) {
+      const type = String(tx?.type || 'transaction').toLowerCase();
+      const rosterIds = [...new Set((tx?.roster_ids || []).map(Number).filter(Number.isFinite))];
+      const teams = rosterIds.map(id => transactionRosterName(id, data));
+      const created = transactionCreatedDate(tx?.created);
+      const status = prettyKey(tx?.status || 'complete');
+      const adds = Object.entries(tx?.adds || {});
+      const drops = Object.entries(tx?.drops || {});
+      const picks = Array.isArray(tx?.draft_picks) ? tx.draft_picks : [];
+      const faab = transactionFaabChips(tx, data);
+
+      const sections = [];
+      if (adds.length) sections.push(`<div><div class="transaction-section-label">${type === 'trade' ? 'Acquired' : 'Added'}</div><div class="transaction-items">${adds.map(([id, rosterId]) => transactionPlayerChip(id, rosterId, 'add', data)).join('')}</div></div>`);
+      if (drops.length) sections.push(`<div><div class="transaction-section-label">${type === 'trade' ? 'Sent / Removed' : 'Dropped'}</div><div class="transaction-items">${drops.map(([id, rosterId]) => transactionPlayerChip(id, rosterId, 'drop', data)).join('')}</div></div>`);
+      if (picks.length) sections.push(`<div><div class="transaction-section-label">Draft Picks</div><div class="transaction-items">${picks.map(p => transactionDraftPickChip(p, data)).join('')}</div></div>`);
+      if (faab.length) sections.push(`<div><div class="transaction-section-label">FAAB</div><div class="transaction-items">${faab.join('')}</div></div>`);
+      if (!sections.length) sections.push('<div class="small">No player, pick, or FAAB details were supplied for this transaction.</div>');
+
+      return `<article class="transaction-card">
+        <div class="transaction-card-head">
+          <div>
+            <div class="transaction-type-row">
+              <span class="transaction-type ${escapeHtml(type)}">${escapeHtml(transactionTypeLabel(type))}</span>
+              <span class="transaction-teams">${escapeHtml(teams.join(' ↔ ') || 'League transaction')}</span>
+            </div>
+          </div>
+          <div class="transaction-meta">${escapeHtml(status)}${created ? `<br>${escapeHtml(created.toLocaleString())}` : ''}</div>
+        </div>
+        <div class="transaction-card-body">${sections.join('')}</div>
+      </article>`;
+    }
+
+    function ensureTransactionWeekOptions(data = app.data) {
+      if (!els.transactionWeek || !data) return;
+      const current = Math.max(1, Number(data?.state?.week || data?.state?.leg || data?.selectedWeek || 1));
+      const maxWeek = Math.max(18, current);
+      const desired = Number(app.transactionWeek || data?.selectedWeek || current);
+      const existing = [...els.transactionWeek.options].map(o => Number(o.value));
+      if (existing.length !== maxWeek || existing[0] !== 1 || existing[existing.length - 1] !== maxWeek) {
+        els.transactionWeek.innerHTML = Array.from({length:maxWeek}, (_,i) => `<option value="${i+1}">Week ${i+1}</option>`).join('');
+      }
+      els.transactionWeek.value = String(Math.max(1, Math.min(maxWeek, desired)));
+    }
+
+    function renderTransactions(data = app.data) {
+      if (!data || !els.transactionFeed) return;
+      const selectedWeek = Number(data?.selectedWeek || data?.state?.week || data?.state?.leg || 1);
+
+      if (!Number.isFinite(Number(app.transactionWeek))) {
+        app.transactionWeek = selectedWeek;
+        app.transactionRows = Array.isArray(data.transactions) ? data.transactions : [];
+      } else if (Number(app.transactionWeek) === selectedWeek) {
+        app.transactionRows = Array.isArray(data.transactions) ? data.transactions : [];
+      }
+
+      ensureTransactionWeekOptions(data);
+      const week = Number(app.transactionWeek || selectedWeek);
+      const filter = els.transactionFilter?.value || app.transactionFilter || 'all';
+      app.transactionFilter = filter;
+
+      let rows = [...(app.transactionRows || [])];
+      if (filter !== 'all') rows = rows.filter(tx => String(tx?.type || '').toLowerCase() === filter);
+      rows.sort((a,b) => Number(b?.created || 0) - Number(a?.created || 0));
+
+      els.transactionWeekPill.textContent = `Week ${week}`;
+      els.transactionStatus.textContent = `Sleeper league activity for Week ${week}. Player names open the same player detail view used elsewhere in Brojees.`;
+      els.transactionSummary.innerHTML =
+        `<strong>${rows.length}</strong> shown · <strong>${(app.transactionRows || []).length}</strong> total Week ${week} transaction${(app.transactionRows || []).length === 1 ? '' : 's'} · ${filter === 'all' ? 'All transaction types' : escapeHtml(transactionTypeLabel(filter))}`;
+
+      els.transactionFeed.innerHTML = rows.map(tx => transactionCardHtml(tx, data)).join('');
+      els.transactionEmpty.hidden = rows.length > 0;
+      els.loadTransactionsBtn.disabled = false;
+    }
+
+    async function loadTransactionWeek() {
+      if (!app.data) return;
+      const week = Math.max(1, Math.min(18, Number(els.transactionWeek.value || app.data.selectedWeek || 1)));
+      const leagueId = app.data.league.league_id;
+      els.loadTransactionsBtn.disabled = true;
+      els.loadTransactionsBtn.textContent = 'Loading…';
+      try {
+        const transactions = await fetchJson(`${API}/league/${leagueId}/transactions/${week}`).catch(() => []);
+        app.transactionWeek = week;
+        app.transactionRows = Array.isArray(transactions) ? transactions : [];
+        renderTransactions(app.data);
+      } catch (err) {
+        showNotice(`Could not load Week ${week} transactions: ${err.message}`, 'error');
+      } finally {
+        els.loadTransactionsBtn.disabled = false;
+        els.loadTransactionsBtn.textContent = 'Load Week';
       }
     }
 
@@ -3980,6 +4374,7 @@
       renderTeamSelector(data);
       renderOverview(data);
       renderMatchups(data);
+      renderTransactions(data);
       renderWaivers(data);
       resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
@@ -4044,7 +4439,10 @@
         app.data = data;
         renderAll(data);
         if (app.activePlayerId && els.playerModalBackdrop.classList.contains('open')) {
-          els.playerModalBody.innerHTML = renderPlayerModalBody(app.activePlayerId, {});
+          els.playerModalBody.innerHTML = renderPlayerModalBody(
+            app.activePlayerId,
+            app.activePlayerStats === null ? null : app.activePlayerStats
+          );
         }
         await silentlyUpdateAuthorizedSnapshot(app.exportSnapshot);
         const minutes = Number(els.autoRefresh.value || 0);
@@ -4111,6 +4509,12 @@
 
         app.data = data;
         renderAll(data);
+        if (app.activePlayerId && els.playerModalBackdrop.classList.contains('open')) {
+          els.playerModalBody.innerHTML = renderPlayerModalBody(
+            app.activePlayerId,
+            app.activePlayerStats === null ? null : app.activePlayerStats
+          );
+        }
 
         const snapshot = buildExport(data);
         app.exportSnapshot = snapshot;
@@ -4165,13 +4569,13 @@
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card');
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player');
       if (playerRow) openPlayerModal(playerRow.dataset.playerId);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card');
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player');
         if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId); }
       }
     });
@@ -4266,6 +4670,11 @@
     els.updateBtn.addEventListener('click', updateAndSave);
     els.exportBtn.addEventListener('click', exportForChatGPT);
     els.loadWeekBtn.addEventListener('click', loadSelectedWeek);
+    els.loadTransactionsBtn.addEventListener('click', loadTransactionWeek);
+    els.transactionFilter.addEventListener('change', () => {
+      app.transactionFilter = els.transactionFilter.value || 'all';
+      if (app.data) renderTransactions(app.data);
+    });
 
     els.copyBtn.addEventListener('click', async () => {
       if (!app.exportSnapshot) return;
@@ -4292,6 +4701,10 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
+
+        if (btn.dataset.tab === 'transactions') {
+          if (app.data) renderTransactions(app.data);
+        }
 
         if (btn.dataset.tab === 'projections') {
           if (!app.data) {
