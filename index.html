@@ -486,24 +486,26 @@
       overflow: hidden;
       box-shadow: 0 10px 28px rgba(0,0,0,.12);
     }
-    .patch-notes summary {
+    .patch-notes-header,
+    .patch-history > summary {
       list-style: none;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       padding: 12px 14px;
-      user-select: none;
     }
-    .patch-notes summary::-webkit-details-marker { display: none; }
-    .patch-notes summary::after {
+    .patch-history { border-top: 1px solid var(--line); }
+    .patch-history > summary { cursor: pointer; user-select: none; }
+    .patch-history > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+    .patch-history > summary::-webkit-details-marker { display: none; }
+    .patch-history > summary::after {
       content: "▾";
       color: var(--muted);
       font-size: 13px;
       transition: transform .16s ease;
     }
-    .patch-notes[open] summary::after { transform: rotate(180deg); }
+    .patch-history[open] > summary::after { transform: rotate(180deg); }
     .patch-notes-title {
       display: flex;
       align-items: center;
@@ -1895,8 +1897,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.5';
+    const APP_VERSION = '2.5.1';
     const PATCH_NOTES = [
+      { version: '2.5.1', note: 'The newest patch note stays visible on Overview. Previous versions are tucked into an expandable patch note history.' },
       { version: '2.5', note: 'Replaced depth-chart display with season-to-date fantasy position rank, calculated from Sleeper season stats using this league\'s scoring settings. Position rank now appears on waivers, mobile cards, player popups, and JSON exports.' },
       { version: '2.4.1', note: 'Player popups now calculate current-week actual fantasy points from Sleeper stat lines for unrostered/waiver players, using this league\'s scoring settings. Rostered players still use Sleeper matchup points when available.' },
       { version: '2.4', note: 'Added a responsive Transactions tab for weekly Sleeper activity and live NFL game scores inside player popups while a player\'s game is in progress.' },
@@ -4001,23 +4004,30 @@
     }
 
     function patchNotesHtml() {
-      const rows = PATCH_NOTES.map((item, index) => `
+      const [latest, ...history] = PATCH_NOTES;
+      if (!latest) return '';
+      const row = item => `
         <div class="patch-note-row">
           <div class="patch-version">V${escapeHtml(item.version)}</div>
           <div class="patch-copy">${escapeHtml(item.note)}</div>
-        </div>`).join('');
+        </div>`;
 
       return `
-        <details class="patch-notes" open>
-          <summary>
+        <section class="patch-notes" aria-label="Patch notes">
+          <div class="patch-notes-header">
             <div class="patch-notes-title">
               <span>What's New</span>
-              <span class="version-badge">V${escapeHtml(APP_VERSION)}</span>
+              <span class="version-badge">V${escapeHtml(latest.version)}</span>
             </div>
-            <span class="small">Patch notes</span>
-          </summary>
-          <div class="patch-notes-body">${rows}</div>
-        </details>`;
+            <span class="small">Latest update</span>
+          </div>
+          <div class="patch-notes-body">${row(latest)}</div>
+          ${history.length ? `
+            <details class="patch-history">
+              <summary><span class="small">Patch note history (${history.length} previous versions)</span></summary>
+              <div class="patch-notes-body">${history.map(row).join('')}</div>
+            </details>` : ''}
+        </section>`;
     }
 
     function renderOverview(data) {
