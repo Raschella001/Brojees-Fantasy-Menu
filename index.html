@@ -1643,6 +1643,29 @@
     .standings-view-tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     .standings-view-panel { min-width: 0; }
     @media (max-width: 600px) { .standings-view-tabs [role="tab"] { flex: 1 1 140px; white-space: normal; } }
+    .projected-standings-controls { display: grid; grid-template-columns: minmax(160px,2fr) minmax(150px,1.4fr) minmax(130px,1fr) auto; gap: 12px; align-items: end; margin: 12px 0; }
+    .projected-standings-controls > div { min-width: 0; }
+    .projected-standings-controls input, .projected-standings-controls select { width: 100%; min-width: 0; }
+    #liveStandingsPanel .waiver-summary { margin: 8px 0; font-size: 12px; }
+    .projected-standings-table { min-width: 720px; }
+    .projected-standings-table td:not(:nth-child(2)) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .projected-standings-table .team-lineup { border: 0; padding: 0; }
+    .projected-standings-table .team-lineup summary { display: flex; align-items: center; gap: 10px; list-style: none; padding: 0; font-size: inherit; color: inherit; }
+    .projected-standings-table .team-lineup summary::-webkit-details-marker { display: none; }
+    .projected-standings-table .team-lineup summary::after { content: '▾'; color: var(--muted); font-size: 10px; }
+    .projected-standings-table .team-lineup[open] summary::after { content: '▴'; }
+    .projected-standings-table .team-lineup summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .projected-team-detail { margin: 10px 0 0 44px; min-width: 190px; }
+    .projected-team-detail > .small { line-height: 1.5; }
+    .projected-result.W { color: var(--accent-2); }
+    .projected-result.L { color: #fca5a5; }
+    .projected-result { font-weight: 800; }
+    .projected-standing-row.score-changed .projected-pf { animation: forecast-flash 1.2s ease-out; }
+    .projected-standings-help { margin-top: 10px; }
+    .projected-standings-help summary { cursor: pointer; color: var(--muted); font-size: 11px; }
+    .projected-standings-help > div { margin-top: 6px; line-height: 1.5; }
+    @media (max-width: 850px) { .projected-standings-controls { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (prefers-reduced-motion: reduce) { .projected-standing-row.score-changed .projected-pf { animation: none; } }
   </style>
 </head>
 <body>
@@ -1722,20 +1745,17 @@
         </div>
         <div id="liveStandingsPanel" class="standings-view-panel" role="tabpanel" aria-labelledby="projectedStandingsTab" hidden>
           <div class="panel-head"><div class="small">Projected league rankings as this week's matchups unfold</div><span class="pill" id="standingsWeek">Current week</span></div>
-        <div class="leader-refresh-controls">
-          <div><label for="standingsLive">Live refresh</label><select id="standingsLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
-          <button id="standingsRefresh" class="btn-secondary" type="button">Refresh Standings</button>
-        </div>
-        <div id="standingsStatus" class="small" role="status">Refresh the league to load projected standings.</div>
-          <div class="team-forecast-note">Projected record = record entering this week + projected matchup result. Projected total PF = PF entering this week + live projected weekly score. Forecasts can change while games are in progress.</div>
-          <div class="team-leader-controls">
-            <div><label for="teamLeaderSearch">Search league teams</label><input id="teamLeaderSearch" type="search" placeholder="Team or opponent…" autocomplete="off"></div>
-            <div><label for="teamLeaderSort">Order teams by</label><select id="teamLeaderSort"><option value="standing">Projected standings</option><option value="pf">Projected total PF</option><option value="week">Live projected weekly score</option></select></div>
+          <div class="projected-standings-controls">
+            <div><label for="teamLeaderSearch">Search teams</label><input id="teamLeaderSearch" type="search" placeholder="Team or opponent…" autocomplete="off"></div>
+            <div><label for="teamLeaderSort">Sort</label><select id="teamLeaderSort"><option value="standing">Projected standings</option><option value="pf">Projected total PF</option><option value="week">Weekly projection</option></select></div>
+            <div><label for="standingsLive">Live refresh</label><select id="standingsLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
+            <button id="standingsRefresh" class="btn-secondary" type="button">Refresh Standings</button>
           </div>
+          <div id="standingsStatus" class="small" role="status">Refresh the league to load projected standings.</div>
           <div id="teamLeaderSummary" class="waiver-summary" role="status"></div>
           <div id="teamLeaderList"></div>
           <div id="teamLeaderEmpty" class="empty">Refresh the league to load Live Projected Standings.</div>
-          <div class="small">Live projections use the same model as Matchups: actual points earned + a share of the original projection for game time remaining. Ranking is a forecast; league-specific division or playoff seeding rules may differ.</div>
+          <details class="projected-standings-help"><summary>How projected standings work</summary><div class="small">Projected record = entering-week record + projected matchup result. Projected PF = entering-week PF + live projected weekly score. The Matchups model combines actual points with expected scoring for remaining game time. Division or playoff seeding rules may differ.</div></details>
         </div>
       </div>
     </section>
@@ -2037,8 +2057,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.7.2';
+    const APP_VERSION = '2.7.3';
     const PATCH_NOTES = [
+      { version: '2.7.3', note: 'Condensed Live Projected Standings into a table matching Current Standings, with team avatars, compact rows, projected record/PF, weekly projection, matchup result, and rank movement. Select a team to expand its baseline and lineup.' },
       { version: '2.7.2', note: 'Combined current standings and Live Projected Standings into one Overview card with tabs. Switching views preserves live controls, sorting, and expanded lineups.' },
       { version: '2.7.1', note: 'Moved the league team forecast to Overview as Live Projected Standings, with its own refresh controls. Stats Leaders now focuses on player scoring.' },
       { version: '2.7', note: 'Added a League Teams view inside Stats Leaders with live projected standings, entering-week and projected records/PF, projected matchup results, rank movement, and expandable starting lineups. Completed weeks are checked to avoid counting the current week twice.' },
@@ -4886,31 +4907,42 @@
       if (sort === 'week') rows = [...rows].sort((a,b) => (b.week_points ?? -Infinity) - (a.week_points ?? -Infinity) || a.name.localeCompare(b.name));
       els.teamLeaderSummary.textContent = hub.teamError ? `Team forecast unavailable: ${hub.teamError}${ready ? ' · Showing last successful forecast.' : ''}`
         : !ready ? 'Refresh the league to load the entering-week standings and live forecast.'
-        : `Week ${hub.teamData.selectedWeek} forecast · ${new Date(hub.teamLoadedAt).toLocaleTimeString()} · ${hub.teamComplete ? 'Ranked by projected win percentage, wins, then projected PF.' : 'Forecast incomplete: showing entering-week rank until all matchups and projections are available.'}${hub.teamMedian ? ' Includes the extra league-median result.' : ''}${hub.teamRegular === false ? ' Regular-season record stays fixed during postseason.' : ''}`;
+        : `Week ${hub.teamData.selectedWeek} forecast · ${new Date(hub.teamLoadedAt).toLocaleTimeString()} · ${hub.teamComplete ? 'Projected record → PF.' : 'Incomplete forecast · entering ranks shown.'}${hub.teamMedian ? ' Includes the extra league-median result.' : ''}${hub.teamRegular === false ? ' Regular-season record stays fixed during postseason.' : ''}`;
       const points = value => value === null ? '—' : Number(value).toFixed(2);
-      els.teamLeaderList.innerHTML = rows.map(row => {
-        const selected = String(row.roster_id) === String(els.myTeam.value);
-        const movement = row.rank === null ? 0 : row.entering_rank - row.rank;
-        const move = movement ? `<span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '<span class="small">—</span>';
-        const result = row.result ? `${row.matchup_final ? 'Final' : 'Projected'} ${row.result}` : row.opponent ? 'Awaiting projection' : 'No opponent';
-        const status = row.median_result ? `${result} · Median ${row.median_result}` : result;
-        const previous = hub.previousTeams?.[String(row.roster_id)];
-        const changed = previous && (previous.projected_pf !== row.projected_pf || teamRecordText(previous.projected) !== teamRecordText(row.projected));
-        return `<article class="team-leader-row${selected ? ' selected' : ''}${changed ? ' score-changed' : ''}">
-          <div class="team-rank"><strong>#${row.rank ?? row.entering_rank}</strong>${move}<span class="small">${row.rank === null ? 'Entering rank' : `Was #${row.entering_rank}`}</span></div>
-          <div class="team-leader-name"><strong>${escapeHtml(row.name)}</strong>${selected ? '<span class="pill me">YOUR TEAM</span>' : ''}<span class="small">${escapeHtml(status)}</span><span class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · ${points(row.week_points)} / ${points(row.opponent_points)}` : 'Matchup not available'}</span></div>
-          <div class="team-leader-metric"><span class="small">Record entering week</span><strong>${teamRecordText(row.entering)}</strong></div>
-          <div class="team-leader-metric"><span class="small">Projected record</span><strong>${row.record_ready ? teamRecordText(row.projected) : '—'}</strong></div>
-          <div class="team-leader-metric"><span class="small">PF entering week</span><strong>${points(row.entering.pf)}</strong></div>
-          <div class="team-leader-metric"><span class="small">Live projected week</span><strong>${points(row.week_points)}</strong><span class="small">Actual ${points(row.actual_points)}</span></div>
-          <div class="team-leader-metric forecast"><span class="small">Projected total PF</span><strong>${points(row.projected_pf)}</strong></div>
-          <details class="team-lineup" data-team-lineup="${row.roster_id}" ${hub.expandedTeams.has(String(row.roster_id)) ? 'open' : ''}><summary>View this week's starting lineup</summary><div>${((hub.teamData?.matchups || []).find(m => String(m.roster_id) === String(row.roster_id))?.starters || []).filter(id => id && String(id) !== '0').map(id => {
+      els.teamLeaderList.innerHTML = rows.length ? `<div class="table-wrap"><table class="projected-standings-table">
+        <thead><tr><th>#</th><th>Team</th><th title="Projected record after this week">Proj Record</th><th title="Projected total points for after this week">Proj PF</th><th title="Live projected matchup score this week">Week Proj</th><th>Proj Result</th><th title="Rank movement from entering this week">Proj Move</th></tr></thead>
+        <tbody>${rows.map(row => {
+          const selected = String(row.roster_id) === String(els.myTeam.value);
+          const roster = hub.teamData.rosters.find(r => String(r.roster_id) === String(row.roster_id));
+          const owner = roster ? ownerForRoster(roster, hub.teamData.users || []) : null;
+          const avatar = avatarUrl(owner);
+          const movement = row.rank === null ? 0 : row.entering_rank - row.rank;
+          const move = movement ? `<span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '<span class="small">—</span>';
+          const result = row.result ? `${row.matchup_final ? 'Final' : 'Projected'} ${row.result}` : row.opponent ? 'Awaiting projection' : 'No opponent';
+          const status = row.median_result ? `${result} · Median ${row.median_result}` : result;
+          const previous = hub.previousTeams?.[String(row.roster_id)];
+          const changed = previous && (previous.projected_pf !== row.projected_pf || teamRecordText(previous.projected) !== teamRecordText(row.projected));
+          const matchup = (hub.teamData.matchups || []).find(m => String(m.roster_id) === String(row.roster_id));
+          const lineup = (matchup?.starters || []).filter(id => id && String(id) !== '0').map(id => {
             const p = playerFromId(id);
-            const m = (hub.teamData.matchups || []).find(m => String(m.roster_id) === String(row.roster_id));
-            return `<button type="button" class="team-leader-player" data-player-id="${escapeHtml(id)}"><span>${escapeHtml(p.full_name)} · ${escapeHtml(p.position)}</span><span>${numberOrDash(adjustedPlayerProjection(m, id, hub.teamData),2)} live proj</span></button>`;
-          }).join('')}</div></details>
-        </article>`;
-      }).join('');
+            return `<button type="button" class="team-leader-player" data-player-id="${escapeHtml(id)}"><span>${escapeHtml(p.full_name)} · ${escapeHtml(p.position)}</span><span>${numberOrDash(adjustedPlayerProjection(matchup, id, hub.teamData),2)} live proj</span></button>`;
+          }).join('');
+          return `<tr class="projected-standing-row${changed ? ' score-changed' : ''}">
+            <td title="${row.rank === null ? 'Entering rank; forecast incomplete' : `Entering rank: #${row.entering_rank}`}">${row.rank ?? row.entering_rank}</td>
+            <td><details class="team-lineup" data-team-lineup="${row.roster_id}" ${hub.expandedTeams.has(String(row.roster_id)) ? 'open' : ''}>
+              <summary title="Expand team baseline and starting lineup"><div class="team-cell">
+                ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="">` : '<div class="avatar"></div>'}
+                <div><div class="team-name">${escapeHtml(row.name)} ${selected ? '<span class="pill me">SELECTED</span>' : ''}</div><div class="owner-name">${escapeHtml(owner?.display_name || owner?.username || `Roster ${row.roster_id}`)}</div></div>
+              </div></summary>
+              <div class="projected-team-detail"><div class="small">Entering week: ${teamRecordText(row.entering)} · PF ${points(row.entering.pf)} · Actual this week ${points(row.actual_points)}</div><div class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · Opponent live proj ${points(row.opponent_points)}` : 'No opponent available'}</div>${lineup || '<div class="small">No starters listed.</div>'}</div>
+            </details></td>
+            <td title="Entering week: ${teamRecordText(row.entering)}">${row.record_ready ? teamRecordText(row.projected) : '—'}</td>
+            <td class="projected-pf" title="Entering PF: ${points(row.entering.pf)}">${points(row.projected_pf)}</td>
+            <td title="Actual this week: ${points(row.actual_points)}">${points(row.week_points)}</td>
+            <td title="${escapeHtml(status)}${row.opponent ? ` vs ${escapeHtml(row.opponent)}` : ''}"><span class="projected-result ${row.result || ''}">${row.result || '—'}</span>${row.median_result ? `<span class="small"> / ${row.median_result}</span>` : ''}</td>
+            <td title="Entering rank: #${row.entering_rank}">${move}</td>
+          </tr>`;
+        }).join('')}</tbody></table></div>` : '';
       els.teamLeaderEmpty.hidden = Boolean(rows.length);
       els.teamLeaderEmpty.textContent = ready ? 'No teams match your search.' : 'Refresh the league to load Live Projected Standings.';
     }
