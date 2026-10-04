@@ -1592,6 +1592,57 @@
       .leader-score strong { font-size: 21px; }
       .leader-rank { font-size: 15px; }
     }
+    .leader-view-panel[hidden] { display: none !important; }
+    .leader-view-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .leader-refresh-controls { display: flex; gap: 12px; align-items: end; margin: 14px 0; }
+    .leader-refresh-controls select { width: 180px; }
+    .leader-toolbar { grid-template-columns: minmax(180px,2fr) repeat(3,minmax(110px,1fr)); }
+    .team-forecast-note { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 16px 0; }
+    .team-leader-controls { display: grid; grid-template-columns: minmax(160px,2fr) minmax(180px,1fr); gap: 12px; }
+    .team-leader-controls input, .team-leader-controls select { width: 100%; min-width: 0; }
+    .team-leader-row { display: grid; grid-template-columns: 68px minmax(180px,1.65fr) repeat(5,minmax(84px,1fr)); align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(19,26,43,.75); margin: 10px 0; }
+    .team-leader-row.selected { border-color: var(--accent); }
+    .team-rank, .team-leader-name, .team-leader-metric { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .team-rank strong { font-size: 22px; color: var(--accent-2); }
+    .team-leader-name strong { font-size: 14px; overflow-wrap: anywhere; }
+    .team-leader-name .pill { align-self: flex-start; }
+    .team-leader-name .small { overflow-wrap: anywhere; }
+    .team-leader-metric { font-variant-numeric: tabular-nums; }
+    .team-leader-metric strong { font-size: 17px; }
+    .team-leader-metric .small, .team-rank .small { font-size: 10px; }
+    .team-leader-metric.forecast strong, .team-rank-move.up { color: var(--accent-2); }
+    .team-rank-move.down { color: #fca5a5; }
+    .team-rank-move { font-size: 12px; font-weight: 800; }
+    .team-lineup { grid-column: 2 / -1; border-top: 1px solid var(--line); padding-top: 8px; }
+    .team-lineup summary { cursor: pointer; color: var(--muted); font-size: 11px; padding: 3px 0; }
+    .team-leader-player { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 9px; text-align: left; color: var(--text); background: rgba(10,16,29,.5); border: 1px solid var(--line); border-radius: 7px; font-size: 11px; margin-top: 6px; }
+    .team-leader-player > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+    .team-leader-player > span:last-child { white-space: nowrap; color: var(--accent-2); }
+    .score-changed .forecast strong { animation: forecast-flash 1.2s ease-out; }
+    @keyframes forecast-flash { from { color: #fff; } to { color: var(--accent-2); } }
+    @media (prefers-reduced-motion: reduce) { .score-changed .forecast strong { animation: none; } }
+    @media (max-width: 1100px) {
+      .team-leader-row { grid-template-columns: 56px repeat(5,minmax(0,1fr)); }
+      .team-leader-name { grid-column: 2 / -1; }
+      .team-leader-metric { grid-row: 2; }
+      .team-leader-metric:nth-of-type(3) { grid-column: 2; }
+    }
+    @media (max-width: 650px) {
+      .leader-toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .team-leader-controls { grid-template-columns: 1fr; }
+      .team-leader-row { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; padding: 14px; }
+      .team-rank { grid-column: 1; flex-direction: row; align-items: center; flex-wrap: wrap; }
+      .team-leader-name { grid-column: 1 / -1; }
+      .team-leader-metric { grid-row: auto; }
+      .team-leader-metric:nth-of-type(3) { grid-column: auto; }
+      .team-leader-metric.forecast { grid-column: 1 / -1; }
+      .team-lineup { grid-column: 1 / -1; }
+    }
+    .standings-view-panel[hidden] { display: none !important; }
+    .standings-view-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px; }
+    .standings-view-tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .standings-view-panel { min-width: 0; }
+    @media (max-width: 600px) { .standings-view-tabs [role="tab"] { flex: 1 1 140px; white-space: normal; } }
   </style>
 </head>
 <body>
@@ -1659,6 +1710,34 @@
         League data refreshes automatically while this page is open. Use <strong>Refresh League</strong> any time you want an immediate update.
       </div>
       <div id="overviewContent" hidden></div>
+      <div class="panel" id="overviewStandingsCard" aria-labelledby="overviewStandingsTitle">
+        <div class="panel-head"><h2 id="overviewStandingsTitle">League Standings &amp; Waivers</h2><span class="pill" id="standingsScoring">League scoring</span></div>
+        <div class="standings-view-tabs" role="tablist" aria-label="Standings views">
+          <button id="currentStandingsTab" class="waiver-pos-btn active" type="button" role="tab" aria-selected="true" aria-controls="currentStandingsPanel" tabindex="0" data-standings-view="current">Current Standings</button>
+          <button id="projectedStandingsTab" class="waiver-pos-btn" type="button" role="tab" aria-selected="false" aria-controls="liveStandingsPanel" tabindex="-1" data-standings-view="projected">Live Projected Standings</button>
+        </div>
+        <div id="currentStandingsPanel" class="standings-view-panel" role="tabpanel" aria-labelledby="currentStandingsTab">
+          <div id="currentStandingsEmpty" class="empty">Refresh the league to load current standings.</div>
+          <div id="currentStandingsContent"></div>
+        </div>
+        <div id="liveStandingsPanel" class="standings-view-panel" role="tabpanel" aria-labelledby="projectedStandingsTab" hidden>
+          <div class="panel-head"><div class="small">Projected league rankings as this week's matchups unfold</div><span class="pill" id="standingsWeek">Current week</span></div>
+        <div class="leader-refresh-controls">
+          <div><label for="standingsLive">Live refresh</label><select id="standingsLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
+          <button id="standingsRefresh" class="btn-secondary" type="button">Refresh Standings</button>
+        </div>
+        <div id="standingsStatus" class="small" role="status">Refresh the league to load projected standings.</div>
+          <div class="team-forecast-note">Projected record = record entering this week + projected matchup result. Projected total PF = PF entering this week + live projected weekly score. Forecasts can change while games are in progress.</div>
+          <div class="team-leader-controls">
+            <div><label for="teamLeaderSearch">Search league teams</label><input id="teamLeaderSearch" type="search" placeholder="Team or opponent…" autocomplete="off"></div>
+            <div><label for="teamLeaderSort">Order teams by</label><select id="teamLeaderSort"><option value="standing">Projected standings</option><option value="pf">Projected total PF</option><option value="week">Live projected weekly score</option></select></div>
+          </div>
+          <div id="teamLeaderSummary" class="waiver-summary" role="status"></div>
+          <div id="teamLeaderList"></div>
+          <div id="teamLeaderEmpty" class="empty">Refresh the league to load Live Projected Standings.</div>
+          <div class="small">Live projections use the same model as Matchups: actual points earned + a share of the original projection for game time remaining. Ranking is a forecast; league-specific division or playoff seeding rules may differ.</div>
+        </div>
+      </div>
     </section>
 
     <section id="matchups" class="tab">
@@ -1726,23 +1805,29 @@
     <section id="leaders" class="tab">
       <div class="panel">
         <div class="panel-head">
-          <div><h2>Weekly Stats Leaders</h2><div class="small">Live actual fantasy scoring · Your league settings · All NFL players, including free agents</div></div>
+          <div><h2>Live Stats Leaders</h2><div class="small">Live player scoring · Your league settings</div></div>
           <span class="pill" id="leaderWeek">Current week</span>
         </div>
+        <div class="leader-refresh-controls">
+          <div><label for="leaderLive">Live refresh</label><select id="leaderLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
+          <button id="leaderRefresh" class="btn-secondary" type="button">Refresh Scores</button>
+        </div>
+        <div id="leaderStatus" class="small" role="status">Refresh the league to load current-week scores.</div>
+        <div id="leaderPlayersPanel" class="leader-view-panel">
         <div class="leader-toolbar">
           <div><label for="leaderSearch">Search players / teams</label><input id="leaderSearch" type="search" placeholder="Player, NFL team, fantasy team…" autocomplete="off"></div>
           <div><label for="leaderScope">Players</label><select id="leaderScope"><option value="all">All players</option><option value="rostered">Rostered in this league</option><option value="available">Free agents</option><option value="mine">My team</option></select></div>
           <div><label for="leaderGame">Games</label><select id="leaderGame"><option value="all">All games</option><option value="live">Live now</option><option value="final">Final</option></select></div>
           <div><label for="leaderLimit">Show</label><select id="leaderLimit"><option value="25">Top 25</option><option value="50" selected>Top 50</option><option value="100">Top 100</option><option value="0">All players</option></select></div>
-          <div><label for="leaderLive">Live refresh</label><select id="leaderLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
-          <button id="leaderRefresh" class="btn-secondary" type="button">Refresh Scores</button>
         </div>
         <div class="waiver-filter-row" aria-label="Stats leader positions"><button class="waiver-pos-btn active" type="button" data-leader-position="ALL" aria-pressed="true">All positions</button><button class="waiver-pos-btn" type="button" data-leader-position="QB" aria-pressed="false">QB</button><button class="waiver-pos-btn" type="button" data-leader-position="RB" aria-pressed="false">RB</button><button class="waiver-pos-btn" type="button" data-leader-position="WR" aria-pressed="false">WR</button><button class="waiver-pos-btn" type="button" data-leader-position="TE" aria-pressed="false">TE</button><button class="waiver-pos-btn" type="button" data-leader-position="K" aria-pressed="false">K</button><button class="waiver-pos-btn" type="button" data-leader-position="DEF" aria-pressed="false">D/ST</button><button class="waiver-pos-btn" type="button" data-leader-position="IDP" aria-pressed="false">IDP</button></div>
-        <div id="leaderStatus" class="small" role="status">Refresh the league to load current-week scores.</div>
         <div id="leaderSummary" class="waiver-summary"></div>
         <div class="leader-list-head" aria-hidden="true"><span>Rank</span><span>Player / Stat line</span><span>Game</span><span>Fantasy pts</span></div>
         <div id="leaderList" class="leader-list"></div>
         <div id="leaderEmpty" class="empty">Refresh the league, then open Stats Leaders.</div>
+        </div>
+
+
       </div>
     </section>
 
@@ -1952,8 +2037,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.6';
+    const APP_VERSION = '2.7.2';
     const PATCH_NOTES = [
+      { version: '2.7.2', note: 'Combined current standings and Live Projected Standings into one Overview card with tabs. Switching views preserves live controls, sorting, and expanded lineups.' },
+      { version: '2.7.1', note: 'Moved the league team forecast to Overview as Live Projected Standings, with its own refresh controls. Stats Leaders now focuses on player scoring.' },
+      { version: '2.7', note: 'Added a League Teams view inside Stats Leaders with live projected standings, entering-week and projected records/PF, projected matchup results, rank movement, and expandable starting lineups. Completed weeks are checked to avoid counting the current week twice.' },
       { version: '2.6', note: 'Added interactive current-week Stats Leaders with all-player and position rankings, league scoring, roster and game filters, player cards, score changes, and live refresh every 30 seconds while the tab is open.' },
       { version: '2.5.1', note: 'The newest patch note stays visible on Overview. Previous versions are tucked into an expandable patch note history.' },
       { version: '2.5', note: 'Replaced depth-chart display with season-to-date fantasy position rank, calculated from Sleeper season stats using this league\'s scoring settings. Position rank now appears on waivers, mobile cards, player popups, and JSON exports.' },
@@ -1973,6 +2061,23 @@
     ];
 
     const els = {
+      currentStandingsPanel: document.getElementById('currentStandingsPanel'),
+      currentStandingsContent: document.getElementById('currentStandingsContent'),
+      currentStandingsEmpty: document.getElementById('currentStandingsEmpty'),
+      currentStandingsTab: document.getElementById('currentStandingsTab'),
+      projectedStandingsTab: document.getElementById('projectedStandingsTab'),
+      standingsScoring: document.getElementById('standingsScoring'),
+      leaderPlayersPanel: document.getElementById('leaderPlayersPanel'),
+      liveStandingsPanel: document.getElementById('liveStandingsPanel'),
+      standingsWeek: document.getElementById('standingsWeek'),
+      standingsLive: document.getElementById('standingsLive'),
+      standingsRefresh: document.getElementById('standingsRefresh'),
+      standingsStatus: document.getElementById('standingsStatus'),
+      teamLeaderSearch: document.getElementById('teamLeaderSearch'),
+      teamLeaderSort: document.getElementById('teamLeaderSort'),
+      teamLeaderSummary: document.getElementById('teamLeaderSummary'),
+      teamLeaderList: document.getElementById('teamLeaderList'),
+      teamLeaderEmpty: document.getElementById('teamLeaderEmpty'),
       leaderStatus: document.getElementById('leaderStatus'),
       leaderWeek: document.getElementById('leaderWeek'),
       leaderSearch: document.getElementById('leaderSearch'),
@@ -2051,6 +2156,7 @@
     };
 
     const app = {
+      standingsView: 'current',
       data: null,
       playerMap: {},
       projections: {},
@@ -2062,7 +2168,8 @@
       isRefreshing: false,
       activePlayerId: null,
       activePlayerData: null,
-      statsLeaders: { position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
+      teamLeaderSeeds: new Map(),
+      statsLeaders: { expandedTeams: new Set(), teamRows: [], teamData: null, teamLoadedAt: 0, teamError: '', previousTeams: {}, position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
       activePlayerStats: null,
       playerStatsCache: new Map(),
       transactionWeek: null,
@@ -2698,7 +2805,7 @@
       return out;
     }
 
-    async function fetchWeekProjections(season, week) {
+    async function fetchWeekProjections(season, week, loader = fetchJson) {
       const positions = ['QB','RB','WR','TE','K','DEF'];
       const modernQuery = positions.map(p => `position[]=${encodeURIComponent(p)}`).join('&');
       const urls = [
@@ -2708,7 +2815,7 @@
       let lastError = null;
       for (const url of urls) {
         try {
-          const raw = await fetchJson(url);
+          const raw = await loader(url);
           const normalized = normalizeProjections(raw);
           if (Object.keys(normalized).length) return normalized;
         } catch (err) {
@@ -4102,6 +4209,24 @@
         </section>`;
     }
 
+    function renderStandingsView() {
+      const projected = app.standingsView === 'projected';
+      els.currentStandingsPanel.hidden = projected;
+      els.liveStandingsPanel.hidden = !projected;
+      [els.currentStandingsTab, els.projectedStandingsTab].forEach(btn => {
+        const active = btn.dataset.standingsView === app.standingsView;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+        btn.setAttribute('tabindex', active ? '0' : '-1');
+      });
+    }
+
+    function setStandingsView(view) {
+      app.standingsView = view === 'projected' ? 'projected' : 'current';
+      renderStandingsView();
+      if (app.standingsView === 'projected') loadStatsLeaders({ force: false });
+    }
+
     function renderOverview(data) {
       const { league, rosters, users, state } = data;
       const faabBudget = Number(league.settings?.waiver_budget ?? 0);
@@ -4155,16 +4280,18 @@
         <div class="card-grid">
           ${cards.map(c => `<div class="stat-card"><div class="stat-label">${escapeHtml(c[0])}</div><div class="stat-value">${escapeHtml(c[1])}</div><div class="stat-sub">${escapeHtml(c[2])}</div></div>`).join('')}
         </div>
-        ${patchNotesHtml()}
-        <div class="panel">
-          <div class="panel-head"><h2>Standings & Waivers</h2><span class="pill">${escapeHtml(scoring)}</span></div>
+        ${patchNotesHtml()}`;
+
+      els.currentStandingsContent.innerHTML = `
           <div class="table-wrap">
             <table>
               <thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>${faabBudget ? 'FAAB Left' : 'Waiver'}</th><th>Moves</th></tr></thead>
               <tbody>${rows}</tbody>
             </table>
-          </div>
-        </div>`;
+          </div>`;
+      els.currentStandingsEmpty.hidden = true;
+      els.standingsScoring.textContent = scoring;
+      renderStandingsView();
 
       els.overviewEmpty.hidden = true;
       els.overviewContent.hidden = false;
@@ -4575,6 +4702,219 @@
       els.settingsEmpty.style.display = 'none';
     }
 
+    function teamActualScore(matchup) {
+      const value = matchup?.custom_points ?? matchup?.points;
+      return value !== null && value !== undefined && Number.isFinite(Number(value)) ? Math.round(Number(value) * 100) / 100 : null;
+    }
+
+    function teamMedian(values) {
+      const sorted = values.filter(value => value !== null && Number.isFinite(value)).sort((a,b) => a-b);
+      if (!sorted.length) return null;
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;
+    }
+
+    function addTeamResult(record, score, opponent) {
+      if (score === null || opponent === null) return null;
+      const difference = score - opponent;
+      const result = difference > .000001 ? 'W' : difference < -.000001 ? 'L' : 'T';
+      record[result === 'W' ? 'wins' : result === 'L' ? 'losses' : 'ties']++;
+      return result;
+    }
+
+    function deriveEnteringTeamSeeds(data, historicalWeeks) {
+      const seeds = Object.fromEntries(data.rosters.map(roster => [String(roster.roster_id), { wins: 0, losses: 0, ties: 0, pf: 0 }]));
+      const medianEnabled = Number(data.league.settings?.league_average_match) === 1;
+      for (const matchups of historicalWeeks) {
+        const groups = new Map();
+        for (const matchup of matchups) {
+          if (!seeds[String(matchup.roster_id)]) continue;
+          const score = teamActualScore(matchup);
+          if (score === null) throw new Error('A prior-week team score is unavailable');
+          seeds[String(matchup.roster_id)].pf += score;
+          if (matchup.matchup_id !== null && matchup.matchup_id !== undefined) {
+            const group = groups.get(String(matchup.matchup_id)) || [];
+            group.push(matchup); groups.set(String(matchup.matchup_id), group);
+          }
+        }
+        for (const group of groups.values()) {
+          if (group.length !== 2) continue;
+          addTeamResult(seeds[String(group[0].roster_id)], teamActualScore(group[0]), teamActualScore(group[1]));
+          addTeamResult(seeds[String(group[1].roster_id)], teamActualScore(group[1]), teamActualScore(group[0]));
+        }
+        if (medianEnabled) {
+          const median = teamMedian(matchups.map(teamActualScore));
+          for (const matchup of matchups) if (seeds[String(matchup.roster_id)]) addTeamResult(seeds[String(matchup.roster_id)], teamActualScore(matchup), median);
+        }
+      }
+      for (const roster of data.rosters) {
+        const seed = seeds[String(roster.roster_id)];
+        seed.pf = Math.round(seed.pf * 100) / 100;
+        const settings = roster.settings || {};
+        const official = { wins: Number(settings.wins || 0), losses: Number(settings.losses || 0), ties: Number(settings.ties || 0) };
+        const expectedGames = seed.wins + seed.losses + seed.ties;
+        const officialGames = official.wins + official.losses + official.ties;
+        // Keep official entering-week records, including commissioner corrections.
+        // If Sleeper has posted this week's result already, use only prior results.
+        if (officialGames === expectedGames) {
+          Object.assign(seed, official);
+          const officialPF = getPoints(settings, 'fpts', 'fpts_decimal');
+          const current = teamActualScore((data.matchups || []).find(m => String(m.roster_id) === String(roster.roster_id)));
+          const includesCurrentPF = current !== null && Math.abs(current) > .005 && Math.abs(officialPF - seed.pf - current) < .02;
+          if (!includesCurrentPF && ('fpts' in settings || 'fpts_decimal' in settings)) seed.pf = Math.round(officialPF * 100) / 100;
+        }
+      }
+      return seeds;
+    }
+
+    async function loadEnteringTeamSeeds(data) {
+      const key = leaderContextKey(data);
+      if (app.teamLeaderSeeds.has(key)) return app.teamLeaderSeeds.get(key);
+      const week = Number(data.selectedWeek);
+      const start = Math.max(1, Number(data.league.settings?.start_week || 1));
+      const playoffStart = Number(data.league.settings?.playoff_week_start || 0);
+      const end = playoffStart > 0 ? Math.min(week, playoffStart) : week;
+      const weeks = Array.from({ length: Math.max(0, end - start) }, (_, i) => start + i);
+      const historical = await Promise.all(weeks.map(async past => {
+        const rows = await fetchLeaderJson(`${API}/league/${data.league.league_id}/matchups/${past}`);
+        if (!Array.isArray(rows) || rows.length !== data.rosters.length) throw new Error(`Week ${past} results are incomplete; team forecast will retry`);
+        const ids = new Set(rows.map(row => String(row.roster_id)));
+        if (ids.size !== data.rosters.length || data.rosters.some(r => !ids.has(String(r.roster_id)))) throw new Error(`Week ${past} is missing a team`);
+        return rows;
+      }));
+      const seeds = deriveEnteringTeamSeeds(data, historical);
+      app.teamLeaderSeeds.set(key, seeds);
+      return seeds;
+    }
+
+    function teamWeeklyForecast(matchup, data) {
+      if (!matchup) return { points: null, actual: null, final: false };
+      const actual = teamActualScore(matchup);
+      const starters = (matchup.starters || []).filter(id => id && String(id) !== '0');
+      if (!data.schedule?.length && !data.espnSchedule?.length) return { points: null, actual, final: false };
+      const final = starters.length > 0 && starters.every(id => ['final','bye','canceled'].includes(playerGameInfo(id, data).key));
+      if (final) return { points: actual, actual, final };
+      const missing = starters.some(id => {
+        if (['final','bye','canceled'].includes(playerGameInfo(id, data).key)) return false;
+        const saved = data.originalProjectionSnapshot?.player_points?.[String(id)];
+        const projected = projectedPoints(id, data);
+        return !(saved !== null && saved !== undefined && Number.isFinite(Number(saved))) && !(projected !== null && Number.isFinite(projected));
+      });
+      if (missing || actual === null) return { points: null, actual, final: false };
+      const starterActual = starters.reduce((sum, id) => {
+        const value = actualPlayerPoints(matchup, id);
+        return sum + (value !== null && Number.isFinite(Number(value)) ? Number(value) : 0);
+      }, 0);
+      const adjustment = actual - starterActual;
+      return { points: Math.round((adjustedMatchupProjectionTotal(matchup, data) + adjustment) * 100) / 100, actual, final: false };
+    }
+
+    function teamRecordPct(record) {
+      const games = record.wins + record.losses + record.ties;
+      return games ? (record.wins + record.ties / 2) / games : 0;
+    }
+
+    function compareTeamStanding(a, b) {
+      return teamRecordPct(b) - teamRecordPct(a) || b.wins - a.wins || b.pf - a.pf;
+    }
+
+    function rankTeamStandings(rows, recordKey, pfKey) {
+      const sorted = [...rows].sort((a,b) => compareTeamStanding({ ...a[recordKey], pf: a[pfKey] ?? a.entering.pf }, { ...b[recordKey], pf: b[pfKey] ?? b.entering.pf }) || a.name.localeCompare(b.name));
+      let previous = null, rank = 0;
+      sorted.forEach((row, i) => {
+        const standing = { ...row[recordKey], pf: row[pfKey] ?? row.entering.pf };
+        if (!previous || compareTeamStanding(previous, standing) !== 0) rank = i + 1;
+        row[recordKey === 'entering' ? 'entering_rank' : 'rank'] = rank;
+        previous = standing;
+      });
+      return sorted;
+    }
+
+    function buildTeamLeaderRows(data, seeds) {
+      const medianEnabled = Number(data.league.settings?.league_average_match) === 1;
+      const matchupMap = new Map((data.matchups || []).map(m => [String(m.roster_id), m]));
+      const rows = data.rosters.map(roster => {
+        const owner = ownerForRoster(roster, data.users || []);
+        const matchup = matchupMap.get(String(roster.roster_id));
+        const forecast = teamWeeklyForecast(matchup, data);
+        const entering = { ...seeds[String(roster.roster_id)] };
+        return { roster_id: roster.roster_id, name: teamName(owner, roster), entering, projected: { wins: entering.wins, losses: entering.losses, ties: entering.ties }, entering_pf: entering.pf, projected_pf: forecast.points === null ? null : Math.round((entering.pf + forecast.points) * 100) / 100, week_points: forecast.points, actual_points: forecast.actual, final: forecast.final, matchup_id: matchup?.matchup_id, result: null, median_result: null, opponent: null, opponent_points: null };
+      });
+      const allScoresReady = rows.every(row => row.week_points !== null);
+      const median = allScoresReady ? teamMedian(rows.map(row => row.week_points)) : null;
+      const playoffStart = Number(data.league.settings?.playoff_week_start || 0);
+      const regularWeek = (!playoffStart || Number(data.selectedWeek) < playoffStart) && data.state?.season_type === 'regular';
+      for (const row of rows) {
+        const group = rows.filter(other => row.matchup_id !== null && row.matchup_id !== undefined && String(other.matchup_id) === String(row.matchup_id));
+        const opponent = group.length === 2 ? group.find(other => other.roster_id !== row.roster_id) : null;
+        if (opponent) {
+          row.opponent = opponent.name; row.opponent_points = opponent.week_points;
+          if (regularWeek) row.result = addTeamResult(row.projected, row.week_points, opponent.week_points);
+          row.matchup_final = row.final && opponent.final;
+        }
+        if (medianEnabled && regularWeek && allScoresReady) row.median_result = addTeamResult(row.projected, row.week_points, median);
+        row.record_ready = !regularWeek || Boolean(row.result) && (!medianEnabled || Boolean(row.median_result));
+      }
+      rankTeamStandings(rows, 'entering', 'entering_pf');
+      const complete = rows.every(row => row.record_ready && row.projected_pf !== null);
+      const sorted = complete ? rankTeamStandings(rows, 'projected', 'projected_pf') : [...rows].sort((a,b) => a.entering_rank - b.entering_rank || a.name.localeCompare(b.name));
+      if (!complete) sorted.forEach(row => { row.rank = null; });
+      return { rows: sorted, complete, medianEnabled, regularWeek };
+    }
+
+    function teamRecordText(record) {
+      return `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ''}`;
+    }
+
+    function renderTeamLeaders() {
+      const hub = app.statsLeaders;
+      els.standingsRefresh.disabled = hub.loading || !app.data;
+      els.standingsRefresh.textContent = hub.loading ? 'Refreshing…' : 'Refresh Standings';
+      const seconds = Number(els.standingsLive.value);
+      els.standingsStatus.textContent = hub.loading ? 'Updating projected standings…'
+        : hub.teamError ? 'Refresh failed. The last successful forecast is retained.'
+        : !app.data ? 'Refresh the league to load projected standings.'
+        : seconds ? `Refresh every ${seconds}s while Overview is open · Scores may lag the games.` : 'Live standings refresh paused';
+      els.standingsStatus.classList.toggle('leader-error', Boolean(hub.teamError));
+      const ready = hub.teamLoadedAt && String(hub.teamData?.league?.league_id) === String(app.data?.league?.league_id);
+      els.standingsWeek.textContent = ready ? `${hub.teamData.state.season} · Week ${hub.teamData.selectedWeek}` : 'Current week';
+      let rows = ready ? hub.teamRows : [];
+      const query = els.teamLeaderSearch.value.trim().toLowerCase();
+      if (query) rows = rows.filter(row => [row.name, row.opponent].join(' ').toLowerCase().includes(query));
+      const sort = els.teamLeaderSort.value;
+      if (sort === 'pf') rows = [...rows].sort((a,b) => (b.projected_pf ?? -Infinity) - (a.projected_pf ?? -Infinity) || a.name.localeCompare(b.name));
+      if (sort === 'week') rows = [...rows].sort((a,b) => (b.week_points ?? -Infinity) - (a.week_points ?? -Infinity) || a.name.localeCompare(b.name));
+      els.teamLeaderSummary.textContent = hub.teamError ? `Team forecast unavailable: ${hub.teamError}${ready ? ' · Showing last successful forecast.' : ''}`
+        : !ready ? 'Refresh the league to load the entering-week standings and live forecast.'
+        : `Week ${hub.teamData.selectedWeek} forecast · ${new Date(hub.teamLoadedAt).toLocaleTimeString()} · ${hub.teamComplete ? 'Ranked by projected win percentage, wins, then projected PF.' : 'Forecast incomplete: showing entering-week rank until all matchups and projections are available.'}${hub.teamMedian ? ' Includes the extra league-median result.' : ''}${hub.teamRegular === false ? ' Regular-season record stays fixed during postseason.' : ''}`;
+      const points = value => value === null ? '—' : Number(value).toFixed(2);
+      els.teamLeaderList.innerHTML = rows.map(row => {
+        const selected = String(row.roster_id) === String(els.myTeam.value);
+        const movement = row.rank === null ? 0 : row.entering_rank - row.rank;
+        const move = movement ? `<span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '<span class="small">—</span>';
+        const result = row.result ? `${row.matchup_final ? 'Final' : 'Projected'} ${row.result}` : row.opponent ? 'Awaiting projection' : 'No opponent';
+        const status = row.median_result ? `${result} · Median ${row.median_result}` : result;
+        const previous = hub.previousTeams?.[String(row.roster_id)];
+        const changed = previous && (previous.projected_pf !== row.projected_pf || teamRecordText(previous.projected) !== teamRecordText(row.projected));
+        return `<article class="team-leader-row${selected ? ' selected' : ''}${changed ? ' score-changed' : ''}">
+          <div class="team-rank"><strong>#${row.rank ?? row.entering_rank}</strong>${move}<span class="small">${row.rank === null ? 'Entering rank' : `Was #${row.entering_rank}`}</span></div>
+          <div class="team-leader-name"><strong>${escapeHtml(row.name)}</strong>${selected ? '<span class="pill me">YOUR TEAM</span>' : ''}<span class="small">${escapeHtml(status)}</span><span class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · ${points(row.week_points)} / ${points(row.opponent_points)}` : 'Matchup not available'}</span></div>
+          <div class="team-leader-metric"><span class="small">Record entering week</span><strong>${teamRecordText(row.entering)}</strong></div>
+          <div class="team-leader-metric"><span class="small">Projected record</span><strong>${row.record_ready ? teamRecordText(row.projected) : '—'}</strong></div>
+          <div class="team-leader-metric"><span class="small">PF entering week</span><strong>${points(row.entering.pf)}</strong></div>
+          <div class="team-leader-metric"><span class="small">Live projected week</span><strong>${points(row.week_points)}</strong><span class="small">Actual ${points(row.actual_points)}</span></div>
+          <div class="team-leader-metric forecast"><span class="small">Projected total PF</span><strong>${points(row.projected_pf)}</strong></div>
+          <details class="team-lineup" data-team-lineup="${row.roster_id}" ${hub.expandedTeams.has(String(row.roster_id)) ? 'open' : ''}><summary>View this week's starting lineup</summary><div>${((hub.teamData?.matchups || []).find(m => String(m.roster_id) === String(row.roster_id))?.starters || []).filter(id => id && String(id) !== '0').map(id => {
+            const p = playerFromId(id);
+            const m = (hub.teamData.matchups || []).find(m => String(m.roster_id) === String(row.roster_id));
+            return `<button type="button" class="team-leader-player" data-player-id="${escapeHtml(id)}"><span>${escapeHtml(p.full_name)} · ${escapeHtml(p.position)}</span><span>${numberOrDash(adjustedPlayerProjection(m, id, hub.teamData),2)} live proj</span></button>`;
+          }).join('')}</div></details>
+        </article>`;
+      }).join('');
+      els.teamLeaderEmpty.hidden = Boolean(rows.length);
+      els.teamLeaderEmpty.textContent = ready ? 'No teams match your search.' : 'Refresh the league to load Live Projected Standings.';
+    }
+
     async function fetchLeaderJson(url) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 20000);
@@ -4666,19 +5006,22 @@
 
     function renderStatsLeaders() {
       const hub = app.statsLeaders;
+      renderTeamLeaders();
       const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
       const ready = sameLeague && hub.loadedAt;
+      const viewReady = ready;
+      const viewError = hub.error;
       els.leaderRefresh.disabled = hub.loading || !app.data;
       els.leaderRefresh.textContent = hub.loading ? 'Refreshing…' : 'Refresh Scores';
       const seconds = Number(els.leaderLive.value);
-      const updated = ready ? new Date(hub.loadedAt).toLocaleTimeString() : '';
-      els.leaderWeek.textContent = ready ? `${hub.data.state.season} · Week ${hub.data.selectedWeek}` : 'Current week';
-      els.leaderStatus.textContent = hub.error
-        ? `${ready ? `Showing scores last checked at ${updated}. ` : ''}Refresh failed: ${hub.error}`
+      const updated = viewReady ? new Date(hub.loadedAt).toLocaleTimeString() : '';
+      els.leaderWeek.textContent = viewReady ? `${hub.data.state.season} · Week ${hub.data.selectedWeek}` : 'Current week';
+      els.leaderStatus.textContent = viewError
+        ? `${viewReady ? `Showing scores last checked at ${updated}. ` : ''}Refresh failed: ${viewError}`
         : hub.loading ? 'Checking current-week scores…'
-        : ready ? `Last scoring check: ${updated} · ${seconds ? `Refresh every ${seconds}s while this tab is open` : 'Live refresh paused'} · Scores may lag the games.`
+        : viewReady ? `Last scoring check: ${updated} · ${seconds ? `Refresh every ${seconds}s while this tab is open` : 'Live refresh paused'} · Scores may lag the games.`
         : 'Open this tab after refreshing the league to load current-week scoring leaders.';
-      els.leaderStatus.classList.toggle('leader-error', Boolean(hub.error));
+      els.leaderStatus.classList.toggle('leader-error', Boolean(viewError));
       document.querySelectorAll('[data-leader-position]').forEach(btn => {
         const active = btn.dataset.leaderPosition === hub.position;
         btn.classList.toggle('active', active); btn.setAttribute('aria-pressed', String(active));
@@ -4732,6 +5075,7 @@
       const base = app.data;
       hub.loading = true;
       hub.error = '';
+      hub.teamError = '';
       renderStatsLeaders();
       try {
         const state = await fetchLeaderJson(`${API}/state/nfl`);
@@ -4740,40 +5084,64 @@
         const type = ['pre','post','regular'].includes(state.season_type) ? state.season_type : 'regular';
         const key = `${base.league.league_id}:${season}:${type}:${week}`;
         const sameWeek = hub.key === key;
-        if (!sameWeek) { hub.rows = []; hub.loadedAt = 0; hub.data = null; renderStatsLeaders(); }
-        const [stats, matchups, rosters, schedule, espnSchedule] = await Promise.all([
-          fetchWeeklyLeaderStats(season, week, type),
-          fetchLeaderJson(`${API}/league/${base.league.league_id}/matchups/${week}`).catch(() => []),
-          fetchLeaderJson(`${API}/league/${base.league.league_id}/rosters`).catch(() => base.rosters || []),
+        if (!sameWeek) { hub.expandedTeams.clear(); hub.rows = []; hub.loadedAt = 0; hub.teamRows = []; hub.teamData = null; hub.teamLoadedAt = 0; hub.data = null; renderStatsLeaders(); }
+        const [statsResult, matchups, rosters, schedule, espnSchedule] = await Promise.all([
+          fetchWeeklyLeaderStats(season, week, type).then(stats => ({ stats })).catch(error => ({ error })),
+          fetchLeaderJson(`${API}/league/${base.league.league_id}/matchups/${week}`),
+          fetchLeaderJson(`${API}/league/${base.league.league_id}/rosters`),
           fetchLeaderJson(`https://api.sleeper.app/schedule/nfl/${type}/${season}`).catch(() => sameWeek ? hub.data?.schedule || [] : []),
           fetchEspnWeekSchedule(season, week, type, fetchLeaderJson).catch(() => sameWeek ? hub.data?.espnSchedule || [] : [])
         ]);
         if (String(app.data?.league?.league_id) !== String(base.league.league_id)) return;
         const context = { ...app.data, state, selectedWeek: week, matchups, rosters, schedule, espnSchedule };
         if (Number(app.data.selectedWeek) !== week || Number(app.data.state?.season) !== season) {
-          context.projections = {}; context.originalProjectionSnapshot = null;
+          context.projections = sameWeek ? hub.data?.projections || {} : {};
+          context.originalProjectionSnapshot = sameWeek ? hub.data?.originalProjectionSnapshot || null : null;
         }
-        hub.previous = sameWeek ? Object.fromEntries(hub.rows.map(row => [row.player_id, row.points])) : {};
-        hub.rows = buildStatsLeaderRows(stats, context);
-        hub.stats = stats; hub.data = context; hub.key = key; hub.loadedAt = Date.now();
+        if (!statsResult.error) {
+          hub.previous = sameWeek ? Object.fromEntries(hub.rows.map(row => [row.player_id, row.points])) : {};
+          hub.rows = buildStatsLeaderRows(statsResult.stats, context);
+          hub.stats = statsResult.stats; hub.loadedAt = Date.now();
+        } else { hub.error = statsResult.error.message; }
+        if (document.getElementById('overview').classList.contains('active') || hub.teamLoadedAt) {
+          try {
+            if (!Object.keys(context.projections || {}).length) context.projections = await fetchWeekProjections(season, week, fetchLeaderJson);
+            if (!context.originalProjectionSnapshot) context.originalProjectionSnapshot = await loadOrCreateOriginalProjectionSnapshot(base.league.league_id, season, week, context.projections, context.league, matchups);
+            const seeds = await loadEnteringTeamSeeds(context);
+            const forecast = buildTeamLeaderRows(context, seeds);
+            hub.previousTeams = sameWeek ? Object.fromEntries(hub.teamRows.map(row => [String(row.roster_id), row])) : {};
+            hub.teamRows = forecast.rows; hub.teamComplete = forecast.complete;
+            hub.teamMedian = forecast.medianEnabled; hub.teamRegular = forecast.regularWeek;
+            hub.teamData = context; hub.teamLoadedAt = Date.now();
+          } catch (error) { hub.teamError = error.message; }
+        }
+        if (String(app.data?.league?.league_id) !== String(base.league.league_id)) return;
+        hub.data = context; hub.key = key;
         if (app.activePlayerData && app.activePlayerId) {
           app.activePlayerData = context;
-          app.activePlayerStats = stats[app.activePlayerId] || {};
+          app.activePlayerStats = hub.stats[app.activePlayerId] || {};
           els.playerModalBody.innerHTML = renderPlayerModalBody(app.activePlayerId, app.activePlayerStats);
         }
       } catch (err) {
         hub.error = err.message || 'Could not load scoring';
+        hub.teamError = hub.error;
       } finally {
         hub.loading = false;
         renderStatsLeaders();
       }
     }
 
+    function activeLeaderboardRefreshSeconds() {
+      if (document.getElementById('overview').classList.contains('active')) return Number(els.standingsLive.value);
+      if (document.getElementById('leaders').classList.contains('active')) return Number(els.leaderLive.value);
+      return 0;
+    }
+
     function startLeaderRefresh() {
       clearInterval(app.statsLeaders.timer);
       app.statsLeaders.timer = null;
-      const seconds = Number(els.leaderLive.value);
-      if (seconds && document.getElementById('leaders').classList.contains('active')) {
+      const seconds = activeLeaderboardRefreshSeconds();
+      if (seconds) {
         app.statsLeaders.timer = setInterval(() => {
           if (!document.hidden) loadStatsLeaders({ force: true });
         }, seconds * 1000);
@@ -4788,7 +5156,7 @@
       renderTransactions(data);
       renderWaivers(data);
       renderStatsLeaders();
-      if (document.getElementById('leaders').classList.contains('active')) loadStatsLeaders({ force: true });
+      if (document.getElementById('leaders').classList.contains('active') || document.getElementById('overview').classList.contains('active')) loadStatsLeaders({ force: true });
       resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
       renderSettings(data);
@@ -4981,15 +5349,38 @@
       }
     }
 
+    document.addEventListener('toggle', event => {
+      const details = event.target;
+      if (details.matches?.('.team-lineup[data-team-lineup]')) {
+        const id = String(details.dataset.teamLineup);
+        if (details.open) app.statsLeaders.expandedTeams.add(id);
+        else app.statsLeaders.expandedTeams.delete(id);
+      }
+    }, true);
+    els.teamLeaderSearch.addEventListener('input', renderTeamLeaders);
+    els.teamLeaderSort.addEventListener('change', renderTeamLeaders);
     document.querySelectorAll('[data-leader-position]').forEach(btn => {
       btn.addEventListener('click', () => { app.statsLeaders.position = btn.dataset.leaderPosition; renderStatsLeaders(); });
     });
     els.leaderSearch.addEventListener('input', renderStatsLeaders);
     [els.leaderScope, els.leaderGame, els.leaderLimit].forEach(el => el.addEventListener('change', renderStatsLeaders));
+    [els.currentStandingsTab, els.projectedStandingsTab].forEach(btn => {
+      btn.addEventListener('click', () => setStandingsView(btn.dataset.standingsView));
+      btn.addEventListener('keydown', event => {
+        if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+        event.preventDefault();
+        const view = event.key === 'Home' ? 'current' : event.key === 'End' ? 'projected' : app.standingsView === 'projected' ? 'current' : 'projected';
+        setStandingsView(view);
+        (view === 'projected' ? els.projectedStandingsTab : els.currentStandingsTab).focus();
+      });
+    });
+
+    els.standingsLive.addEventListener('change', startLeaderRefresh);
+    els.standingsRefresh.addEventListener('click', () => loadStatsLeaders({ force: true }));
     els.leaderLive.addEventListener('change', startLeaderRefresh);
     els.leaderRefresh.addEventListener('click', () => loadStatsLeaders({ force: true }));
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && Number(els.leaderLive.value) && document.getElementById('leaders').classList.contains('active')) loadStatsLeaders({ force: true });
+      if (!document.hidden && activeLeaderboardRefreshSeconds()) loadStatsLeaders({ force: true });
     });
 
     document.addEventListener('click', event => {
@@ -4997,14 +5388,14 @@
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row');
-      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
+      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row');
-        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
+        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
       }
     });
     els.playerModalClose.addEventListener('click', closePlayerModal);
@@ -5132,7 +5523,7 @@
         document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
 
         startLeaderRefresh();
-        if (btn.dataset.tab === 'leaders') loadStatsLeaders({ force: false });
+        if (btn.dataset.tab === 'leaders' || btn.dataset.tab === 'overview') loadStatsLeaders({ force: false });
 
         if (btn.dataset.tab === 'transactions') {
           if (app.data) renderTransactions(app.data);
@@ -5155,6 +5546,7 @@
       els.autoRefresh.value = savedAutoMinutes;
     }
     restoreLastSnapshot();
+    startLeaderRefresh();
     startAutoRefresh({ runNow: Number(els.autoRefresh.value || 0) > 0 });
   </script>
 </body>
