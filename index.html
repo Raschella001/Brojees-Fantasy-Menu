@@ -1561,6 +1561,37 @@
       tbody tr:hover { background: transparent; }
     }
 
+    .leader-toolbar { display: grid; grid-template-columns: minmax(200px,2fr) repeat(4,minmax(105px,1fr)) auto; gap: 12px; align-items: end; margin: 16px 0; }
+    .leader-toolbar > div { min-width: 0; }
+    .leader-toolbar input, .leader-toolbar select { width: 100%; min-width: 0; }
+    .leader-list-head, .leader-row { display: grid; grid-template-columns: 52px minmax(0,1fr) 110px 146px; gap: 14px; align-items: center; }
+    .leader-list-head { padding: 10px 14px; color: var(--muted); font-size: 11px; }
+    .leader-list-head > :last-child { text-align: right; }
+    .leader-row { width: 100%; text-align: left; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(19,26,43,.75); color: var(--text); cursor: pointer; margin-bottom: 8px; }
+    .leader-row:hover { border-color: var(--accent); background: rgba(32,48,70,.8); }
+    .leader-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .leader-rank { color: var(--accent-2); font-size: 18px; font-weight: 900; }
+    .leader-player, .leader-score { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .leader-player strong { font-size: 14px; overflow-wrap: anywhere; }
+    .leader-player .small, .leader-stats { font-size: 11px; white-space: normal; overflow-wrap: anywhere; }
+    .leader-stats { color: var(--muted); line-height: 1.5; }
+    .leader-score { text-align: right; font-variant-numeric: tabular-nums; }
+    .leader-score strong { color: var(--accent-2); font-size: 24px; font-weight: 900; }
+    .leader-change { color: var(--accent-2); font-size: 10px; }
+    .leader-change.down, .leader-error { color: #fca5a5; }
+    @media (max-width: 1100px) { .leader-toolbar { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+    @media (max-width: 600px) {
+      .leader-toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .leader-toolbar > div:first-child { grid-column: 1 / -1; }
+      .leader-list-head { display: none; }
+      .leader-row { grid-template-columns: 38px minmax(0,1fr) 94px; gap: 9px; padding: 12px 10px; }
+      .leader-player { grid-column: 2; grid-row: 1; }
+      .leader-game { grid-column: 2; grid-row: 2; }
+      .leader-game .game-status-badge { padding: 3px; font-size: 8px; }
+      .leader-score { grid-column: 3; grid-row: 1 / 3; }
+      .leader-score strong { font-size: 21px; }
+      .leader-rank { font-size: 15px; }
+    }
   </style>
 </head>
 <body>
@@ -1615,6 +1646,7 @@
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
       <button class="tab-btn" data-tab="transactions">Transactions</button>
+      <button class="tab-btn" data-tab="leaders">Stats Leaders</button>
       <button class="tab-btn" data-tab="waivers">Waivers</button>
       <button class="tab-btn" data-tab="projections">Projections</button>
       <button class="tab-btn" data-tab="rosters">Rosters</button>
@@ -1688,6 +1720,29 @@
         <div class="transaction-summary" id="transactionSummary">Refresh the league to load transactions.</div>
         <div class="transaction-feed" id="transactionFeed"></div>
         <div class="transaction-empty" id="transactionEmpty" hidden>No transactions match this view.</div>
+      </div>
+    </section>
+
+    <section id="leaders" class="tab">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Weekly Stats Leaders</h2><div class="small">Live actual fantasy scoring · Your league settings · All NFL players, including free agents</div></div>
+          <span class="pill" id="leaderWeek">Current week</span>
+        </div>
+        <div class="leader-toolbar">
+          <div><label for="leaderSearch">Search players / teams</label><input id="leaderSearch" type="search" placeholder="Player, NFL team, fantasy team…" autocomplete="off"></div>
+          <div><label for="leaderScope">Players</label><select id="leaderScope"><option value="all">All players</option><option value="rostered">Rostered in this league</option><option value="available">Free agents</option><option value="mine">My team</option></select></div>
+          <div><label for="leaderGame">Games</label><select id="leaderGame"><option value="all">All games</option><option value="live">Live now</option><option value="final">Final</option></select></div>
+          <div><label for="leaderLimit">Show</label><select id="leaderLimit"><option value="25">Top 25</option><option value="50" selected>Top 50</option><option value="100">Top 100</option><option value="0">All players</option></select></div>
+          <div><label for="leaderLive">Live refresh</label><select id="leaderLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div>
+          <button id="leaderRefresh" class="btn-secondary" type="button">Refresh Scores</button>
+        </div>
+        <div class="waiver-filter-row" aria-label="Stats leader positions"><button class="waiver-pos-btn active" type="button" data-leader-position="ALL" aria-pressed="true">All positions</button><button class="waiver-pos-btn" type="button" data-leader-position="QB" aria-pressed="false">QB</button><button class="waiver-pos-btn" type="button" data-leader-position="RB" aria-pressed="false">RB</button><button class="waiver-pos-btn" type="button" data-leader-position="WR" aria-pressed="false">WR</button><button class="waiver-pos-btn" type="button" data-leader-position="TE" aria-pressed="false">TE</button><button class="waiver-pos-btn" type="button" data-leader-position="K" aria-pressed="false">K</button><button class="waiver-pos-btn" type="button" data-leader-position="DEF" aria-pressed="false">D/ST</button><button class="waiver-pos-btn" type="button" data-leader-position="IDP" aria-pressed="false">IDP</button></div>
+        <div id="leaderStatus" class="small" role="status">Refresh the league to load current-week scores.</div>
+        <div id="leaderSummary" class="waiver-summary"></div>
+        <div class="leader-list-head" aria-hidden="true"><span>Rank</span><span>Player / Stat line</span><span>Game</span><span>Fantasy pts</span></div>
+        <div id="leaderList" class="leader-list"></div>
+        <div id="leaderEmpty" class="empty">Refresh the league, then open Stats Leaders.</div>
       </div>
     </section>
 
@@ -1897,8 +1952,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.5.1';
+    const APP_VERSION = '2.6';
     const PATCH_NOTES = [
+      { version: '2.6', note: 'Added interactive current-week Stats Leaders with all-player and position rankings, league scoring, roster and game filters, player cards, score changes, and live refresh every 30 seconds while the tab is open.' },
       { version: '2.5.1', note: 'The newest patch note stays visible on Overview. Previous versions are tucked into an expandable patch note history.' },
       { version: '2.5', note: 'Replaced depth-chart display with season-to-date fantasy position rank, calculated from Sleeper season stats using this league\'s scoring settings. Position rank now appears on waivers, mobile cards, player popups, and JSON exports.' },
       { version: '2.4.1', note: 'Player popups now calculate current-week actual fantasy points from Sleeper stat lines for unrostered/waiver players, using this league\'s scoring settings. Rostered players still use Sleeper matchup points when available.' },
@@ -1917,6 +1973,17 @@
     ];
 
     const els = {
+      leaderStatus: document.getElementById('leaderStatus'),
+      leaderWeek: document.getElementById('leaderWeek'),
+      leaderSearch: document.getElementById('leaderSearch'),
+      leaderScope: document.getElementById('leaderScope'),
+      leaderGame: document.getElementById('leaderGame'),
+      leaderLimit: document.getElementById('leaderLimit'),
+      leaderLive: document.getElementById('leaderLive'),
+      leaderRefresh: document.getElementById('leaderRefresh'),
+      leaderSummary: document.getElementById('leaderSummary'),
+      leaderList: document.getElementById('leaderList'),
+      leaderEmpty: document.getElementById('leaderEmpty'),
       leagueId: document.getElementById('leagueId'),
       myTeam: document.getElementById('myTeam'),
       autoRefresh: document.getElementById('autoRefresh'),
@@ -1994,6 +2061,8 @@
       lastFetchAt: 0,
       isRefreshing: false,
       activePlayerId: null,
+      activePlayerData: null,
+      statsLeaders: { position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
       activePlayerStats: null,
       playerStatsCache: new Map(),
       transactionWeek: null,
@@ -2369,7 +2438,7 @@
     }
 
     function renderPlayerModalBody(playerId, actualStats = null) {
-      const data = app.data;
+      const data = app.activePlayerData || app.data;
       const p = playerFromId(playerId);
       const matchup = matchupForPlayer(playerId, data);
       const rosterCtx = playerRosterContext(playerId, data);
@@ -2410,7 +2479,7 @@
             <div class="player-fantasy-card live"><div class="player-fantasy-label">Live Proj</div><div class="player-fantasy-value">${fantasyValueOrDash(live)}</div></div>
           </div>
         </section>
-        ${playerProjectionComparisonHtml(playerId)}
+        ${!app.activePlayerData || Number(app.activePlayerData.selectedWeek) === Number(app.data.selectedWeek) ? playerProjectionComparisonHtml(playerId) : ''}
         <section class="player-modal-section">
           <div class="player-modal-section-title">Game</div>
           <div class="player-game-strip">${gameStatusBadge(gameInfo)} <strong>${escapeHtml(opponent || gameInfo.label)}</strong> ${kickoff.display ? `<span>${escapeHtml(kickoff.display)}</span>` : ''} ${rosterCtx ? `<span>Fantasy roster: <strong>${escapeHtml(rosterCtx.team_name)}</strong></span>` : '<span>Unrostered</span>'}</div>
@@ -2420,9 +2489,10 @@
         <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
     }
 
-    async function openPlayerModal(playerId) {
+    async function openPlayerModal(playerId, leaderData = null) {
       if (!app.data || !playerId) return;
       app.activePlayerId = String(playerId);
+      app.activePlayerData = leaderData;
       app.activePlayerStats = null;
       const p = playerFromId(playerId);
       els.playerModalName.textContent = p.full_name || 'Player';
@@ -2438,7 +2508,7 @@
       els.playerModalBackdrop.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
       requestAnimationFrame(() => els.playerModalClose.focus());
-      const stats = await fetchPlayerWeekStats(playerId, app.data);
+      const stats = leaderData ? app.statsLeaders.stats[String(playerId)] || {} : await fetchPlayerWeekStats(playerId, app.data);
       if (String(app.activePlayerId) !== String(playerId)) return;
       app.activePlayerStats = stats || {};
       els.playerModalBody.innerHTML = renderPlayerModalBody(playerId, app.activePlayerStats);
@@ -2447,6 +2517,7 @@
     function closePlayerModal() {
       if (!els.playerModalBackdrop.classList.contains('open')) return;
       app.activePlayerId = null;
+      app.activePlayerData = null;
       app.activePlayerStats = null;
       els.playerModalBackdrop.classList.remove('open');
       els.playerModalBackdrop.setAttribute('aria-hidden', 'true');
@@ -2454,6 +2525,7 @@
     }
 
     async function refreshOpenPlayerStats(playerId) {
+      if (app.activePlayerData) { await loadStatsLeaders({ force: true }); return; }
       const statsContainer = document.getElementById('playerModalStats');
       if (statsContainer) statsContainer.innerHTML = '<div class="player-modal-loading">Refreshing weekly stats…</div>';
       const stats = await fetchPlayerWeekStats(playerId, app.data, { force: true });
@@ -2789,10 +2861,10 @@
       return 2;
     }
 
-    async function fetchEspnWeekSchedule(season, week, seasonType = 'regular') {
+    async function fetchEspnWeekSchedule(season, week, seasonType = 'regular', loader = fetchJson) {
       const seasonTypeNum = espnSeasonTypeNumber(seasonType);
       const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?season=${encodeURIComponent(season)}&seasontype=${seasonTypeNum}&week=${encodeURIComponent(week)}`;
-      const raw = await fetchJson(url);
+      const raw = await loader(url);
       return (raw?.events || []).map(event => {
         const competition = event?.competitions?.[0] || {};
         const competitors = competition?.competitors || [];
@@ -4503,12 +4575,220 @@
       els.settingsEmpty.style.display = 'none';
     }
 
+    async function fetchLeaderJson(url) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) throw new Error(`Scoring source returned ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        if (err.name === 'AbortError') throw new Error('Scoring request timed out; try Refresh Scores');
+        throw err;
+      } finally { clearTimeout(timeout); }
+    }
+
+    function leaderContextKey(data) {
+      return `${data?.league?.league_id}:${data?.state?.season || data?.league?.season}:${data?.state?.season_type || 'regular'}:${data?.state?.week || data?.state?.leg || 1}`;
+    }
+
+    async function fetchWeeklyLeaderStats(season, week, type) {
+      const urls = [
+        `https://api.sleeper.com/stats/nfl/${encodeURIComponent(season)}/${encodeURIComponent(week)}?season_type=${encodeURIComponent(type)}`,
+        `${API}/stats/nfl/${type}/${season}/${week}`
+      ];
+      let lastError;
+      for (const url of urls) {
+        try {
+          const raw = await fetchLeaderJson(url);
+          if (raw === null || typeof raw !== 'object' || raw.error || raw.message) throw new Error('Weekly stats feed unavailable');
+          return normalizeSeasonStats(raw);
+        } catch (err) { lastError = err; }
+      }
+      throw lastError || new Error('Weekly stats feed unavailable');
+    }
+
+    function scoreLeaderStats(stats, scoring) {
+      // Use actual league scoring only; generic PPR totals are not a substitute.
+      const normalized = normalizeProjectionStatKeys(Object.fromEntries(
+        Object.entries(stats || {}).filter(([, value]) => value !== null && value !== '' && typeof value !== 'boolean')
+      ));
+      let total = 0, matched = false;
+      for (const [key, multiplier] of Object.entries(scoring || {})) {
+        if (!Number.isFinite(Number(multiplier)) || Number(multiplier) === 0) continue;
+        if (!Object.prototype.hasOwnProperty.call(normalized, key)) continue;
+        total += Number(multiplier) * normalized[key];
+        matched = true;
+      }
+      return matched ? Math.round(total * 100) / 100 : null;
+    }
+
+    function buildStatsLeaderRows(stats, data) {
+      const official = new Map();
+      for (const matchup of data.matchups || []) {
+        for (const [id, value] of Object.entries(matchup.players_points || {})) {
+          if (value !== null && value !== '' && Number.isFinite(Number(value))) official.set(String(id), Number(value));
+        }
+      }
+      const ownership = new Map();
+      for (const roster of data.rosters || []) {
+        const owner = ownerForRoster(roster, data.users || []);
+        for (const id of [...(roster.players || []), ...(roster.reserve || []), ...(roster.taxi || [])]) {
+          ownership.set(String(id), { roster_id: roster.roster_id, team_name: teamName(owner, roster) });
+        }
+      }
+      const rows = [];
+      for (const id of new Set([...Object.keys(stats || {}), ...official.keys()])) {
+        const player = playerFromId(id);
+        if (!player.position) continue;
+        const calculated = scoreLeaderStats(stats?.[id], data.league.scoring_settings);
+        const points = official.has(id) ? official.get(id) : calculated;
+        if (points === null || !Number.isFinite(points)) continue;
+        const game = data.schedule?.length || data.espnSchedule?.length
+          ? playerGameInfo(id, data) : { key: 'unknown', label: 'Unknown', status: 'unknown' };
+        rows.push({ ...player, points: Math.round(points * 100) / 100, stats: stats?.[id] || {}, game, owner: ownership.get(id) || null });
+      }
+      rows.sort((a, b) => b.points - a.points || a.full_name.localeCompare(b.full_name) || a.player_id.localeCompare(b.player_id));
+      const positions = new Map();
+      let prior = null, rank = 0;
+      rows.forEach((row, index) => {
+        if (prior !== row.points) rank = index + 1;
+        row.rank = rank; prior = row.points;
+        const bucket = positions.get(row.position) || { count: 0, prior: null, rank: 0 };
+        bucket.count++;
+        if (bucket.prior !== row.points) bucket.rank = bucket.count;
+        bucket.prior = row.points;
+        row.position_rank = bucket.rank;
+        positions.set(row.position, bucket);
+      });
+      return rows;
+    }
+
+    function renderStatsLeaders() {
+      const hub = app.statsLeaders;
+      const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
+      const ready = sameLeague && hub.loadedAt;
+      els.leaderRefresh.disabled = hub.loading || !app.data;
+      els.leaderRefresh.textContent = hub.loading ? 'Refreshing…' : 'Refresh Scores';
+      const seconds = Number(els.leaderLive.value);
+      const updated = ready ? new Date(hub.loadedAt).toLocaleTimeString() : '';
+      els.leaderWeek.textContent = ready ? `${hub.data.state.season} · Week ${hub.data.selectedWeek}` : 'Current week';
+      els.leaderStatus.textContent = hub.error
+        ? `${ready ? `Showing scores last checked at ${updated}. ` : ''}Refresh failed: ${hub.error}`
+        : hub.loading ? 'Checking current-week scores…'
+        : ready ? `Last scoring check: ${updated} · ${seconds ? `Refresh every ${seconds}s while this tab is open` : 'Live refresh paused'} · Scores may lag the games.`
+        : 'Open this tab after refreshing the league to load current-week scoring leaders.';
+      els.leaderStatus.classList.toggle('leader-error', Boolean(hub.error));
+      document.querySelectorAll('[data-leader-position]').forEach(btn => {
+        const active = btn.dataset.leaderPosition === hub.position;
+        btn.classList.toggle('active', active); btn.setAttribute('aria-pressed', String(active));
+      });
+      let rows = ready ? hub.rows : [];
+      const position = hub.position;
+      if (position !== 'ALL') rows = rows.filter(row => position === 'IDP'
+        ? ['DL','DE','DT','LB','DB','CB','S','SS','FS','NT','EDGE'].includes(row.position)
+        : row.position === position || row.fantasy_positions?.includes(position));
+      const positionCount = rows.length;
+      const scope = els.leaderScope.value;
+      if (scope === 'available') rows = rows.filter(row => !row.owner);
+      if (scope === 'rostered') rows = rows.filter(row => row.owner);
+      if (scope === 'mine') rows = rows.filter(row => row.owner && String(row.owner.roster_id) === String(els.myTeam.value));
+      if (els.leaderGame.value === 'live') rows = rows.filter(row => row.game.key === 'live');
+      if (els.leaderGame.value === 'final') rows = rows.filter(row => row.game.key === 'final');
+      const query = els.leaderSearch.value.trim().toLowerCase();
+      if (query) rows = rows.filter(row => [row.full_name, row.team, row.position, row.owner?.team_name].join(' ').toLowerCase().includes(query));
+      const count = rows.length;
+      const limit = Number(els.leaderLimit.value) || rows.length;
+      rows = rows.slice(0, limit);
+      els.leaderSummary.textContent = ready
+        ? `Showing ${rows.length} of ${count} matching players · ${positionCount} ${position === 'ALL' ? 'NFL' : position} players with reported scores · Actual fantasy points under your league settings; ties share rank.`
+        : 'Actual scoring leaders will appear here, including free agents.';
+      els.leaderList.innerHTML = rows.map(row => {
+        const previous = hub.previous[row.player_id];
+        const delta = previous === undefined ? 0 : Math.round((row.points - previous) * 100) / 100;
+        const change = delta ? `<span class="leader-change ${delta < 0 ? 'down' : ''}">${delta > 0 ? '+' : ''}${delta.toFixed(2)} since last check</span>` : '';
+        const details = statRowsForPlayer(row.position, row.stats, {}).filter(stat => stat.actual !== null).slice(0, 5)
+          .map(stat => `${formatStatValue(stat.actual)} ${stat.label}`).join(' · ');
+        const gameBadge = gameStatusBadge(row.game) || `<span class="small">${escapeHtml(row.game.label)}</span>`;
+        const rank = position === 'ALL' || position === 'IDP' ? row.rank : row.position_rank;
+        return `<button class="leader-row" type="button" data-player-id="${escapeHtml(row.player_id)}" aria-label="Open ${escapeHtml(row.full_name)}, ${row.points.toFixed(2)} fantasy points">
+          <span class="leader-rank">#${rank}</span>
+          <span class="leader-player"><strong>${escapeHtml(row.full_name)}</strong><span class="small">${escapeHtml(row.team || 'FA')} · ${escapeHtml(row.position)} #${row.position_rank} this week · ${escapeHtml(row.owner?.team_name || 'Free agent')}</span><span class="leader-stats">${escapeHtml(details || 'Detailed stat line pending')}</span></span>
+          <span class="leader-game">${gameBadge}</span>
+          <span class="leader-score"><strong>${row.points.toFixed(2)}</strong><span class="small">Fantasy pts</span>${change}</span>
+        </button>`;
+      }).join('');
+      els.leaderEmpty.hidden = Boolean(rows.length);
+      els.leaderEmpty.textContent = !ready ? 'Refresh the league, then open Stats Leaders.'
+        : scope === 'mine' && !els.myTeam.value ? 'Select your team at the top of the page to see its players.'
+        : !hub.rows.length ? 'No current-week scores reported yet. The list will update when scoring arrives.'
+        : 'No players match these filters. Try All players or All games.';
+    }
+
+    async function loadStatsLeaders({ force = false } = {}) {
+      const hub = app.statsLeaders;
+      if (!app.data || hub.loading) { renderStatsLeaders(); return; }
+      if (!force && hub.key === leaderContextKey(app.data) && Date.now() - hub.loadedAt < 15000) { renderStatsLeaders(); return; }
+      const base = app.data;
+      hub.loading = true;
+      hub.error = '';
+      renderStatsLeaders();
+      try {
+        const state = await fetchLeaderJson(`${API}/state/nfl`);
+        const season = Number(state.season || base.league.season);
+        const week = Math.max(1, Number(state.week || state.leg || 1));
+        const type = ['pre','post','regular'].includes(state.season_type) ? state.season_type : 'regular';
+        const key = `${base.league.league_id}:${season}:${type}:${week}`;
+        const sameWeek = hub.key === key;
+        if (!sameWeek) { hub.rows = []; hub.loadedAt = 0; hub.data = null; renderStatsLeaders(); }
+        const [stats, matchups, rosters, schedule, espnSchedule] = await Promise.all([
+          fetchWeeklyLeaderStats(season, week, type),
+          fetchLeaderJson(`${API}/league/${base.league.league_id}/matchups/${week}`).catch(() => []),
+          fetchLeaderJson(`${API}/league/${base.league.league_id}/rosters`).catch(() => base.rosters || []),
+          fetchLeaderJson(`https://api.sleeper.app/schedule/nfl/${type}/${season}`).catch(() => sameWeek ? hub.data?.schedule || [] : []),
+          fetchEspnWeekSchedule(season, week, type, fetchLeaderJson).catch(() => sameWeek ? hub.data?.espnSchedule || [] : [])
+        ]);
+        if (String(app.data?.league?.league_id) !== String(base.league.league_id)) return;
+        const context = { ...app.data, state, selectedWeek: week, matchups, rosters, schedule, espnSchedule };
+        if (Number(app.data.selectedWeek) !== week || Number(app.data.state?.season) !== season) {
+          context.projections = {}; context.originalProjectionSnapshot = null;
+        }
+        hub.previous = sameWeek ? Object.fromEntries(hub.rows.map(row => [row.player_id, row.points])) : {};
+        hub.rows = buildStatsLeaderRows(stats, context);
+        hub.stats = stats; hub.data = context; hub.key = key; hub.loadedAt = Date.now();
+        if (app.activePlayerData && app.activePlayerId) {
+          app.activePlayerData = context;
+          app.activePlayerStats = stats[app.activePlayerId] || {};
+          els.playerModalBody.innerHTML = renderPlayerModalBody(app.activePlayerId, app.activePlayerStats);
+        }
+      } catch (err) {
+        hub.error = err.message || 'Could not load scoring';
+      } finally {
+        hub.loading = false;
+        renderStatsLeaders();
+      }
+    }
+
+    function startLeaderRefresh() {
+      clearInterval(app.statsLeaders.timer);
+      app.statsLeaders.timer = null;
+      const seconds = Number(els.leaderLive.value);
+      if (seconds && document.getElementById('leaders').classList.contains('active')) {
+        app.statsLeaders.timer = setInterval(() => {
+          if (!document.hidden) loadStatsLeaders({ force: true });
+        }, seconds * 1000);
+      }
+      renderStatsLeaders();
+    }
+
     function renderAll(data) {
       renderTeamSelector(data);
       renderOverview(data);
       renderMatchups(data);
       renderTransactions(data);
       renderWaivers(data);
+      renderStatsLeaders();
+      if (document.getElementById('leaders').classList.contains('active')) loadStatsLeaders({ force: true });
       resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
       renderSettings(data);
@@ -4701,19 +4981,30 @@
       }
     }
 
+    document.querySelectorAll('[data-leader-position]').forEach(btn => {
+      btn.addEventListener('click', () => { app.statsLeaders.position = btn.dataset.leaderPosition; renderStatsLeaders(); });
+    });
+    els.leaderSearch.addEventListener('input', renderStatsLeaders);
+    [els.leaderScope, els.leaderGame, els.leaderLimit].forEach(el => el.addEventListener('change', renderStatsLeaders));
+    els.leaderLive.addEventListener('change', startLeaderRefresh);
+    els.leaderRefresh.addEventListener('click', () => loadStatsLeaders({ force: true }));
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && Number(els.leaderLive.value) && document.getElementById('leaders').classList.contains('active')) loadStatsLeaders({ force: true });
+    });
+
     document.addEventListener('click', event => {
       const refreshBtn = event.target.closest('#refreshPlayerStatsBtn');
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player');
-      if (playerRow) openPlayerModal(playerRow.dataset.playerId);
+      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row');
+      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player');
-        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId); }
+        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row');
+        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
       }
     });
     els.playerModalClose.addEventListener('click', closePlayerModal);
@@ -4829,6 +5120,7 @@
       renderOverview(app.data);
       renderMatchups(app.data);
       renderRosters(app.data);
+      renderStatsLeaders();
       if (app.projectionHub.loaded) renderMultiProjections(app.data);
       app.exportSnapshot = buildExport(app.data);
       els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
@@ -4838,6 +5130,9 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
+
+        startLeaderRefresh();
+        if (btn.dataset.tab === 'leaders') loadStatsLeaders({ force: false });
 
         if (btn.dataset.tab === 'transactions') {
           if (app.data) renderTransactions(app.data);
