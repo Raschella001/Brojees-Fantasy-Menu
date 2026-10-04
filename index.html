@@ -1084,7 +1084,7 @@
     .waiver-player-name { color: var(--text); font-weight: 900; }
     .waiver-player-sub { margin-top: 2px; color: var(--muted); font-size: 10px; }
     .waiver-proj { color: var(--accent-2); font-weight: 900; font-variant-numeric: tabular-nums; }
-    .waiver-depth { white-space: nowrap; }
+    .waiver-pos-rank { white-space: nowrap; font-weight: 900; color: #c8ddff; }
     .waiver-injury { font-weight: 800; }
     .waiver-injury.healthy { color: #9eabc4; }
     .waiver-injury.questionable { color: #fbbf24; }
@@ -1709,7 +1709,7 @@
             <select id="waiverSort">
               <option value="top">Top Available</option>
               <option value="projection">Projection: High to Low</option>
-              <option value="depth">Depth Chart</option>
+              <option value="position_rank">Position Rank</option>
               <option value="kickoff">Kickoff Time</option>
               <option value="name">Player Name</option>
               <option value="team">NFL Team</option>
@@ -1749,7 +1749,7 @@
                 <th><button class="waiver-sort-btn" type="button" data-waiver-sort="opponent">Opponent</button></th>
                 <th><button class="waiver-sort-btn" type="button" data-waiver-sort="kickoff">Kickoff</button></th>
                 <th><button class="waiver-sort-btn" type="button" data-waiver-sort="projection">Proj</button></th>
-                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="depth">Depth</button></th>
+                <th><button class="waiver-sort-btn" type="button" data-waiver-sort="position_rank">Pos Rank</button></th>
                 <th><button class="waiver-sort-btn" type="button" data-waiver-sort="injury">Injury</button></th>
               </tr>
             </thead>
@@ -1895,8 +1895,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.4.1';
+    const APP_VERSION = '2.5';
     const PATCH_NOTES = [
+      { version: '2.5', note: 'Replaced depth-chart display with season-to-date fantasy position rank, calculated from Sleeper season stats using this league\'s scoring settings. Position rank now appears on waivers, mobile cards, player popups, and JSON exports.' },
       { version: '2.4.1', note: 'Player popups now calculate current-week actual fantasy points from Sleeper stat lines for unrostered/waiver players, using this league\'s scoring settings. Rostered players still use Sleeper matchup points when available.' },
       { version: '2.4', note: 'Added a responsive Transactions tab for weekly Sleeper activity and live NFL game scores inside player popups while a player\'s game is in progress.' },
       { version: '2.3.1', note: 'External projection sources now use their own projected stats first and fill only missing scored categories from Sleeper before applying the league scoring settings. The UI continues to show only each provider\'s final Brojees-adjusted score.' },
@@ -2250,12 +2251,87 @@
       return stats || {};
     }
 
-    function playerBioItems(p) {
+    function normalizeSeasonStats(raw) {
+      const out = {};
+      if (Array.isArray(raw)) {
+        for (const row of raw) {
+          const id = row?.player_id ?? row?.player?.player_id ?? row?.player?.id;
+          if (!id) continue;
+          out[String(id)] = row?.stats || row || {};
+        }
+        return out;
+      }
+      if (raw && typeof raw === 'object') {
+        for (const [key, row] of Object.entries(raw)) {
+          const id = row?.player_id ?? row?.player?.player_id ?? row?.player?.id ?? key;
+          if (!id || String(id).startsWith('TEAM_')) continue;
+          out[String(id)] = row?.stats || row || {};
+        }
+      }
+      return out;
+    }
+
+    function buildPositionRankings(rawStats, scoring = app.data?.league?.scoring_settings || {}) {
+      const seasonStats = normalizeSeasonStats(rawStats);
+      const allowed = new Set(['QB','RB','WR','TE','K','DEF']);
+      const buckets = {};
+      for (const [id, stats] of Object.entries(seasonStats)) {
+        const p = playerFromId(id);
+        const fantasyPositions = Array.isArray(p.fantasy_positions) ? p.fantasy_positions : [];
+        const pos = allowed.has(p.position) ? p.position : fantasyPositions.find(x => allowed.has(x));
+        if (!pos) continue;
+        const points = scoreProjectionStats(stats || {}, scoring);
+        if (!Number.isFinite(Number(points))) continue;
+        if (!buckets[pos]) buckets[pos] = [];
+        buckets[pos].push({ player_id: String(id), position: pos, points: Math.round(Number(points) * 100) / 100 });
+      }
+
+      const rankings = {};
+      for (const [pos, rows] of Object.entries(buckets)) {
+        rows.sort((a, b) => (b.points - a.points) || a.player_id.localeCompare(b.player_id));
+        let competitionRank = 0;
+        let previousPoints = null;
+        rows.forEach((row, index) => {
+          if (previousPoints === null || Math.abs(row.points - previousPoints) > 0.0001) competitionRank = index + 1;
+          rankings[row.player_id] = {
+            position: pos,
+            rank: competitionRank,
+            points: row.points,
+            position_count: rows.length
+          };
+          previousPoints = row.points;
+        });
+      }
+      return rankings;
+    }
+
+    function positionRankForPlayer(playerId, data = app.data) {
+      return data?.positionRankings?.[String(playerId)] || null;
+    }
+
+    function positionRankText(playerId, data = app.data, { includePoints = false } = {}) {
+      const rank = positionRankForPlayer(playerId, data);
+      if (!rank || !Number.isFinite(Number(rank.rank))) return '—';
+      const base = `${rank.position || playerFromId(playerId).position || 'POS'} #${rank.rank}${rank.position_count ? ` of ${rank.position_count}` : ''}`;
+      return includePoints && Number.isFinite(Number(rank.points)) ? `${base} · ${numberOrDash(rank.points, 2)} pts` : base;
+    }
+
+    function playerSnapshot(playerId, data = app.data) {
+      const p = playerFromId(playerId);
+      const rank = positionRankForPlayer(playerId, data);
+      return {
+        ...p,
+        position_rank: rank?.rank ?? null,
+        season_fantasy_points: Number.isFinite(Number(rank?.points)) ? Number(rank.points) : null
+      };
+    }
+
+    function playerBioItems(p, data = app.data) {
       const items = [
         ['NFL Team', p.team || '—'], ['Position', p.position || '—'], ['Jersey', p.number !== null && p.number !== undefined ? `#${p.number}` : '—'],
         ['Age', p.age ?? '—'], ['Height', p.height || '—'], ['Weight', p.weight ? `${p.weight} lb` : '—'], ['College', p.college || '—'],
         ['Experience', Number.isFinite(Number(p.years_exp)) ? `${p.years_exp} yr` : '—'],
-        ['Depth Chart', p.depth_chart_order ? `#${p.depth_chart_order}${p.depth_chart_position ? ` · ${p.depth_chart_position}` : ''}` : (p.depth_chart_position || '—')],
+        ['Position Rank', positionRankText(p.player_id, data, { includePoints: true })],
         ['Player Status', p.status || '—'], ['Injury', p.injury_status || '—'], ['Practice', p.practice_participation || '—']
       ];
       return items.map(([key, value]) => `<div class="player-bio-item"><div class="player-bio-key">${escapeHtml(key)}</div><div class="player-bio-value">${escapeHtml(value)}</div></div>`).join('');
@@ -2337,7 +2413,7 @@
           <div class="player-game-strip">${gameStatusBadge(gameInfo)} <strong>${escapeHtml(opponent || gameInfo.label)}</strong> ${kickoff.display ? `<span>${escapeHtml(kickoff.display)}</span>` : ''} ${rosterCtx ? `<span>Fantasy roster: <strong>${escapeHtml(rosterCtx.team_name)}</strong></span>` : '<span>Unrostered</span>'}</div>
           <div id="playerLiveGameScore">${livePlayerGameScoreHtml(playerId, data)}</div>
         </section>
-        <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p)}</div></section>
+        <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p, data)}</div></section>
         <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
     }
 
@@ -2347,7 +2423,9 @@
       app.activePlayerStats = null;
       const p = playerFromId(playerId);
       els.playerModalName.textContent = p.full_name || 'Player';
-      els.playerModalSubtitle.textContent = [p.team, p.position, p.injury_status].filter(Boolean).join(' · ');
+      const rank = positionRankForPlayer(playerId, app.data);
+      const positionLabel = rank ? `${rank.position || p.position} #${rank.rank}` : p.position;
+      els.playerModalSubtitle.textContent = [p.team, positionLabel, p.injury_status].filter(Boolean).join(' · ');
       els.playerModalHeadshot.style.display = '';
       els.playerModalHeadshotFallback.style.display = 'none';
       els.playerModalHeadshot.src = `https://sleepercdn.com/content/nfl/players/${encodeURIComponent(playerId)}.jpg`;
@@ -2563,6 +2641,28 @@
         }
       }
       if (lastError) console.warn('Sleeper projections unavailable:', lastError);
+      return {};
+    }
+
+    async function fetchSeasonStats(season, seasonType = 'regular') {
+      const type = ['pre','post','regular'].includes(String(seasonType || '').toLowerCase())
+        ? String(seasonType).toLowerCase()
+        : 'regular';
+      const urls = [
+        `${API}/stats/nfl/${type}/${season}`,
+        `https://api.sleeper.com/stats/nfl/${encodeURIComponent(season)}?season_type=${encodeURIComponent(type)}`
+      ];
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          const raw = await fetchJson(url);
+          const normalized = normalizeSeasonStats(raw);
+          if (Object.keys(normalized).length) return normalized;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (lastError) console.warn('Sleeper season stats unavailable:', lastError);
       return {};
     }
 
@@ -2901,11 +3001,12 @@
       const season = Number(state?.season || league?.season || new Date().getFullYear());
       const seasonTypeRaw = String(state?.season_type || league?.season_type || 'regular').toLowerCase();
       const scheduleSeasonType = ['pre','post','regular'].includes(seasonTypeRaw) ? seasonTypeRaw : 'regular';
-      const [matchups, transactions, draftPicks, projections, schedule, espnSchedule] = await Promise.all([
+      const [matchups, transactions, draftPicks, projections, seasonStats, schedule, espnSchedule] = await Promise.all([
         fetchJson(`${API}/league/${leagueId}/matchups/${week}`).catch(() => []),
         fetchJson(`${API}/league/${leagueId}/transactions/${week}`).catch(() => []),
         league?.draft_id ? fetchJson(`${API}/draft/${league.draft_id}/picks`).catch(() => []) : Promise.resolve([]),
         fetchWeekProjections(season, week).catch(() => ({})),
+        fetchSeasonStats(season, 'regular').catch(() => ({})),
         fetchJson(`https://api.sleeper.app/schedule/nfl/${scheduleSeasonType}/${season}`).catch(() => []),
         fetchEspnWeekSchedule(season, week, seasonTypeRaw).catch(() => [])
       ]);
@@ -2914,21 +3015,22 @@
       const originalProjectionSnapshot = await loadOrCreateOriginalProjectionSnapshot(
         leagueId, season, week, projections || {}, league, matchups || []
       );
+      const positionRankings = buildPositionRankings(seasonStats || {}, league?.scoring_settings || {});
       app.originalProjectionSnapshot = originalProjectionSnapshot;
-      return { league, rosters, users, state, drafts, tradedPicks, matchups, transactions, draftPicks, projections: projections || {}, originalProjectionSnapshot, schedule: schedule || [], espnSchedule: espnSchedule || [], selectedWeek: week };
+      return { league, rosters, users, state, drafts, tradedPicks, matchups, transactions, draftPicks, projections: projections || {}, seasonStats: seasonStats || {}, positionRankings, originalProjectionSnapshot, schedule: schedule || [], espnSchedule: espnSchedule || [], selectedWeek: week };
     }
 
     function waiverRelevanceScore(player, data = app.data) {
       const proj = Number(player?.projected_points ?? projectedPoints(player?.player_id, data));
-      const depth = Number(player?.depth_chart_order);
+      const rank = Number(positionRankForPlayer(player?.player_id, data)?.rank);
       const statusText = String(player?.status || '').toLowerCase();
       const injury = String(player?.injury_status || '').toUpperCase();
 
       let score = Number.isFinite(proj) ? proj * 10 : 0;
-      if (depth === 1) score += 30;
-      else if (depth === 2) score += 18;
-      else if (depth === 3) score += 10;
-      else if (depth === 4) score += 4;
+      if (Number.isFinite(rank) && rank <= 12) score += 30;
+      else if (Number.isFinite(rank) && rank <= 24) score += 18;
+      else if (Number.isFinite(rank) && rank <= 36) score += 10;
+      else if (Number.isFinite(rank) && rank <= 48) score += 4;
       if (statusText === 'active') score += 5;
       if (injury === 'IR' || injury === 'PUP') score -= 50;
       else if (injury === 'OUT') score -= 20;
@@ -2965,9 +3067,12 @@
         const gameInfo = playerGameInfo(base.player_id, data);
         const kickoff = playerKickoffInfo(base.player_id, data);
         const opponent = waiverOpponent(base.player_id, data);
+        const rank = positionRankForPlayer(base.player_id, data);
         return {
           ...full,
           projected_points: Number.isFinite(Number(base.projected_points)) ? Number(base.projected_points) : null,
+          position_rank: Number.isFinite(Number(rank?.rank)) ? Number(rank.rank) : null,
+          season_fantasy_points: Number.isFinite(Number(rank?.points)) ? Number(rank.points) : null,
           relevance_score: waiverRelevanceScore(full, data),
           opponent,
           kickoff,
@@ -2988,7 +3093,7 @@
         app.waiverSortDir = app.waiverSortDir === 'asc' ? 'desc' : 'asc';
       } else {
         app.waiverSortKey = key;
-        app.waiverSortDir = direction || (['name','team','position','opponent','kickoff','depth'].includes(key) ? 'asc' : 'desc');
+        app.waiverSortDir = direction || (['name','team','position','opponent','kickoff','position_rank'].includes(key) ? 'asc' : 'desc');
       }
       if (els.waiverSort && [...els.waiverSort.options].some(o => o.value === key)) els.waiverSort.value = key;
       if (els.waiverTopBtn) els.waiverTopBtn.classList.toggle('active', key === 'top');
@@ -2998,7 +3103,7 @@
     function compareWaiverRows(a, b, key) {
       if (key === 'top') return (a.relevance_score - b.relevance_score) || ((a.projected_points ?? -999) - (b.projected_points ?? -999));
       if (key === 'projection') return (a.projected_points ?? -999) - (b.projected_points ?? -999);
-      if (key === 'depth') return (Number(a.depth_chart_order) || 99) - (Number(b.depth_chart_order) || 99) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'position_rank') return (Number(a.position_rank) || 9999) - (Number(b.position_rank) || 9999) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
       if (key === 'kickoff') return (a.kickoff_ts - b.kickoff_ts) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
       if (key === 'name') return String(a.full_name || '').localeCompare(String(b.full_name || ''));
       if (key === 'team') return String(a.team || '').localeCompare(String(b.team || '')) || String(a.full_name || '').localeCompare(String(b.full_name || ''));
@@ -3026,7 +3131,7 @@
       let rows = rawRows.filter(row => {
         if (position !== 'ALL' && String(row.position) !== position) return false;
         if (!search) return true;
-        const haystack = [row.full_name, row.team, row.position, row.opponent, row.injury_status, row.depth_chart_position]
+        const haystack = [row.full_name, row.team, row.position, row.opponent, row.injury_status, row.position_rank ? `${row.position}${row.position_rank}` : '']
           .filter(Boolean).join(' ').toLowerCase();
         return haystack.includes(search);
       });
@@ -3041,7 +3146,7 @@
       const projectionCount = rawRows.filter(r => Number.isFinite(Number(r.projected_points))).length;
       els.waiverWeekPill.textContent = `Week ${week}`;
       els.waiverStatus.textContent = `Relevant unrostered QB/RB/WR/TE/K players · ${projectionCount} with Week ${week} projections.`;
-      els.waiverSummary.innerHTML = `<strong>${rows.length}</strong> shown · <strong>${rawRows.length}</strong> relevant free agents · ${position === 'ALL' ? 'All positions' : escapeHtml(position)} · ${search ? `Search: <strong>${escapeHtml(els.waiverSearch.value)}</strong> · ` : ''}Top Available blends projection, depth chart, active status, and injury availability.`;
+      els.waiverSummary.innerHTML = `<strong>${rows.length}</strong> shown · <strong>${rawRows.length}</strong> relevant free agents · ${position === 'ALL' ? 'All positions' : escapeHtml(position)} · ${search ? `Search: <strong>${escapeHtml(els.waiverSearch.value)}</strong> · ` : ''}Top Available blends projection, season position rank, active status, and injury availability.`;
 
       document.querySelectorAll('[data-waiver-position]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.waiverPosition === position);
@@ -3050,14 +3155,14 @@
 
       document.querySelectorAll('[data-waiver-sort]').forEach(btn => {
         const base = btn.dataset.waiverSort;
-        const labels = { name:'Player', position:'Pos', team:'NFL', opponent:'Opponent', kickoff:'Kickoff', projection:'Proj', depth:'Depth', injury:'Injury' };
+        const labels = { name:'Player', position:'Pos', team:'NFL', opponent:'Opponent', kickoff:'Kickoff', projection:'Proj', position_rank:'Pos Rank', injury:'Injury' };
         btn.textContent = (labels[base] || base) + waiverSortIndicator(base);
       });
 
       const tableHtml = rows.map((row, index) => {
         const injury = row.injury_status || 'Healthy';
         const injuryClass = waiverInjuryClass(injury);
-        const depth = row.depth_chart_order ? `#${row.depth_chart_order}${row.depth_chart_position ? ` ${row.depth_chart_position}` : ''}` : (row.depth_chart_position || '—');
+        const positionRank = Number.isFinite(Number(row.position_rank)) ? `#${row.position_rank}` : '—';
         return `<tr class="waiver-player-row" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
           <td class="waiver-rank">${index + 1}</td>
           <td class="waiver-player-cell"><div class="waiver-player-name">${escapeHtml(row.full_name)}</div><div class="waiver-player-sub">${escapeHtml([row.team, row.position].filter(Boolean).join(' · '))}</div></td>
@@ -3066,7 +3171,7 @@
           <td class="waiver-game">${escapeHtml(row.opponent || '—')}</td>
           <td>${waiverGameCell(row)}</td>
           <td class="waiver-proj">${row.projected_points === null ? '—' : numberOrDash(row.projected_points, 2)}</td>
-          <td class="waiver-depth">${escapeHtml(depth)}</td>
+          <td class="waiver-pos-rank">${escapeHtml(positionRank)}</td>
           <td><span class="waiver-injury ${escapeHtml(injuryClass)}">${escapeHtml(injury)}</span></td>
         </tr>`;
       }).join('');
@@ -3074,7 +3179,9 @@
       const mobileHtml = rows.map((row, index) => {
         const injury = row.injury_status || 'Healthy';
         const injuryClass = waiverInjuryClass(injury);
-        const depth = row.depth_chart_order ? `Depth #${row.depth_chart_order}${row.depth_chart_position ? ` ${row.depth_chart_position}` : ''}` : (row.depth_chart_position ? `Depth ${row.depth_chart_position}` : 'Depth —');
+        const rankText = Number.isFinite(Number(row.position_rank))
+          ? `${row.position || 'POS'} #${row.position_rank}${Number.isFinite(Number(row.season_fantasy_points)) ? ` · ${numberOrDash(row.season_fantasy_points, 2)} pts` : ''}`
+          : 'Pos Rank —';
         return `<article class="waiver-mobile-card waiver-player-row" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
           <div class="waiver-mobile-top">
             <div class="waiver-mobile-rank">#${index + 1}</div>
@@ -3082,7 +3189,7 @@
             <div><div class="waiver-mobile-proj">${row.projected_points === null ? '—' : numberOrDash(row.projected_points, 2)}</div><div class="waiver-mobile-proj-label">Proj</div></div>
           </div>
           <div class="waiver-mobile-details">
-            <span>${escapeHtml(depth)}</span>
+            <span>${escapeHtml(rankText)}</span>
             <span class="waiver-injury ${escapeHtml(injuryClass)}">${escapeHtml(injury)}</span>
             <span>${escapeHtml(row.kickoff?.display || 'Kickoff —')}</span>
             ${gameStatusBadge(row.game_info)}
@@ -3663,14 +3770,15 @@
         if (['retired', 'complete'].includes(statusText)) continue;
 
         const proj = projectedPoints(id, data);
-        const depth = Number(p.depth_chart_order);
+        const rankInfo = positionRankForPlayer(id, data);
+        const rank = Number(rankInfo?.rank);
         const injury = String(p.injury_status || '').toUpperCase();
 
         let relevance = Number.isFinite(proj) ? proj * 10 : 0;
-        if (depth === 1) relevance += 30;
-        else if (depth === 2) relevance += 18;
-        else if (depth === 3) relevance += 10;
-        else if (depth === 4) relevance += 4;
+        if (Number.isFinite(rank) && rank <= 12) relevance += 30;
+        else if (Number.isFinite(rank) && rank <= 24) relevance += 18;
+        else if (Number.isFinite(rank) && rank <= 36) relevance += 10;
+        else if (Number.isFinite(rank) && rank <= 48) relevance += 4;
         if (statusText === 'active') relevance += 5;
         if (injury === 'IR' || injury === 'PUP') relevance -= 50;
         else if (injury === 'OUT') relevance -= 20;
@@ -3683,7 +3791,8 @@
           team: p.team,
           status: p.status ?? null,
           injury_status: p.injury_status ?? null,
-          depth_chart_order: p.depth_chart_order ?? null,
+          position_rank: Number.isFinite(rank) ? rank : null,
+          season_fantasy_points: Number.isFinite(Number(rankInfo?.points)) ? Number(rankInfo.points) : null,
           projected_points: proj,
           game_status: playerGameInfo(id, data).status,
           _relevance: relevance
@@ -3698,7 +3807,7 @@
         candidateCounts[pos] = bucket.length;
         bucket.sort((a, b) =>
           (b._relevance - a._relevance) ||
-          ((a.depth_chart_order ?? 99) - (b.depth_chart_order ?? 99)) ||
+          ((a.position_rank ?? 9999) - (b.position_rank ?? 9999)) ||
           a.full_name.localeCompare(b.full_name)
         );
         const selected = bucket.slice(0, limits[pos]).map(({ _relevance, ...player }) => player);
@@ -3708,7 +3817,7 @@
 
       return {
         selection: 'relevant_unrostered_players',
-        selection_method: 'Unrostered QB/RB/WR/TE/K players, capped by position and prioritized by current-week projection, depth-chart order, active status, and injury availability.',
+        selection_method: 'Unrostered QB/RB/WR/TE/K players, capped by position and prioritized by current-week projection, season-to-date fantasy position rank under league scoring, active status, and injury availability.',
         limits_by_position: limits,
         candidate_counts_by_position: candidateCounts,
         included_counts_by_position: includedCounts,
@@ -3753,11 +3862,11 @@
           },
           starters: (roster.starters || []).map((id, i) => ({
             slot: startingSlots[i] || null,
-            ...playerFromId(id)
+            ...playerSnapshot(id, data)
           })),
-          bench: benchIds.map(playerFromId),
-          reserve: (roster.reserve || []).map(playerFromId),
-          taxi: (roster.taxi || []).map(playerFromId)
+          bench: benchIds.map(id => playerSnapshot(id, data)),
+          reserve: (roster.reserve || []).map(id => playerSnapshot(id, data)),
+          taxi: (roster.taxi || []).map(id => playerSnapshot(id, data))
         };
       });
 
@@ -3771,7 +3880,7 @@
         adjusted_projected_points: adjustedMatchupProjectionTotal(m, data),
         starters: (m.starters || []).map((id, i) => ({
           slot: startingSlots[i] || null,
-          ...playerFromId(id),
+          ...playerSnapshot(id, data),
           actual_points: actualPlayerPoints(m, id),
           projected_points: originalProjectedPoints(id, data),
           original_projected_points: originalProjectedPoints(id, data),
@@ -3783,7 +3892,7 @@
         })),
         bench: (m.players || [])
           .filter(id => !(m.starters || []).includes(id))
-          .map(id => ({ ...playerFromId(id), actual_points: actualPlayerPoints(m, id), projected_points: originalProjectedPoints(id, data), original_projected_points: originalProjectedPoints(id, data), adjusted_projected_points: adjustedPlayerProjection(m, id, data), game_progress: gameProgressFraction(id, data), game_status: playerGameInfo(id, data).status, kickoff: playerKickoffInfo(id, data), game: playerGameInfo(id, data).game }))
+          .map(id => ({ ...playerSnapshot(id, data), actual_points: actualPlayerPoints(m, id), projected_points: originalProjectedPoints(id, data), original_projected_points: originalProjectedPoints(id, data), adjusted_projected_points: adjustedPlayerProjection(m, id, data), game_progress: gameProgressFraction(id, data), game_status: playerGameInfo(id, data).status, kickoff: playerKickoffInfo(id, data), game: playerGameInfo(id, data).game }))
       }));
 
       const transactionExport = (transactions || []).map(t => ({
@@ -3793,14 +3902,14 @@
         created: t.created ? new Date(t.created).toISOString() : null,
         roster_ids: t.roster_ids || [],
         waiver_bid: t.settings?.waiver_bid ?? null,
-        adds: Object.entries(t.adds || {}).map(([playerId, rosterId]) => ({ roster_id: rosterId, ...playerFromId(playerId) })),
-        drops: Object.entries(t.drops || {}).map(([playerId, rosterId]) => ({ roster_id: rosterId, ...playerFromId(playerId) })),
+        adds: Object.entries(t.adds || {}).map(([playerId, rosterId]) => ({ roster_id: rosterId, ...playerSnapshot(playerId, data) })),
+        drops: Object.entries(t.drops || {}).map(([playerId, rosterId]) => ({ roster_id: rosterId, ...playerSnapshot(playerId, data) })),
         waiver_budget: t.waiver_budget || [],
         draft_picks: t.draft_picks || []
       }));
 
       return {
-        schema: 'sleeper-chatgpt-league-snapshot-v5',
+        schema: 'sleeper-chatgpt-league-snapshot-v6',
         exported_at: new Date().toISOString(),
         source: 'Sleeper public API',
         league_id: league.league_id,
@@ -3871,7 +3980,7 @@
             draft_slot: p.draft_slot,
             roster_id: p.roster_id,
             is_keeper: p.is_keeper ?? null,
-            player: playerFromId(p.player_id)
+            player: playerSnapshot(p.player_id, data)
           })),
           traded_picks: tradedPicks || []
         }
@@ -4412,20 +4521,24 @@
       const seasonTypeRaw = String(state?.season_type || baseData?.league?.season_type || 'regular').toLowerCase();
       const scheduleSeasonType = ['pre','post','regular'].includes(seasonTypeRaw) ? seasonTypeRaw : 'regular';
 
-      const [rosters, matchups, transactions, schedule, espnSchedule] = await Promise.all([
+      const [rosters, matchups, transactions, seasonStats, schedule, espnSchedule] = await Promise.all([
         fetchJson(`${API}/league/${leagueId}/rosters`).catch(() => baseData.rosters || []),
         fetchJson(`${API}/league/${leagueId}/matchups/${selectedWeek}`).catch(() => baseData.matchups || []),
         fetchJson(`${API}/league/${leagueId}/transactions/${selectedWeek}`).catch(() => baseData.transactions || []),
+        fetchSeasonStats(season, 'regular').catch(() => baseData.seasonStats || {}),
         fetchJson(`https://api.sleeper.app/schedule/nfl/${scheduleSeasonType}/${season}`).catch(() => baseData.schedule || []),
         fetchEspnWeekSchedule(season, selectedWeek, seasonTypeRaw).catch(() => baseData.espnSchedule || [])
       ]);
 
+      const positionRankings = buildPositionRankings(seasonStats || {}, baseData?.league?.scoring_settings || {});
       return {
         ...baseData,
         state,
         rosters,
         matchups,
         transactions,
+        seasonStats,
+        positionRankings,
         schedule,
         espnSchedule,
         selectedWeek
@@ -4617,7 +4730,7 @@
     els.waiverSort.addEventListener('change', () => {
       const key = els.waiverSort.value || 'top';
       app.waiverSortKey = key;
-      app.waiverSortDir = ['name','team','kickoff','depth'].includes(key) ? 'asc' : 'desc';
+      app.waiverSortDir = ['name','team','kickoff','position_rank'].includes(key) ? 'asc' : 'desc';
       if (app.data) renderWaivers(app.data);
     });
 
