@@ -1895,8 +1895,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.4';
+    const APP_VERSION = '2.4.1';
     const PATCH_NOTES = [
+      { version: '2.4.1', note: 'Player popups now calculate current-week actual fantasy points from Sleeper stat lines for unrostered/waiver players, using this league\'s scoring settings. Rostered players still use Sleeper matchup points when available.' },
       { version: '2.4', note: 'Added a responsive Transactions tab for weekly Sleeper activity and live NFL game scores inside player popups while a player\'s game is in progress.' },
       { version: '2.3.1', note: 'External projection sources now use their own projected stats first and fill only missing scored categories from Sleeper before applying the league scoring settings. The UI continues to show only each provider\'s final Brojees-adjusted score.' },
       { version: '2.3', note: 'Removed the limited sample projection source and replaced it with the free ESPN Fantasy projection feed through the Brojees Cloudflare Worker. Consensus now compares Sleeper + ESPN using this league\'s scoring settings.' },
@@ -2296,10 +2297,23 @@
       const gameInfo = playerGameInfo(playerId, data);
       const kickoff = playerKickoffInfo(playerId, data);
       const original = originalProjectedPoints(playerId, data);
-      const actualFantasy = matchup ? actualPlayerPoints(matchup, playerId) : null;
-      const live = matchup ? adjustedPlayerProjection(matchup, playerId, data) : original;
       const projectedStats = data?.projections?.[String(playerId)] || {};
       const statsReady = actualStats !== null;
+
+      // Rostered players can use Sleeper's official matchup fantasy points directly.
+      // Unrostered / waiver players are not present in league matchup objects, so their
+      // actual fantasy score is calculated from their current-week Sleeper stat line
+      // using this league's scoring_settings.
+      const matchupActual = matchup ? actualPlayerPoints(matchup, playerId) : null;
+      const statLineActual = statsReady
+        ? scoreProjectionStats(actualStats || {}, data?.league?.scoring_settings || {})
+        : null;
+      const actualFantasy =
+        matchupActual !== null && Number.isFinite(Number(matchupActual))
+          ? Number(matchupActual)
+          : (statLineActual !== null && Number.isFinite(Number(statLineActual)) ? Number(statLineActual) : null);
+
+      const live = matchup ? adjustedPlayerProjection(matchup, playerId, data) : original;
       const statRows = statRowsForPlayer(p.position, actualStats || {}, projectedStats);
       const sleeperGame = gameForTeam(p.team, data);
       const opponent = sleeperGame ? (String(sleeperGame.home) === String(p.team) ? `vs ${sleeperGame.away}` : `@ ${sleeperGame.home}`) : '';
