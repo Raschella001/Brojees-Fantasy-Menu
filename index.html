@@ -203,6 +203,97 @@
       border-color: #365175;
     }
 
+    .mobile-nav-toggle { display: none; }
+    .mobile-nav-toggle:focus-visible,
+    .dashboard-nav .tab-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 760px) {
+      .shell { padding-top: calc(80px + env(safe-area-inset-top, 0px)); }
+      .dashboard-nav {
+        position: fixed;
+        left: calc(12px + env(safe-area-inset-left, 0px));
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: min(320px, calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+        margin: 0;
+        pointer-events: none;
+      }
+      .mobile-nav-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 100%;
+        min-height: 52px;
+        padding: 12px 15px;
+        border: 2px solid var(--accent);
+        border-radius: 16px;
+        background: var(--panel);
+        color: var(--text);
+        box-shadow: 0 8px 28px rgba(0,0,0,.5);
+        text-align: left;
+        pointer-events: auto;
+      }
+      .mobile-nav-current {
+        min-width: 0;
+        padding-left: 12px;
+        border-left: 1px solid var(--line);
+        overflow-wrap: anywhere;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .mobile-nav-action {
+        order: -1;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+      .hamburger-icon { order: -1; display: grid; gap: 4px; width: 20px; }
+      .hamburger-icon span { display: block; height: 2px; border-radius: 2px; background: currentColor; }
+      .dashboard-nav.is-open .hamburger-icon span:first-child { transform: translateY(6px) rotate(45deg); }
+      .dashboard-nav.is-open .hamburger-icon span:nth-child(2) { opacity: 0; }
+      .dashboard-nav.is-open .hamburger-icon span:last-child { transform: translateY(-6px) rotate(-45deg); }
+      .dashboard-nav .tabs {
+        display: none;
+        width: 100%;
+        min-height: 0;
+        /* The fallback supports older browsers; dvh follows mobile browser chrome. */
+        max-height: calc(100vh - 112px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+        max-height: calc(100dvh - 112px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+        margin: 10px 0 0;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: 0 8px 28px rgba(0,0,0,.5);
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 5px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        pointer-events: auto;
+      }
+      .dashboard-nav.is-open .tabs { display: flex; }
+      .dashboard-nav .tab-btn {
+        width: 100%;
+        min-height: 44px;
+        flex-shrink: 0;
+        text-align: left;
+        white-space: normal;
+      }
+    }
+
     .tab { display: none; }
     .tab.active { display: block; }
 
@@ -668,7 +759,7 @@
 
     @media (max-width: 640px) {
       .shell {
-        padding-top: 10px;
+        padding-top: calc(80px + env(safe-area-inset-top, 0px));
         padding-bottom: max(30px, env(safe-area-inset-bottom));
       }
 
@@ -694,18 +785,6 @@
       /* iOS Safari avoids focus-zoom when form controls are at least 16px. */
       .field input,
       .field select { font-size: 16px; }
-
-      .tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 3px;
-        margin-top: 14px;
-      }
-      .tab-btn {
-        flex: 0 0 auto;
-        white-space: nowrap;
-      }
 
       .panel { padding: 12px; border-radius: 13px; }
       .panel-head { align-items: flex-start; flex-wrap: wrap; }
@@ -1716,7 +1795,12 @@
 
     <div class="notice" id="notice"></div>
 
-    <nav class="tabs" aria-label="Dashboard sections">
+    <div class="dashboard-nav" id="dashboardNav">
+      <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="dashboardTabs" aria-label="Open navigation menu">
+        <span class="mobile-nav-current" id="mobileNavCurrent">Overview</span>
+        <span class="mobile-nav-action" aria-hidden="true"><span id="mobileNavAction">Menu</span><span class="hamburger-icon"><span></span><span></span><span></span></span></span>
+      </button>
+    <nav class="tabs" id="dashboardTabs" aria-label="Dashboard sections">
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
       <button class="tab-btn" data-tab="transactions">Transactions</button>
@@ -1727,6 +1811,7 @@
       <button class="tab-btn" data-tab="settings">Settings</button>
       <button class="tab-btn" data-tab="raw">Raw Export</button>
     </nav>
+    </div>
 
     <section id="overview" class="tab active">
       <div class="empty" id="overviewEmpty">
@@ -2057,8 +2142,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.7.3';
+    const APP_VERSION = '2.7.6';
     const PATCH_NOTES = [
+      { version: '2.7.6', note: 'Moved the floating mobile Menu button to the top-left corner. Navigation expands downward within the screen, with safe-area spacing and room above the page header.' },
+      { version: '2.7.5', note: 'Moved mobile navigation to a floating bottom-left Menu button with a highlighted hamburger icon and current section label. Tabs expand upward into a screen-sized, scrollable menu with safe-area spacing.' },
+      { version: '2.7.4', note: 'Added a mobile hamburger menu with all dashboard sections in a vertical list. The current section stays visible, and the menu closes after selection. Desktop navigation keeps its tab layout.' },
       { version: '2.7.3', note: 'Condensed Live Projected Standings into a table matching Current Standings, with team avatars, compact rows, projected record/PF, weekly projection, matchup result, and rank movement. Select a team to expand its baseline and lineup.' },
       { version: '2.7.2', note: 'Combined current standings and Live Projected Standings into one Overview card with tabs. Switching views preserves live controls, sorting, and expanded lineups.' },
       { version: '2.7.1', note: 'Moved the league team forecast to Overview as Live Projected Standings, with its own refresh controls. Stats Leaders now focuses on player scoring.' },
@@ -5549,8 +5637,45 @@
       els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
     });
 
+    const dashboardNav = document.getElementById('dashboardNav');
+    const mobileNavToggle = document.getElementById('mobileNavToggle');
+    const mobileNavCurrent = document.getElementById('mobileNavCurrent');
+    const mobileNavAction = document.getElementById('mobileNavAction');
+    const mobileNavMedia = window.matchMedia('(max-width: 760px)');
+
+    function setMobileNavOpen(open, restoreFocus = false) {
+      dashboardNav.classList.toggle('is-open', open);
+      mobileNavToggle.setAttribute('aria-expanded', String(open));
+      mobileNavToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      mobileNavAction.textContent = open ? 'Close' : 'Menu';
+      if (restoreFocus && mobileNavMedia.matches) mobileNavToggle.focus();
+    }
+
+    mobileNavToggle.addEventListener('click', () => {
+      setMobileNavOpen(!dashboardNav.classList.contains('is-open'));
+    });
+    document.addEventListener('click', event => {
+      if (dashboardNav.classList.contains('is-open') && !dashboardNav.contains(event.target)) {
+        setMobileNavOpen(false);
+      }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && dashboardNav.classList.contains('is-open')) {
+        event.preventDefault();
+        setMobileNavOpen(false, true);
+      }
+    });
+    // Reset the disclosure when switching between phone and desktop layouts.
+    if (mobileNavMedia.addEventListener) {
+      mobileNavMedia.addEventListener('change', () => setMobileNavOpen(false));
+    } else {
+      mobileNavMedia.addListener(() => setMobileNavOpen(false));
+    }
+
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        mobileNavCurrent.textContent = btn.textContent.trim();
+        setMobileNavOpen(false, true);
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
 
