@@ -1777,10 +1777,76 @@
     .projected-standings-help > div { margin-top: 6px; line-height: 1.5; }
     @media (max-width: 850px) { .projected-standings-controls { grid-template-columns: repeat(2,minmax(0,1fr)); } }
     @media (prefers-reduced-motion: reduce) { .projected-standing-row.score-changed .projected-pf { animation: none; } }
+
+    /* A separate header disclosure and a persistent current-week matchup dock. */
+    .header-disclosure { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .header-disclosure button { font-size: 12px; padding: 8px 12px; }
+    .dashboard-setup[hidden], .game-day-bar[hidden], .game-day-panel[hidden] { display: none; }
+    body.game-day-docked .shell { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
+    .game-day-bar { position: fixed; z-index: 900; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); max-width: 1452px; margin-inline: auto; border: 1px solid #365175; border-radius: 16px; background: var(--panel-2); box-shadow: 0 10px 40px rgba(0,0,0,.55); }
+    .game-day-bottom { display: flex; align-items: stretch; gap: 6px; padding: 7px; }
+    .game-day-expand { flex: 1; min-width: 0; padding: 6px 10px; background: transparent; color: var(--text); text-align: left; }
+    .game-day-expand:hover { transform: none; background: rgba(96,165,250,.07); }
+    .game-day-expand:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .game-day-summary { display: grid; grid-template-columns: auto minmax(0,1fr) auto minmax(0,1fr) auto; align-items: center; gap: 12px; }
+    .game-day-label { font-size: 10px; font-weight: 800; color: var(--accent); letter-spacing: .06em; }
+    .game-day-team { display: grid; gap: 2px; min-width: 0; }
+    .game-day-team strong { font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .game-day-points { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .game-day-points small { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .game-day-team .small { font-size: 11px; }
+    .game-day-vs { color: var(--muted); font-size: 11px; }
+    .game-day-chevron { color: var(--accent); font-size: 20px; transition: transform .18s ease; }
+    .game-day-bar.is-expanded .game-day-chevron { transform: rotate(180deg); }
+    .game-day-prompt { grid-column: 2 / 5; font-size: 12px; }
+    .game-day-hide { align-self: center; padding: 8px; font-size: 12px; }
+    .game-day-panel { display: block; min-height: 0; max-height: 60vh; max-height: 60dvh; overflow-y: auto; border-bottom: 1px solid var(--line); border-radius: 16px 16px 0 0; }
+    .game-day-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; padding: 10px 12px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .game-day-controls .field { flex: 1 1 180px; min-width: 0; }
+    .game-day-controls label { font-size: 11px; }
+    .game-day-controls select { width: 100%; min-width: 0; }
+    .game-day-controls button { font-size: 12px; padding: 8px 10px; }
+    .game-day-status { flex-basis: 100%; font-size: 11px; }
+    .game-day-panel { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .game-day-rosters { min-height: 0; }
+    .game-day-rosters .matchup-lineups { margin: 0; }
+    .game-day-rosters .lineup-side { min-width: 0; }
+    .game-day-rosters .match-player { padding-top: 7px; padding-bottom: 7px; }
+    .game-day-rosters .mobile-lineup-team { display: flex; }
+    #mobileGameDayToggle { text-align: left; color: var(--text); }
+    @media (max-width: 760px) {
+      .game-day-summary { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto; gap: 6px; }
+      .game-day-label { grid-column: 1 / -1; }
+      .game-day-team .small { font-size: 10px; }
+      .game-day-prompt { grid-column: 1 / 4; }
+      .game-day-points { font-size: 18px; }
+      .game-day-controls { gap: 6px; padding: 8px; }
+      .game-day-controls .field { flex-basis: 140px; }
+      .game-day-controls select { font-size: 16px; }
+      .game-day-hide { font-size: 11px; }
+      .game-day-expand { padding: 5px; }
+      .game-day-panel { max-height: min(65vh, calc(100vh - 150px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))); max-height: min(65dvh, calc(100dvh - 150px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))); }
+    }
+    @media (prefers-reduced-motion: reduce) { .game-day-chevron { transition: none; } }
+    /* Only paint changes; cell dimensions and row heights stay unchanged. */
+    .live-value-change { --live-tint: rgba(110,231,183,.32); animation: live-value-fade 3s ease-out both; animation-delay: var(--live-delay, 0ms); }
+    .live-value-down { --live-tint: rgba(251,191,36,.35); }
+    @keyframes live-value-fade { 0%, 18% { box-shadow: inset 0 0 0 100px var(--live-tint); } 100% { box-shadow: inset 0 0 0 100px transparent; } }
+    @keyframes live-value-still { 0%, 99% { box-shadow: inset 0 0 0 100px var(--live-tint); } 100% { box-shadow: none; } }
+    @media (prefers-reduced-motion: reduce) { .live-value-change { animation-name: live-value-still; animation-timing-function: step-end; } }
   </style>
 </head>
 <body>
   <main class="shell">
+    <section class="game-day-bar" id="gameDayBar" aria-label="Game Day matchup" hidden>
+      <div class="game-day-panel" id="gameDayPanel" role="region" aria-label="Game Day roster details and controls" tabindex="0" hidden>
+        <div class="game-day-controls"><div class="field"><label for="gameDayTeam">Follow team</label><select id="gameDayTeam"><option value="">Select your team</option></select></div><div class="field"><label for="gameDayLive">Game Day refresh</label><select id="gameDayLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div><button id="gameDayRefresh" class="btn-primary" type="button">Refresh</button><button id="gameDayCollapse" class="btn-secondary" type="button">Collapse rosters</button><div class="game-day-status small" id="gameDayStatus" role="status">Refresh your league, then select a team.</div><div class="game-day-status small" id="gameDayProjectionNote">Pts = actual · Orig = original projection · Live = adjusted projection</div></div>
+        <div class="game-day-rosters" id="gameDayRosters"></div>
+      </div>
+      <div class="game-day-bottom"><button id="gameDayExpand" class="game-day-expand" type="button" aria-expanded="false" aria-controls="gameDayPanel" aria-label="Expand Game Day matchup and rosters"><span class="game-day-summary" id="gameDaySummary"><span class="game-day-label">GAME DAY</span><span class="game-day-prompt">Select a team to follow its matchup</span><span class="game-day-chevron" aria-hidden="true">⌃</span></span></button><button id="gameDayExit" class="btn-ghost game-day-hide" type="button" aria-label="Hide Game Day bar">Hide</button></div>
+    </section>
+    <div class="header-disclosure"><button id="headerToggle" class="btn-secondary" type="button" aria-expanded="true" aria-controls="dashboardSetup">Collapse header &amp; controls</button></div>
+    <div class="dashboard-setup" id="dashboardSetup">
     <section class="hero">
       <div>
         <div class="eyebrow">Sleeper Fantasy Football</div>
@@ -1792,6 +1858,7 @@
       <div class="hero-actions">
         <button class="btn-primary" id="updateBtn">Refresh League</button>
         <button class="btn-secondary" id="exportBtn" disabled>Export JSON</button>
+        <button class="btn-secondary" id="gameDayToggle" type="button" aria-pressed="false">Show Game Day</button>
       </div>
     </section>
 
@@ -1825,6 +1892,7 @@
       </div>
     </section>
 
+    </div>
     <div class="notice" id="notice"></div>
 
     <div class="mobile-nav-bounds" id="mobileNavBounds" aria-hidden="true"></div>
@@ -1844,7 +1912,7 @@
       <button class="tab-btn" data-tab="rosters">Rosters</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
       <button class="tab-btn" data-tab="raw">Raw Export</button>
-      <div class="mobile-nav-help"><span>Drag the Menu button to move it.</span><button id="mobileNavReset" type="button">Reset position</button></div>
+      <div class="mobile-nav-help"><button id="mobileGameDayToggle" type="button" aria-pressed="false">Show Game Day bar</button><span>Drag the Menu button to move it.</span><button id="mobileNavReset" type="button">Reset position</button></div>
     </nav>
     </div>
 
@@ -2177,8 +2245,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.7.7';
+    const APP_VERSION = '2.8.1';
     const PATCH_NOTES = [
+      { version: '2.8.1', note: 'Game Day is now a persistent expandable matchup bar across all tabs, showing your selected team, opponent, live scores, original/live projections, starters, and benches. It follows the current week independently of historical Matchups views. Header collapse is a separate remembered control.' },
+      { version: '2.8.0', note: 'Added a remembered compact Game Day mode with a small league/week header, refresh, and expandable controls. Recent score changes and projected record/PF/rank updates briefly highlight; corrections use amber. Highlights fade and respect reduced-motion settings.' },
       { version: '2.7.7', note: 'The floating mobile Menu button can now be dragged anywhere within the screen and remembers its position. Navigation opens in the available space, the hamburger animates into a close icon, and Reset position restores the top-left corner.' },
       { version: '2.7.6', note: 'Moved the floating mobile Menu button to the top-left corner. Navigation expands downward within the screen, with safe-area spacing and room above the page header.' },
       { version: '2.7.5', note: 'Moved mobile navigation to a floating bottom-left Menu button with a highlighted hamburger icon and current section label. Tabs expand upward into a screen-sized, scrollable menu with safe-area spacing.' },
@@ -2206,6 +2276,22 @@
     ];
 
     const els = {
+      gameDayBar: document.getElementById('gameDayBar'),
+      dashboardSetup: document.getElementById('dashboardSetup'),
+      gameDaySummary: document.getElementById('gameDaySummary'),
+      gameDayPanel: document.getElementById('gameDayPanel'),
+      gameDayExpand: document.getElementById('gameDayExpand'),
+      gameDayRosters: document.getElementById('gameDayRosters'),
+      gameDayTeam: document.getElementById('gameDayTeam'),
+      gameDayLive: document.getElementById('gameDayLive'),
+      gameDayStatus: document.getElementById('gameDayStatus'),
+      gameDayProjectionNote: document.getElementById('gameDayProjectionNote'),
+      gameDayRefresh: document.getElementById('gameDayRefresh'),
+      gameDayCollapse: document.getElementById('gameDayCollapse'),
+      gameDayExit: document.getElementById('gameDayExit'),
+      headerToggle: document.getElementById('headerToggle'),
+      gameDayToggle: document.getElementById('gameDayToggle'),
+      mobileGameDayToggle: document.getElementById('mobileGameDayToggle'),
       currentStandingsPanel: document.getElementById('currentStandingsPanel'),
       currentStandingsContent: document.getElementById('currentStandingsContent'),
       currentStandingsEmpty: document.getElementById('currentStandingsEmpty'),
@@ -2301,6 +2387,10 @@
     };
 
     const app = {
+      gameDayMode: false,
+      gameDayExpanded: false,
+      gameDayData: null,
+      headerCollapsed: false,
       standingsView: 'current',
       data: null,
       playerMap: {},
@@ -2314,7 +2404,7 @@
       activePlayerId: null,
       activePlayerData: null,
       teamLeaderSeeds: new Map(),
-      statsLeaders: { expandedTeams: new Set(), teamRows: [], teamData: null, teamLoadedAt: 0, teamError: '', previousTeams: {}, position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
+      statsLeaders: { matchupLoadedAt: 0, matchupError: '', gameDayProjectionError: '', expandedTeams: new Set(), teamRows: [], teamData: null, teamLoadedAt: 0, teamError: '', previousTeams: {}, position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
       activePlayerStats: null,
       playerStatsCache: new Map(),
       transactionWeek: null,
@@ -2337,6 +2427,186 @@
       }
     };
 
+    const liveChangeChannels = new Map();
+    const LIVE_CHANGE_DURATION = 3000;
+
+    function liveChangeContext(data) {
+      return JSON.stringify([data?.league?.league_id, data?.state?.season || data?.league?.season,
+        data?.state?.season_type || 'regular', data?.selectedWeek || data?.state?.week,
+        data?.league?.scoring_settings || {}]);
+    }
+
+    function recordLiveChanges(channel, context, rows) {
+      const now = Date.now();
+      let state = liveChangeChannels.get(channel);
+      if (!state || state.context !== context) {
+        state = { context, values: new Map(), changes: new Map() };
+        liveChangeChannels.set(channel, state);
+      }
+      const next = new Map();
+      for (const [id, fields] of rows) {
+        const normalized = Object.fromEntries(Object.entries(fields).map(([field, value]) =>
+          [field, typeof value === 'number' ? (Number.isFinite(value) ? Math.round(value * 100) / 100 : null) : value]));
+        const previous = state.values.get(String(id));
+        next.set(String(id), normalized);
+        if (!previous) continue;
+        for (const [field, value] of Object.entries(normalized)) {
+          const old = previous[field];
+          // Missing projections or first-time reported scores establish a baseline.
+          if (old == null || value == null || old === value) continue;
+          const decreasing = typeof value === 'number' && typeof old === 'number'
+            ? (field === 'rank' ? value > old : value < old) : false;
+          state.changes.set(`${id}:${field}`, { old, value, decreasing, at: now });
+        }
+      }
+      state.values = next;
+      for (const [key, change] of state.changes) {
+        if (now - change.at >= LIVE_CHANGE_DURATION) state.changes.delete(key);
+      }
+    }
+
+    function liveChangeAttrs(channel, id, field, baseClass = '', title = '') {
+      const change = liveChangeChannels.get(channel)?.changes.get(`${id}:${field}`);
+      const elapsed = change ? Math.max(0, Date.now() - change.at) : LIVE_CHANGE_DURATION;
+      const active = elapsed < LIVE_CHANGE_DURATION;
+      const classes = [baseClass, active ? `live-value-change${change.decreasing ? ' live-value-down' : ''}` : ''].filter(Boolean).join(' ');
+      const format = value => typeof value !== 'number' ? String(value) : field === 'rank' ? `#${value}` : value.toFixed(2);
+      const detail = active ? `Last update: ${format(change.old)} → ${format(change.value)}` : '';
+      return `${classes ? `class="${escapeHtml(classes)}"` : ''}${active ? ` style="--live-delay: -${elapsed}ms"` : ''}${title || detail ? ` title="${escapeHtml([title, detail].filter(Boolean).join(' · '))}"` : ''}`;
+    }
+
+    function replaceLiveContent(container, html) {
+      const scrolls = [...container.querySelectorAll('.table-wrap')].map(el => el.scrollLeft);
+      const benches = new Set([...container.querySelectorAll('[data-bench-roster]')].filter(el => el.open).map(el => el.dataset.benchRoster));
+      const active = document.activeElement;
+      const focusedInside = active && container.contains(active);
+      const focusedPlayer = focusedInside ? active.dataset?.playerId : null;
+      const focusedTeam = focusedInside ? active.closest('[data-team-lineup]')?.dataset.teamLineup : null;
+      const pageX = window.scrollX, pageY = window.scrollY;
+      const containerTop = container.scrollTop, containerLeft = container.scrollLeft;
+      container.innerHTML = html;
+      if (Number.isFinite(containerTop)) container.scrollTop = containerTop;
+      if (Number.isFinite(containerLeft)) container.scrollLeft = containerLeft;
+      container.querySelectorAll('.table-wrap').forEach((el, index) => { el.scrollLeft = scrolls[index] || 0; });
+      container.querySelectorAll('[data-bench-roster]').forEach(el => { el.open = benches.has(el.dataset.benchRoster); });
+      if (focusedPlayer) {
+        const player = [...container.querySelectorAll('[data-player-id]')].find(el => el.dataset.playerId === focusedPlayer);
+        if (player) player.focus({ preventScroll: true });
+      } else if (focusedTeam) {
+        const team = [...container.querySelectorAll('[data-team-lineup]')].find(el => el.dataset.teamLineup === focusedTeam);
+        team?.querySelector('summary')?.focus({ preventScroll: true });
+      }
+      if (Number.isFinite(pageY) && typeof window.scrollTo === 'function') window.scrollTo(pageX || 0, pageY);
+    }
+
+    function gameDayData() {
+      const hub = app.statsLeaders;
+      const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
+      if (sameLeague && hub.matchupLoadedAt) return hub.data;
+      const base = app.data;
+      const currentWeek = Number(base?.state?.week || base?.state?.leg || 1);
+      return base && Number(base.selectedWeek) === currentWeek ? base : null;
+    }
+
+    function gameDayProjection(matchup, data) {
+      if (!matchup) return { original: null, live: null };
+      const ids = (matchup.starters || []).filter(id => id && String(id) !== '0');
+      const originalsReady = ids.length && ids.every(id => Number.isFinite(originalProjectedPoints(id, data)));
+      const liveReady = ids.length && ids.every(id => Number.isFinite(originalProjectedPoints(id, data)) || ['final','bye','canceled'].includes(playerGameInfo(id, data).key));
+      return { original: originalsReady ? originalMatchupProjectionTotal(matchup, data) : null,
+        live: liveReady ? adjustedMatchupProjectionTotal(matchup, data) : null };
+    }
+
+    function renderGameDayBar() {
+      if (!app.gameDayMode) return;
+      const hub = app.statsLeaders;
+      const data = gameDayData();
+      app.gameDayData = data;
+      const rosterId = String(els.myTeam.value || '');
+      const rosters = data?.rosters || app.data?.rosters || [];
+      const users = data?.users || app.data?.users || [];
+      const options = '<option value="">Select your team</option>' + rosters.map(roster =>
+        `<option value="${escapeHtml(roster.roster_id)}">${escapeHtml(teamName(ownerForRoster(roster, users), roster))}</option>`).join('');
+      if (els.gameDayTeam.innerHTML !== options) els.gameDayTeam.innerHTML = options;
+      els.gameDayTeam.value = rosters.some(roster => String(roster.roster_id) === rosterId) ? rosterId : '';
+      const selected = (data?.matchups || []).find(matchup => String(matchup.roster_id) === rosterId);
+      const opponent = selected?.matchup_id == null ? null : (data.matchups || []).find(matchup =>
+        String(matchup.matchup_id) === String(selected.matchup_id) && String(matchup.roster_id) !== rosterId);
+      const week = data?.selectedWeek || app.data?.state?.week || app.data?.state?.leg;
+      const seconds = activeLeaderboardRefreshSeconds();
+      const updatedAt = data === hub.data ? hub.matchupLoadedAt : app.lastFetchAt;
+      const updated = updatedAt ? new Date(updatedAt).toLocaleTimeString() : '';
+      els.gameDayStatus.textContent = hub.loading ? 'Updating matchup…'
+        : hub.matchupError ? `Refresh failed · ${updated ? `showing scores checked at ${updated}` : 'waiting for scores'}`
+        : data ? `Week ${week} · ${updated ? `Checked ${updated} · ` : ''}${seconds ? `Refresh every ${seconds}s` : 'Live refresh paused'} · Scores may lag the games.`
+        : app.data ? `Loading current Week ${week || '—'} matchup…` : 'Refresh your league, then select a team.';
+      els.gameDayStatus.classList.toggle('leader-error', Boolean(hub.matchupError));
+      els.gameDayRefresh.disabled = hub.loading || app.isRefreshing;
+      els.gameDayRefresh.textContent = hub.loading || app.isRefreshing ? 'Updating…' : 'Refresh';
+      els.gameDayTeam.disabled = !rosters.length;
+      const liveRows = [];
+      for (const matchup of data?.matchups || []) {
+        const projection = gameDayProjection(matchup, data);
+        liveRows.push([`team:${matchup.roster_id}`, { score: Number(matchup.custom_points ?? matchup.points ?? 0), projection: projection.live }]);
+        for (const id of new Set([...(matchup.players || []), ...(matchup.starters || [])])) {
+          liveRows.push([`player:${matchup.roster_id}:${id}`, { score: actualPlayerPoints(matchup, id), projection: adjustedPlayerProjection(matchup, id, data) }]);
+        }
+      }
+      if (data) recordLiveChanges('gameday', liveChangeContext(data), liveRows);
+      const teamHtml = matchup => {
+        if (!matchup) return '<span class="game-day-team"><strong>Bye / no opponent</strong><span class="small">—</span></span>';
+        const roster = rosters.find(row => String(row.roster_id) === String(matchup.roster_id));
+        const name = roster ? teamName(ownerForRoster(roster, users), roster) : `Roster ${matchup.roster_id}`;
+        const projection = gameDayProjection(matchup, data);
+        const actual = Number(matchup.custom_points ?? matchup.points ?? 0);
+        return `<span class="game-day-team"><strong>${escapeHtml(name)}</strong><span ${liveChangeAttrs('gameday', `team:${matchup.roster_id}`, 'score', 'game-day-points')}>${numberOrDash(actual, 2)} <small>pts</small></span><span class="small">Orig ${projection.original === null ? '—' : numberOrDash(projection.original,2)} · <span ${liveChangeAttrs('gameday', `team:${matchup.roster_id}`, 'projection')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live,2)}</span></span></span>`;
+      };
+      els.gameDaySummary.innerHTML = selected
+        ? `<span class="game-day-label">GAME DAY · W${week}</span>${teamHtml(selected)}<span class="game-day-vs">vs</span>${teamHtml(opponent)}<span class="game-day-chevron" aria-hidden="true">⌃</span>`
+        : `<span class="game-day-label">GAME DAY${week ? ` · W${week}` : ''}</span><span class="game-day-prompt">${!app.data ? 'Refresh league to load your matchup' : !rosterId ? 'Select a team to follow its matchup' : !data ? 'Loading current-week matchup' : 'No current-week matchup for this team'}</span><span class="game-day-chevron" aria-hidden="true">⌃</span>`;
+      els.gameDayExpand.setAttribute('aria-expanded', String(app.gameDayExpanded));
+      els.gameDayExpand.setAttribute('aria-label', `${app.gameDayExpanded ? 'Collapse' : 'Expand'} Game Day matchup and rosters`);
+      els.gameDayPanel.hidden = !app.gameDayExpanded;
+      els.gameDayBar.classList.toggle('is-expanded', app.gameDayExpanded);
+      els.gameDayProjectionNote.textContent = selected && (gameDayProjection(selected, data).live === null || (opponent && gameDayProjection(opponent, data).live === null))
+        ? 'Some projections are unavailable. Actual scores remain visible; missing team projections show —.' : hub.gameDayProjectionError ? 'Projection refresh failed; retaining the available projection baseline.' : 'Pts = actual · Orig = original projection · Live = adjusted projection';
+      const content = selected ? `<div class="matchup-lineups">${renderLineupSide(selected, data, 'gameday')}${renderLineupSide(opponent, data, 'gameday')}</div>`
+        : `<div class="empty">${!app.data ? 'Refresh your league first.' : !rosterId ? 'Choose your team above to show its matchup and rosters.' : !data ? 'Checking the current week. Your historical Matchups view will stay unchanged.' : 'No matchup is available for the selected team this week.'}</div>`;
+      const rosterScrollTop = els.gameDayPanel.scrollTop;
+      replaceLiveContent(els.gameDayRosters, content);
+      if (Number.isFinite(rosterScrollTop)) els.gameDayPanel.scrollTop = rosterScrollTop;
+    }
+
+    function setGameDayExpanded(expanded, { persist = true, focus = false } = {}) {
+      app.gameDayExpanded = Boolean(expanded);
+      if (persist) { try { localStorage.setItem('sleeper_game_day_expanded', app.gameDayExpanded ? '1' : '0'); } catch (_) {} }
+      renderGameDayBar();
+      if (focus) els.gameDayExpand.focus({ preventScroll: true });
+    }
+
+    function setGameDayMode(enabled, { persist = true, focus = true, refresh = true } = {}) {
+      app.gameDayMode = Boolean(enabled);
+      document.body.classList.toggle('game-day-docked', app.gameDayMode);
+      els.gameDayBar.hidden = !app.gameDayMode;
+      els.gameDayToggle.setAttribute('aria-pressed', String(app.gameDayMode));
+      els.mobileGameDayToggle.setAttribute('aria-pressed', String(app.gameDayMode));
+      els.gameDayToggle.textContent = app.gameDayMode ? 'Hide Game Day' : 'Show Game Day';
+      els.mobileGameDayToggle.textContent = app.gameDayMode ? 'Hide Game Day bar' : 'Show Game Day bar';
+      if (persist) { try { localStorage.setItem('sleeper_game_day_mode', app.gameDayMode ? '1' : '0'); } catch (_) {} }
+      startLeaderRefresh();
+      renderGameDayBar();
+      if (app.gameDayMode && refresh && app.data) loadStatsLeaders({ force: false });
+      if (focus) (app.gameDayMode ? els.gameDayExpand : app.headerCollapsed ? els.headerToggle : els.gameDayToggle).focus({ preventScroll: true });
+    }
+
+    function setHeaderCollapsed(collapsed, { persist = true } = {}) {
+      app.headerCollapsed = Boolean(collapsed);
+      els.dashboardSetup.hidden = app.headerCollapsed;
+      els.headerToggle.textContent = app.headerCollapsed ? 'Show header & controls' : 'Collapse header & controls';
+      els.headerToggle.setAttribute('aria-expanded', String(!app.headerCollapsed));
+      if (persist) { try { localStorage.setItem('sleeper_header_collapsed', app.headerCollapsed ? '1' : '0'); } catch (_) {} }
+    }
+
     function showNotice(message, type = '') {
       els.notice.textContent = message;
       els.notice.className = 'notice show' + (type ? ` ${type}` : '');
@@ -2350,6 +2620,7 @@
     function setStatus(text, state = '') {
       els.statusText.textContent = text;
       els.statusDot.className = 'status-dot' + (state ? ` ${state}` : '');
+      renderGameDayBar();
     }
 
     function escapeHtml(value) {
@@ -4451,7 +4722,7 @@
       els.loadWeekBtn.disabled = false;
     }
 
-    function renderMatchPlayer(matchup, playerId, slot, data) {
+    function renderMatchPlayer(matchup, playerId, slot, data, channel = 'matchups') {
       const p = playerFromId(playerId);
       const actual = actualPlayerPoints(matchup, playerId);
       const proj = originalProjectedPoints(playerId, data);
@@ -4475,13 +4746,13 @@
               ${gameStatusBadge(gameInfo)}
             </div>
           </div>
-          <div class="match-num"><span class="game-point ${escapeHtml(gameInfo.key)}" title="${escapeHtml(statusTitle)}" aria-label="${escapeHtml(`${scoreText} points, ${gameInfo.label}`)}"><span class="game-dot"></span>${escapeHtml(scoreText)}</span></div>
+          <div ${liveChangeAttrs(channel, `player:${matchup.roster_id}:${playerId}`, 'score', 'match-num')}><span class="game-point ${escapeHtml(gameInfo.key)}" title="${escapeHtml(statusTitle)}" aria-label="${escapeHtml(`${scoreText} points, ${gameInfo.label}`)}"><span class="game-dot"></span>${escapeHtml(scoreText)}</span></div>
           <div class="match-num proj">${proj === null ? '—' : numberOrDash(proj, 2)}</div>
-          <div class="match-num adjusted">${adjustedProj === null ? '—' : numberOrDash(adjustedProj, 2)}</div>
+          <div ${liveChangeAttrs(channel, `player:${matchup.roster_id}:${playerId}`, 'projection', 'match-num adjusted')}>${adjustedProj === null ? '—' : numberOrDash(adjustedProj, 2)}</div>
         </div>`;
     }
 
-    function renderLineupSide(matchup, data) {
+    function renderLineupSide(matchup, data, channel = 'matchups') {
       if (!matchup) return '<div class="lineup-side"><div class="small" style="padding:14px">Bye / no opponent.</div></div>';
       const startSlots = (data.league.roster_positions || []).filter(p => !['BN','IR','TAXI'].includes(p));
       const starters = matchup.starters || [];
@@ -4501,12 +4772,20 @@
             <div class="mobile-lineup-team-label">LINEUP</div>
           </div>
           <div class="matchup-column-head"><span>Slot</span><span>Player</span><span>Pts</span><span>Orig</span><span>Live</span></div>
-          ${starters.map((id, i) => renderMatchPlayer(matchup, id, startSlots[i] || '', data)).join('') || '<div class="small" style="padding:14px">No starters.</div>'}
-          ${bench.length ? `<details class="bench"><summary>Bench (${bench.length})</summary>${bench.map(id => renderMatchPlayer(matchup, id, 'BN', data)).join('')}</details>` : ''}
+          ${starters.map((id, i) => renderMatchPlayer(matchup, id, startSlots[i] || '', data, channel)).join('') || '<div class="small" style="padding:14px">No starters.</div>'}
+          ${bench.length ? `<details class="bench" data-bench-roster="${matchup.roster_id}"><summary>Bench (${bench.length})</summary>${bench.map(id => renderMatchPlayer(matchup, id, 'BN', data, channel)).join('')}</details>` : ''}
         </div>`;
     }
 
     function renderMatchups(data) {
+      const liveRows = [];
+      for (const matchup of data.matchups || []) {
+        liveRows.push([`team:${matchup.roster_id}`, { score: Number(matchup.points ?? 0), projection: adjustedMatchupProjectionTotal(matchup, data) }]);
+        for (const id of new Set([...(matchup.players || []), ...(matchup.starters || [])])) {
+          liveRows.push([`player:${matchup.roster_id}:${id}`, { score: actualPlayerPoints(matchup, id), projection: adjustedPlayerProjection(matchup, id, data) }]);
+        }
+      }
+      recordLiveChanges('matchups', liveChangeContext(data), liveRows);
       populateWeekSelector(data);
       const myRosterId = Number(els.myTeam.value || 0);
       const rosterMap = new Map((data.rosters || []).map(r => [Number(r.roster_id), r]));
@@ -4546,10 +4825,10 @@
             <div class="matchup-head">
               <div class="matchup-team">
                 <div class="matchup-team-name">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</div>
-                <div class="matchup-score">${a ? numberOrDash(a.points ?? 0, 2) : '—'}</div>
+                <div ${liveChangeAttrs('matchups', `team:${a?.roster_id}`, 'score', 'matchup-score')}>${a ? numberOrDash(a.points ?? 0, 2) : '—'}</div>
                 <div class="matchup-proj-row">
                   <span class="matchup-proj-original">Orig ${a ? numberOrDash(aProj, 2) : '—'}</span>
-                  <span class="matchup-proj-adjusted">Live ${a ? numberOrDash(aAdjusted, 2) : '—'}</span>
+                  <span ${liveChangeAttrs('matchups', `team:${a?.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${a ? numberOrDash(aAdjusted, 2) : '—'}</span>
                   ${a ? projectionDeltaHtml(aProj, aAdjusted) : ''}
                   ${aMe ? '<span class="pill me">SELECTED</span>' : ''}
                 </div>
@@ -4558,11 +4837,11 @@
               <div class="matchup-vs">VS</div>
               <div class="matchup-team right">
                 <div class="matchup-team-name">${escapeHtml(br ? teamName(bo, br) : 'Bye')}</div>
-                <div class="matchup-score">${b ? numberOrDash(b.points ?? 0, 2) : '—'}</div>
+                <div ${liveChangeAttrs('matchups', `team:${b?.roster_id}`, 'score', 'matchup-score')}>${b ? numberOrDash(b.points ?? 0, 2) : '—'}</div>
                 <div class="matchup-proj-row" style="justify-content:flex-end">
                   ${bMe ? '<span class="pill me">SELECTED</span>' : ''}
                   ${b ? projectionDeltaHtml(bProj, bAdjusted) : ''}
-                  <span class="matchup-proj-adjusted">Live ${b ? numberOrDash(bAdjusted, 2) : '—'}</span>
+                  <span ${liveChangeAttrs('matchups', `team:${b?.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${b ? numberOrDash(bAdjusted, 2) : '—'}</span>
                   <span class="matchup-proj-original">Orig ${b ? numberOrDash(bProj, 2) : '—'}</span>
                 </div>
                 <div class="matchup-state-summary">${escapeHtml(b ? matchupStatusSummary(b, data) : '')}</div>
@@ -4575,7 +4854,7 @@
           </article>`;
       }).join('');
 
-      els.matchupGrid.innerHTML = cards;
+      replaceLiveContent(els.matchupGrid, cards);
       els.matchupsEmpty.style.display = cards ? 'none' : 'block';
       if (!cards) els.matchupsEmpty.textContent = `No matchup data found for Week ${data.selectedWeek || '—'}.`;
     }
@@ -5015,11 +5294,11 @@
       const hub = app.statsLeaders;
       els.standingsRefresh.disabled = hub.loading || !app.data;
       els.standingsRefresh.textContent = hub.loading ? 'Refreshing…' : 'Refresh Standings';
-      const seconds = Number(els.standingsLive.value);
+      const seconds = activeLeaderboardRefreshSeconds();
       els.standingsStatus.textContent = hub.loading ? 'Updating projected standings…'
         : hub.teamError ? 'Refresh failed. The last successful forecast is retained.'
         : !app.data ? 'Refresh the league to load projected standings.'
-        : seconds ? `Refresh every ${seconds}s while Overview is open · Scores may lag the games.` : 'Live standings refresh paused';
+        : seconds ? `Refresh every ${seconds}s while Overview or Game Day is open · Scores may lag the games.` : 'Live standings refresh paused';
       els.standingsStatus.classList.toggle('leader-error', Boolean(hub.teamError));
       const ready = hub.teamLoadedAt && String(hub.teamData?.league?.league_id) === String(app.data?.league?.league_id);
       els.standingsWeek.textContent = ready ? `${hub.teamData.state.season} · Week ${hub.teamData.selectedWeek}` : 'Current week';
@@ -5033,7 +5312,7 @@
         : !ready ? 'Refresh the league to load the entering-week standings and live forecast.'
         : `Week ${hub.teamData.selectedWeek} forecast · ${new Date(hub.teamLoadedAt).toLocaleTimeString()} · ${hub.teamComplete ? 'Projected record → PF.' : 'Incomplete forecast · entering ranks shown.'}${hub.teamMedian ? ' Includes the extra league-median result.' : ''}${hub.teamRegular === false ? ' Regular-season record stays fixed during postseason.' : ''}`;
       const points = value => value === null ? '—' : Number(value).toFixed(2);
-      els.teamLeaderList.innerHTML = rows.length ? `<div class="table-wrap"><table class="projected-standings-table">
+      const standingsHtml = rows.length ? `<div class="table-wrap"><table class="projected-standings-table">
         <thead><tr><th>#</th><th>Team</th><th title="Projected record after this week">Proj Record</th><th title="Projected total points for after this week">Proj PF</th><th title="Live projected matchup score this week">Week Proj</th><th>Proj Result</th><th title="Rank movement from entering this week">Proj Move</th></tr></thead>
         <tbody>${rows.map(row => {
           const selected = String(row.roster_id) === String(els.myTeam.value);
@@ -5044,15 +5323,13 @@
           const move = movement ? `<span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '<span class="small">—</span>';
           const result = row.result ? `${row.matchup_final ? 'Final' : 'Projected'} ${row.result}` : row.opponent ? 'Awaiting projection' : 'No opponent';
           const status = row.median_result ? `${result} · Median ${row.median_result}` : result;
-          const previous = hub.previousTeams?.[String(row.roster_id)];
-          const changed = previous && (previous.projected_pf !== row.projected_pf || teamRecordText(previous.projected) !== teamRecordText(row.projected));
           const matchup = (hub.teamData.matchups || []).find(m => String(m.roster_id) === String(row.roster_id));
           const lineup = (matchup?.starters || []).filter(id => id && String(id) !== '0').map(id => {
             const p = playerFromId(id);
             return `<button type="button" class="team-leader-player" data-player-id="${escapeHtml(id)}"><span>${escapeHtml(p.full_name)} · ${escapeHtml(p.position)}</span><span>${numberOrDash(adjustedPlayerProjection(matchup, id, hub.teamData),2)} live proj</span></button>`;
           }).join('');
-          return `<tr class="projected-standing-row${changed ? ' score-changed' : ''}">
-            <td title="${row.rank === null ? 'Entering rank; forecast incomplete' : `Entering rank: #${row.entering_rank}`}">${row.rank ?? row.entering_rank}</td>
+          return `<tr class="projected-standing-row">
+            <td ${liveChangeAttrs('standings', row.roster_id, 'rank', '', row.rank === null ? 'Entering rank; forecast incomplete' : `Entering rank: #${row.entering_rank}`)}>${row.rank ?? row.entering_rank}</td>
             <td><details class="team-lineup" data-team-lineup="${row.roster_id}" ${hub.expandedTeams.has(String(row.roster_id)) ? 'open' : ''}>
               <summary title="Expand team baseline and starting lineup"><div class="team-cell">
                 ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="">` : '<div class="avatar"></div>'}
@@ -5060,13 +5337,14 @@
               </div></summary>
               <div class="projected-team-detail"><div class="small">Entering week: ${teamRecordText(row.entering)} · PF ${points(row.entering.pf)} · Actual this week ${points(row.actual_points)}</div><div class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · Opponent live proj ${points(row.opponent_points)}` : 'No opponent available'}</div>${lineup || '<div class="small">No starters listed.</div>'}</div>
             </details></td>
-            <td title="Entering week: ${teamRecordText(row.entering)}">${row.record_ready ? teamRecordText(row.projected) : '—'}</td>
-            <td class="projected-pf" title="Entering PF: ${points(row.entering.pf)}">${points(row.projected_pf)}</td>
-            <td title="Actual this week: ${points(row.actual_points)}">${points(row.week_points)}</td>
+            <td ${liveChangeAttrs('standings', row.roster_id, 'record', '', `Entering week: ${teamRecordText(row.entering)}`)}>${row.record_ready ? teamRecordText(row.projected) : '—'}</td>
+            <td ${liveChangeAttrs('standings', row.roster_id, 'pf', 'projected-pf', `Entering PF: ${points(row.entering.pf)}`)}>${points(row.projected_pf)}</td>
+            <td ${liveChangeAttrs('standings', row.roster_id, 'week', '', `Actual this week: ${points(row.actual_points)}`)}>${points(row.week_points)}</td>
             <td title="${escapeHtml(status)}${row.opponent ? ` vs ${escapeHtml(row.opponent)}` : ''}"><span class="projected-result ${row.result || ''}">${row.result || '—'}</span>${row.median_result ? `<span class="small"> / ${row.median_result}</span>` : ''}</td>
             <td title="Entering rank: #${row.entering_rank}">${move}</td>
           </tr>`;
         }).join('')}</tbody></table></div>` : '';
+      replaceLiveContent(els.teamLeaderList, standingsHtml);
       els.teamLeaderEmpty.hidden = Boolean(rows.length);
       els.teamLeaderEmpty.textContent = ready ? 'No teams match your search.' : 'Refresh the league to load Live Projected Standings.';
     }
@@ -5161,6 +5439,7 @@
     }
 
     function renderStatsLeaders() {
+      renderGameDayBar();
       const hub = app.statsLeaders;
       renderTeamLeaders();
       const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
@@ -5169,13 +5448,13 @@
       const viewError = hub.error;
       els.leaderRefresh.disabled = hub.loading || !app.data;
       els.leaderRefresh.textContent = hub.loading ? 'Refreshing…' : 'Refresh Scores';
-      const seconds = Number(els.leaderLive.value);
+      const seconds = activeLeaderboardRefreshSeconds();
       const updated = viewReady ? new Date(hub.loadedAt).toLocaleTimeString() : '';
       els.leaderWeek.textContent = viewReady ? `${hub.data.state.season} · Week ${hub.data.selectedWeek}` : 'Current week';
       els.leaderStatus.textContent = viewError
         ? `${viewReady ? `Showing scores last checked at ${updated}. ` : ''}Refresh failed: ${viewError}`
         : hub.loading ? 'Checking current-week scores…'
-        : viewReady ? `Last scoring check: ${updated} · ${seconds ? `Refresh every ${seconds}s while this tab is open` : 'Live refresh paused'} · Scores may lag the games.`
+        : viewReady ? `Last scoring check: ${updated} · ${seconds ? `Refresh every ${seconds}s while Stats Leaders or Game Day is open` : 'Live refresh paused'} · Scores may lag the games.`
         : 'Open this tab after refreshing the league to load current-week scoring leaders.';
       els.leaderStatus.classList.toggle('leader-error', Boolean(viewError));
       document.querySelectorAll('[data-leader-position]').forEach(btn => {
@@ -5202,7 +5481,7 @@
       els.leaderSummary.textContent = ready
         ? `Showing ${rows.length} of ${count} matching players · ${positionCount} ${position === 'ALL' ? 'NFL' : position} players with reported scores · Actual fantasy points under your league settings; ties share rank.`
         : 'Actual scoring leaders will appear here, including free agents.';
-      els.leaderList.innerHTML = rows.map(row => {
+      const leaderHtml = rows.map(row => {
         const previous = hub.previous[row.player_id];
         const delta = previous === undefined ? 0 : Math.round((row.points - previous) * 100) / 100;
         const change = delta ? `<span class="leader-change ${delta < 0 ? 'down' : ''}">${delta > 0 ? '+' : ''}${delta.toFixed(2)} since last check</span>` : '';
@@ -5214,9 +5493,10 @@
           <span class="leader-rank">#${rank}</span>
           <span class="leader-player"><strong>${escapeHtml(row.full_name)}</strong><span class="small">${escapeHtml(row.team || 'FA')} · ${escapeHtml(row.position)} #${row.position_rank} this week · ${escapeHtml(row.owner?.team_name || 'Free agent')}</span><span class="leader-stats">${escapeHtml(details || 'Detailed stat line pending')}</span></span>
           <span class="leader-game">${gameBadge}</span>
-          <span class="leader-score"><strong>${row.points.toFixed(2)}</strong><span class="small">Fantasy pts</span>${change}</span>
+          <span class="leader-score"><strong ${liveChangeAttrs('leaders', row.player_id, 'score')}>${row.points.toFixed(2)}</strong><span class="small">Fantasy pts</span>${change}</span>
         </button>`;
       }).join('');
+      replaceLiveContent(els.leaderList, leaderHtml);
       els.leaderEmpty.hidden = Boolean(rows.length);
       els.leaderEmpty.textContent = !ready ? 'Refresh the league, then open Stats Leaders.'
         : scope === 'mine' && !els.myTeam.value ? 'Select your team at the top of the page to see its players.'
@@ -5232,6 +5512,7 @@
       hub.loading = true;
       hub.error = '';
       hub.teamError = '';
+      hub.gameDayProjectionError = '';
       renderStatsLeaders();
       try {
         const state = await fetchLeaderJson(`${API}/state/nfl`);
@@ -5240,7 +5521,7 @@
         const type = ['pre','post','regular'].includes(state.season_type) ? state.season_type : 'regular';
         const key = `${base.league.league_id}:${season}:${type}:${week}`;
         const sameWeek = hub.key === key;
-        if (!sameWeek) { hub.expandedTeams.clear(); hub.rows = []; hub.loadedAt = 0; hub.teamRows = []; hub.teamData = null; hub.teamLoadedAt = 0; hub.data = null; renderStatsLeaders(); }
+        if (!sameWeek) { hub.expandedTeams.clear(); hub.rows = []; hub.loadedAt = 0; hub.teamRows = []; hub.teamData = null; hub.teamLoadedAt = 0; hub.data = null; hub.matchupLoadedAt = 0; renderStatsLeaders(); }
         const [statsResult, matchups, rosters, schedule, espnSchedule] = await Promise.all([
           fetchWeeklyLeaderStats(season, week, type).then(stats => ({ stats })).catch(error => ({ error })),
           fetchLeaderJson(`${API}/league/${base.league.league_id}/matchups/${week}`),
@@ -5257,8 +5538,15 @@
         if (!statsResult.error) {
           hub.previous = sameWeek ? Object.fromEntries(hub.rows.map(row => [row.player_id, row.points])) : {};
           hub.rows = buildStatsLeaderRows(statsResult.stats, context);
+          recordLiveChanges('leaders', liveChangeContext(context), hub.rows.map(row => [row.player_id, { score: row.points }]));
           hub.stats = statsResult.stats; hub.loadedAt = Date.now();
         } else { hub.error = statsResult.error.message; }
+        if (app.gameDayMode) {
+          try {
+            if (!Object.keys(context.projections || {}).length) context.projections = await fetchWeekProjections(season, week, fetchLeaderJson);
+            if (!context.originalProjectionSnapshot) context.originalProjectionSnapshot = await loadOrCreateOriginalProjectionSnapshot(base.league.league_id, season, week, context.projections, context.league, matchups);
+          } catch (error) { hub.gameDayProjectionError = error.message; }
+        }
         if (document.getElementById('overview').classList.contains('active') || hub.teamLoadedAt) {
           try {
             if (!Object.keys(context.projections || {}).length) context.projections = await fetchWeekProjections(season, week, fetchLeaderJson);
@@ -5266,6 +5554,7 @@
             const seeds = await loadEnteringTeamSeeds(context);
             const forecast = buildTeamLeaderRows(context, seeds);
             hub.previousTeams = sameWeek ? Object.fromEntries(hub.teamRows.map(row => [String(row.roster_id), row])) : {};
+            recordLiveChanges('standings', liveChangeContext(context), forecast.rows.map(row => [row.roster_id, { pf: row.projected_pf, week: row.week_points, record: row.record_ready ? teamRecordText(row.projected) : null, rank: row.rank }]));
             hub.teamRows = forecast.rows; hub.teamComplete = forecast.complete;
             hub.teamMedian = forecast.medianEnabled; hub.teamRegular = forecast.regularWeek;
             hub.teamData = context; hub.teamLoadedAt = Date.now();
@@ -5273,6 +5562,7 @@
         }
         if (String(app.data?.league?.league_id) !== String(base.league.league_id)) return;
         hub.data = context; hub.key = key;
+        hub.matchupLoadedAt = Date.now(); hub.matchupError = '';
         if (app.activePlayerData && app.activePlayerId) {
           app.activePlayerData = context;
           app.activePlayerStats = hub.stats[app.activePlayerId] || {};
@@ -5281,6 +5571,7 @@
       } catch (err) {
         hub.error = err.message || 'Could not load scoring';
         hub.teamError = hub.error;
+        hub.matchupError = hub.error;
       } finally {
         hub.loading = false;
         renderStatsLeaders();
@@ -5288,9 +5579,12 @@
     }
 
     function activeLeaderboardRefreshSeconds() {
-      if (document.getElementById('overview').classList.contains('active')) return Number(els.standingsLive.value);
-      if (document.getElementById('leaders').classList.contains('active')) return Number(els.leaderLive.value);
-      return 0;
+      const intervals = [];
+      if (document.getElementById('overview').classList.contains('active')) intervals.push(Number(els.standingsLive.value));
+      if (document.getElementById('leaders').classList.contains('active')) intervals.push(Number(els.leaderLive.value));
+      if (app.gameDayMode) intervals.push(Number(els.gameDayLive.value));
+      const enabled = intervals.filter(seconds => seconds > 0);
+      return enabled.length ? Math.min(...enabled) : 0;
     }
 
     function startLeaderRefresh() {
@@ -5312,7 +5606,7 @@
       renderTransactions(data);
       renderWaivers(data);
       renderStatsLeaders();
-      if (document.getElementById('leaders').classList.contains('active') || document.getElementById('overview').classList.contains('active')) loadStatsLeaders({ force: true });
+      if (document.getElementById('leaders').classList.contains('active') || document.getElementById('overview').classList.contains('active') || app.gameDayMode) loadStatsLeaders({ force: true });
       resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
       renderSettings(data);
@@ -5326,6 +5620,7 @@
       app.lastFetchAt = updated.getTime();
       els.lastUpdated.textContent = `Last update: ${updated.toLocaleString()}`;
       localStorage.setItem('sleeper_dashboard_last_snapshot', JSON.stringify(app.exportSnapshot));
+      renderGameDayBar();
     }
 
     async function fetchLiveRefreshData(leagueId, baseData) {
@@ -5399,6 +5694,7 @@
         }
       } finally {
         app.isRefreshing = false;
+        renderGameDayBar();
       }
     }
 
@@ -5473,6 +5769,7 @@
         els.updateBtn.disabled = false;
         els.exportBtn.disabled = !app.exportSnapshot;
         els.updateBtn.textContent = 'Refresh League';
+        renderGameDayBar();
       }
     }
 
@@ -5545,13 +5842,13 @@
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
       const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
-      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
+      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.closest('#gameDayRosters') ? app.gameDayData : playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
         const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
-        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
+        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.closest('#gameDayRosters') ? app.gameDayData : playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
       }
     });
     els.playerModalClose.addEventListener('click', closePlayerModal);
@@ -5662,6 +5959,7 @@
     });
 
     els.myTeam.addEventListener('change', () => {
+      renderGameDayBar();
       if (!app.data) return;
       localStorage.setItem(`sleeper_selected_roster_${app.data.league.league_id}`, els.myTeam.value);
       renderOverview(app.data);
@@ -5862,6 +6160,35 @@
         }
       });
     });
+
+    els.gameDayToggle.addEventListener('click', () => setGameDayMode(!app.gameDayMode));
+    els.gameDayExit.addEventListener('click', () => setGameDayMode(false));
+    els.mobileGameDayToggle.addEventListener('click', () => {
+      setMobileNavOpen(false);
+      setGameDayMode(!app.gameDayMode);
+    });
+    els.headerToggle.addEventListener('click', () => setHeaderCollapsed(!app.headerCollapsed));
+    els.gameDayExpand.addEventListener('click', () => setGameDayExpanded(!app.gameDayExpanded));
+    els.gameDayCollapse.addEventListener('click', () => setGameDayExpanded(false, { focus: true }));
+    els.gameDayRefresh.addEventListener('click', () => app.data ? loadStatsLeaders({ force: true }) : els.updateBtn.click());
+    els.gameDayTeam.addEventListener('change', () => {
+      els.myTeam.value = els.gameDayTeam.value;
+      els.myTeam.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    els.gameDayLive.addEventListener('change', () => {
+      try { localStorage.setItem('sleeper_game_day_refresh', els.gameDayLive.value); } catch (_) {}
+      startLeaderRefresh();
+    });
+    let savedGameDayMode = false, savedHeaderCollapsed = false;
+    try {
+      savedGameDayMode = localStorage.getItem('sleeper_game_day_mode') === '1';
+      savedHeaderCollapsed = localStorage.getItem('sleeper_header_collapsed') === '1';
+      app.gameDayExpanded = localStorage.getItem('sleeper_game_day_expanded') === '1';
+      const savedRefresh = localStorage.getItem('sleeper_game_day_refresh');
+      if ([...els.gameDayLive.options].some(option => option.value === savedRefresh)) els.gameDayLive.value = savedRefresh;
+    } catch (_) {}
+    setHeaderCollapsed(savedHeaderCollapsed, { persist: false });
+    setGameDayMode(savedGameDayMode, { persist: false, focus: false, refresh: false });
 
     els.espnProjectionProxyUrl.value = espnProjectionProxyUrl();
 
