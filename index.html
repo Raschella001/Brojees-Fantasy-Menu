@@ -203,7 +203,9 @@
       border-color: #365175;
     }
 
-    .mobile-nav-toggle { display: none; }
+    .mobile-nav-toggle, .mobile-nav-bounds, .mobile-nav-help { display: none; }
+    .mobile-nav-instructions { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    @keyframes mobile-menu-enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     .mobile-nav-toggle:focus-visible,
     .dashboard-nav .tab-btn:focus-visible {
       outline: 2px solid var(--accent);
@@ -220,8 +222,16 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        width: min(320px, calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+        width: max-content;
+        max-width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
         margin: 0;
+        pointer-events: none;
+      }
+      .mobile-nav-bounds {
+        display: block;
+        position: fixed;
+        inset: calc(12px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px));
+        visibility: hidden;
         pointer-events: none;
       }
       .mobile-nav-toggle {
@@ -238,6 +248,18 @@
         box-shadow: 0 8px 28px rgba(0,0,0,.5);
         text-align: left;
         pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        cursor: grab;
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+      .mobile-nav-toggle:hover { transform: none; }
+      .dashboard-nav.is-dragging .mobile-nav-toggle {
+        cursor: grabbing;
+        background: #1b2740;
+        box-shadow: 0 12px 36px rgba(0,0,0,.65), 0 0 0 4px rgba(110,231,183,.16);
       }
       .mobile-nav-current {
         min-width: 0;
@@ -258,18 +280,22 @@
         flex-shrink: 0;
       }
       .hamburger-icon { order: -1; display: grid; gap: 4px; width: 20px; }
-      .hamburger-icon span { display: block; height: 2px; border-radius: 2px; background: currentColor; }
+      .hamburger-icon span { display: block; height: 2px; border-radius: 2px; background: currentColor; transition: transform .2s ease, opacity .15s ease; }
       .dashboard-nav.is-open .hamburger-icon span:first-child { transform: translateY(6px) rotate(45deg); }
       .dashboard-nav.is-open .hamburger-icon span:nth-child(2) { opacity: 0; }
       .dashboard-nav.is-open .hamburger-icon span:last-child { transform: translateY(-6px) rotate(-45deg); }
       .dashboard-nav .tabs {
         display: none;
-        width: 100%;
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        width: min(320px, calc(100vw - 24px));
+        max-width: none;
         min-height: 0;
         /* The fallback supports older browsers; dvh follows mobile browser chrome. */
         max-height: calc(100vh - 112px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
         max-height: calc(100dvh - 112px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
-        margin: 10px 0 0;
+        margin: 0;
         padding: 8px;
         border: 1px solid var(--line);
         border-radius: 16px;
@@ -284,7 +310,13 @@
         -webkit-overflow-scrolling: touch;
         pointer-events: auto;
       }
-      .dashboard-nav.is-open .tabs { display: flex; }
+      .dashboard-nav.is-open .tabs { display: flex; animation: mobile-menu-enter .18s ease-out; }
+      .mobile-nav-help { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); flex-shrink: 0; }
+      .mobile-nav-help button { background: transparent; border: 1px solid var(--line); color: var(--muted); text-align: left; }
+      @media (prefers-reduced-motion: reduce) {
+        .mobile-nav-toggle, .hamburger-icon span { transition: none; }
+        .dashboard-nav.is-open .tabs { animation: none; }
+      }
       .dashboard-nav .tab-btn {
         width: 100%;
         min-height: 44px;
@@ -1795,8 +1827,10 @@
 
     <div class="notice" id="notice"></div>
 
+    <div class="mobile-nav-bounds" id="mobileNavBounds" aria-hidden="true"></div>
+    <span class="mobile-nav-instructions" id="mobileNavInstructions">Tap to open navigation. Drag the Menu button to move it. Keyboard: hold Alt and use the arrow keys to move it.</span>
     <div class="dashboard-nav" id="dashboardNav">
-      <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="dashboardTabs" aria-label="Open navigation menu">
+      <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="dashboardTabs" aria-label="Open navigation menu" aria-describedby="mobileNavInstructions" title="Tap to open · Drag to move">
         <span class="mobile-nav-current" id="mobileNavCurrent">Overview</span>
         <span class="mobile-nav-action" aria-hidden="true"><span id="mobileNavAction">Menu</span><span class="hamburger-icon"><span></span><span></span><span></span></span></span>
       </button>
@@ -1810,6 +1844,7 @@
       <button class="tab-btn" data-tab="rosters">Rosters</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
       <button class="tab-btn" data-tab="raw">Raw Export</button>
+      <div class="mobile-nav-help"><span>Drag the Menu button to move it.</span><button id="mobileNavReset" type="button">Reset position</button></div>
     </nav>
     </div>
 
@@ -2142,8 +2177,9 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.7.6';
+    const APP_VERSION = '2.7.7';
     const PATCH_NOTES = [
+      { version: '2.7.7', note: 'The floating mobile Menu button can now be dragged anywhere within the screen and remembers its position. Navigation opens in the available space, the hamburger animates into a close icon, and Reset position restores the top-left corner.' },
       { version: '2.7.6', note: 'Moved the floating mobile Menu button to the top-left corner. Navigation expands downward within the screen, with safe-area spacing and room above the page header.' },
       { version: '2.7.5', note: 'Moved mobile navigation to a floating bottom-left Menu button with a highlighted hamburger icon and current section label. Tabs expand upward into a screen-sized, scrollable menu with safe-area spacing.' },
       { version: '2.7.4', note: 'Added a mobile hamburger menu with all dashboard sections in a vertical list. The current section stays visible, and the menu closes after selection. Desktop navigation keeps its tab layout.' },
@@ -5641,23 +5677,148 @@
     const mobileNavToggle = document.getElementById('mobileNavToggle');
     const mobileNavCurrent = document.getElementById('mobileNavCurrent');
     const mobileNavAction = document.getElementById('mobileNavAction');
+    const mobileNavTabs = document.getElementById('dashboardTabs');
+    const mobileNavBounds = document.getElementById('mobileNavBounds');
+    const mobileNavReset = document.getElementById('mobileNavReset');
     const mobileNavMedia = window.matchMedia('(max-width: 760px)');
+    const mobileNavPositionKey = 'sleeper_mobile_nav_position_v1';
+    let mobileNavPosition = { x: 0, y: 0 };
+    let mobileNavDrag = null;
+    let mobileNavSuppressClickUntil = 0;
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(mobileNavPositionKey));
+      if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+        mobileNavPosition = { x: Math.max(0, Math.min(1, saved.x)), y: Math.max(0, Math.min(1, saved.y)) };
+      }
+    } catch (_) { /* Use the default corner if storage is unavailable. */ }
+
+    function mobileNavGeometry() {
+      const safe = mobileNavBounds.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const width = viewport ? viewport.width : document.documentElement.clientWidth;
+      const height = viewport ? viewport.height : window.innerHeight;
+      const offsetLeft = viewport ? viewport.offsetLeft : 0;
+      const offsetTop = viewport ? viewport.offsetTop : 0;
+      const left = Math.max(safe.left, offsetLeft + 12);
+      const top = Math.max(safe.top, offsetTop + 12);
+      const right = Math.max(left, Math.min(safe.right, offsetLeft + width - 12));
+      const bottom = Math.max(top, Math.min(safe.bottom, offsetTop + height - 12));
+      const buttonWidth = mobileNavToggle.offsetWidth;
+      const buttonHeight = mobileNavToggle.offsetHeight;
+      return { left, top, right, bottom, buttonWidth, buttonHeight,
+        travelX: Math.max(0, right - left - buttonWidth),
+        travelY: Math.max(0, bottom - top - buttonHeight) };
+    }
+
+    function saveMobileNavPosition() {
+      try { localStorage.setItem(mobileNavPositionKey, JSON.stringify(mobileNavPosition)); } catch (_) {}
+    }
+
+    function layoutMobileNav() {
+      if (!mobileNavMedia.matches) {
+        dashboardNav.style.left = '';
+        dashboardNav.style.top = '';
+        for (const property of ['left', 'top', 'bottom', 'width', 'maxHeight']) mobileNavTabs.style[property] = '';
+        dashboardNav.classList.remove('opens-up');
+        return;
+      }
+      const bounds = mobileNavGeometry();
+      const left = bounds.left + mobileNavPosition.x * bounds.travelX;
+      const top = bounds.top + mobileNavPosition.y * bounds.travelY;
+      dashboardNav.style.left = `${left}px`;
+      dashboardNav.style.top = `${top}px`;
+      const menuWidth = Math.min(320, bounds.right - bounds.left);
+      const menuLeft = Math.max(bounds.left, Math.min(left, bounds.right - menuWidth));
+      const below = Math.max(0, bounds.bottom - top - bounds.buttonHeight - 10);
+      const above = Math.max(0, top - bounds.top - 10);
+      const opensUp = above > below;
+      dashboardNav.classList.toggle('opens-up', opensUp);
+      mobileNavTabs.style.left = `${menuLeft - left}px`;
+      mobileNavTabs.style.width = `${menuWidth}px`;
+      mobileNavTabs.style.top = opensUp ? 'auto' : `${bounds.buttonHeight + 10}px`;
+      mobileNavTabs.style.bottom = opensUp ? `${bounds.buttonHeight + 10}px` : 'auto';
+      mobileNavTabs.style.maxHeight = `${Math.floor(opensUp ? above : below)}px`;
+    }
+
+    function moveMobileNav(left, top) {
+      const bounds = mobileNavGeometry();
+      mobileNavPosition = {
+        x: bounds.travelX ? Math.max(0, Math.min(1, (left - bounds.left) / bounds.travelX)) : 0,
+        y: bounds.travelY ? Math.max(0, Math.min(1, (top - bounds.top) / bounds.travelY)) : 0
+      };
+      layoutMobileNav();
+    }
 
     function setMobileNavOpen(open, restoreFocus = false) {
       dashboardNav.classList.toggle('is-open', open);
       mobileNavToggle.setAttribute('aria-expanded', String(open));
       mobileNavToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
       mobileNavAction.textContent = open ? 'Close' : 'Menu';
+      layoutMobileNav();
       if (restoreFocus && mobileNavMedia.matches) mobileNavToggle.focus();
     }
 
-    mobileNavToggle.addEventListener('click', () => {
+    mobileNavToggle.addEventListener('pointerdown', event => {
+      if (!mobileNavMedia.matches || mobileNavDrag || event.isPrimary === false || event.button > 0) return;
+      mobileNavSuppressClickUntil = 0;
+      const rect = mobileNavToggle.getBoundingClientRect();
+      mobileNavDrag = { id: event.pointerId, startX: event.clientX, startY: event.clientY,
+        left: rect.left, top: rect.top, moved: false };
+      mobileNavToggle.setPointerCapture(event.pointerId);
+    });
+    mobileNavToggle.addEventListener('pointermove', event => {
+      const drag = mobileNavDrag;
+      if (!drag || drag.id !== event.pointerId) return;
+      const deltaX = event.clientX - drag.startX;
+      const deltaY = event.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(deltaX, deltaY) < 8) return;
+      if (!drag.moved) {
+        drag.moved = true;
+        setMobileNavOpen(false);
+        dashboardNav.classList.add('is-dragging');
+      }
+      event.preventDefault();
+      moveMobileNav(drag.left + deltaX, drag.top + deltaY);
+    });
+
+    function finishMobileNavDrag(event) {
+      const drag = mobileNavDrag;
+      if (!drag || event.pointerId !== drag.id) return;
+      mobileNavDrag = null;
+      dashboardNav.classList.remove('is-dragging');
+      if (mobileNavToggle.hasPointerCapture(drag.id)) mobileNavToggle.releasePointerCapture(drag.id);
+      if (drag.moved) {
+        mobileNavSuppressClickUntil = Date.now() + 500;
+        saveMobileNavPosition();
+      }
+    }
+    for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+      mobileNavToggle.addEventListener(eventName, finishMobileNavDrag);
+    }
+    mobileNavToggle.addEventListener('click', event => {
+      // Pointer-generated clicks after a drag must not also open the menu.
+      if (event.detail !== 0 && Date.now() < mobileNavSuppressClickUntil) {
+        event.preventDefault();
+        return;
+      }
       setMobileNavOpen(!dashboardNav.classList.contains('is-open'));
     });
+    mobileNavToggle.addEventListener('keydown', event => {
+      const direction = { ArrowLeft: [-16, 0], ArrowRight: [16, 0], ArrowUp: [0, -16], ArrowDown: [0, 16] }[event.key];
+      if (!mobileNavMedia.matches || !event.altKey || !direction) return;
+      event.preventDefault();
+      const rect = mobileNavToggle.getBoundingClientRect();
+      moveMobileNav(rect.left + direction[0], rect.top + direction[1]);
+      saveMobileNavPosition();
+    });
+    mobileNavReset.addEventListener('click', () => {
+      mobileNavPosition = { x: 0, y: 0 };
+      try { localStorage.removeItem(mobileNavPositionKey); } catch (_) {}
+      setMobileNavOpen(false, true);
+    });
     document.addEventListener('click', event => {
-      if (dashboardNav.classList.contains('is-open') && !dashboardNav.contains(event.target)) {
-        setMobileNavOpen(false);
-      }
+      if (dashboardNav.classList.contains('is-open') && !dashboardNav.contains(event.target)) setMobileNavOpen(false);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && dashboardNav.classList.contains('is-open')) {
@@ -5665,12 +5826,18 @@
         setMobileNavOpen(false, true);
       }
     });
-    // Reset the disclosure when switching between phone and desktop layouts.
-    if (mobileNavMedia.addEventListener) {
-      mobileNavMedia.addEventListener('change', () => setMobileNavOpen(false));
-    } else {
-      mobileNavMedia.addListener(() => setMobileNavOpen(false));
+    function mobileNavBreakpointChanged() {
+      if (mobileNavDrag) finishMobileNavDrag({ pointerId: mobileNavDrag.id });
+      setMobileNavOpen(false);
     }
+    if (mobileNavMedia.addEventListener) mobileNavMedia.addEventListener('change', mobileNavBreakpointChanged);
+    else mobileNavMedia.addListener(mobileNavBreakpointChanged);
+    window.addEventListener('resize', layoutMobileNav);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', layoutMobileNav);
+      window.visualViewport.addEventListener('scroll', layoutMobileNav);
+    }
+    layoutMobileNav();
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
