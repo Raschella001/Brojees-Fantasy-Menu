@@ -1834,6 +1834,110 @@
     @keyframes live-value-fade { 0%, 18% { box-shadow: inset 0 0 0 100px var(--live-tint); } 100% { box-shadow: inset 0 0 0 100px transparent; } }
     @keyframes live-value-still { 0%, 99% { box-shadow: inset 0 0 0 100px var(--live-tint); } 100% { box-shadow: none; } }
     @media (prefers-reduced-motion: reduce) { .live-value-change { animation-name: live-value-still; animation-timing-function: step-end; } }
+  
+    /* ===== V2.9 team detail popup ===== */
+    .standings-row { cursor: pointer; outline: none; }
+    .standings-row:hover { background: rgba(96,165,250,.085); }
+    .standings-row:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-2); }
+    .standings-row.me { background: rgba(110,231,183,.045); }
+    .standings-row .team-cell { justify-content: flex-start; }
+    .standings-open { margin-left: auto; padding-left: 8px; color: var(--accent-2); font-size: 18px; font-weight: 900; line-height: 1; }
+    .standings-hint { margin: 0 0 8px; }
+    .team-details-btn { margin-top: 8px; font-size: 12px; padding: 7px 10px; }
+
+    .team-modal { width: min(900px, 100%); }
+    .team-modal .player-headshot { object-position: center; }
+    .team-modal .player-headshot-fallback { font-size: 22px; }
+    .team-modal-head .player-modal-name .pill { vertical-align: middle; font-size: 10px; }
+
+    .team-stat-grid { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; }
+    .team-stat-tile { min-width: 0; padding: 10px 9px; border: 1px solid #253550; border-radius: 11px; background: #0d1524; }
+    .team-stat-label { color: var(--muted); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .team-stat-value { margin-top: 4px; font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .team-stat-sub { margin-top: 2px; color: var(--muted); font-size: 10.5px; line-height: 1.3; }
+    .team-season-extras { display: grid; gap: 6px; margin-top: 10px; }
+    .team-season-extras strong { color: var(--text); }
+    .team-form { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+    .team-form .small { margin-right: 3px; }
+    .team-form-chip { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; font-size: 11px; font-weight: 900; }
+    .team-form-chip.win { background: rgba(52,211,153,.16); color: #a7f3d0; }
+    .team-form-chip.loss { background: rgba(251,113,133,.16); color: #fecdd3; }
+    .team-form-chip.tie { background: rgba(158,171,196,.16); color: var(--muted); }
+
+    .team-matchup-score { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: stretch; }
+    .team-matchup-side { min-width: 0; padding: 11px; border: 1px solid #253550; border-radius: 12px; background: #0d1524; }
+    .team-matchup-side.focus { border-color: rgba(110,231,183,.45); }
+    .team-matchup-side.right { text-align: right; }
+    .team-matchup-name { display: block; max-width: 100%; font-size: 13px; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .team-matchup-side.right .pill.me { margin-top: 3px; }
+    button.team-link { padding: 0; min-height: 0; border: 0; background: none; color: #c8ddff; font: inherit; font-size: 13px; font-weight: 800; text-align: inherit; cursor: pointer; }
+    .team-matchup-side.right button.team-link { margin-left: auto; }
+    button.team-link:hover { color: var(--text); text-decoration: underline; transform: none; background: none; }
+    button.team-link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 4px; }
+    .team-matchup-points { margin-top: 3px; font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .team-matchup-proj { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+    .team-matchup-side.right .team-matchup-proj { justify-content: flex-end; }
+    .team-matchup-vs { align-self: center; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    .team-matchup-outlook { margin-top: 9px; color: var(--muted); font-size: 12px; }
+    .team-matchup-outlook strong { color: var(--text); }
+    .team-matchup-outlook.ahead strong { color: var(--accent); }
+    .team-matchup-outlook.behind strong { color: #fecdd3; }
+    .team-lineup-check { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 10px; border: 1px solid #253550; border-radius: 10px; background: rgba(8,13,24,.45); }
+    .team-lineup-check-label { color: var(--muted); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; margin-right: 2px; }
+    .team-alert { padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid; }
+    .team-alert.bad { color: #fecdd3; border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.08); }
+    .team-alert.warn { color: #fde68a; border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.07); }
+    .team-modal-lineups { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .team-modal-lineups.single { grid-template-columns: 1fr; }
+    .team-modal-lineups .mobile-lineup-team { display: flex; }
+    .team-modal-note { margin-top: 8px; }
+
+    .team-pos-counts { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .team-pos-count { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(8,13,24,.5); color: #c8ddff; font-size: 10.5px; font-weight: 800; }
+    .team-roster-head, .team-roster-row { display: grid; grid-template-columns: 38px minmax(0,1fr) 62px 62px; gap: 8px; align-items: center; }
+    .team-roster-head { padding: 0 9px 5px; color: var(--muted); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .team-roster-head span:nth-last-child(-n+2) { text-align: right; }
+    .team-roster-list { display: grid; gap: 5px; }
+    .team-roster-row { min-height: 44px; padding: 7px 9px; border: 1px solid #202c44; border-radius: 9px; background: #0d1423; cursor: pointer; outline: none; }
+    .team-roster-row:hover { background: rgba(96,165,250,.085); }
+    .team-roster-row:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-2); }
+    .team-roster-pos { color: var(--accent-2); font-size: 10.5px; font-weight: 900; text-align: center; }
+    .team-roster-main { min-width: 0; }
+    .team-roster-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .team-roster-player { min-width: 0; font-size: 13px; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .team-role { display: inline-block; margin-right: 2px; padding: 0 5px; vertical-align: 1px; line-height: 15px; border-radius: 999px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); color: var(--muted); }
+    .team-role.starter { color: #baf8df; border-color: rgba(110,231,183,.38); background: rgba(110,231,183,.08); }
+    .team-role.ir { color: #fecdd3; border-color: rgba(251,113,133,.4); }
+    .team-role.taxi { color: #e9d5ff; border-color: rgba(196,181,253,.4); }
+    .team-roster-meta { margin-top: 3px; color: var(--muted); font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .team-roster-meta .game-status-badge { vertical-align: middle; }
+    .team-roster-num { text-align: right; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .team-roster-num.proj { color: var(--accent-2); }
+
+    .team-modal-details summary { cursor: pointer; color: #c8ddff; font-size: 12px; font-weight: 900; min-height: 32px; display: flex; align-items: center; }
+    .team-moves { display: grid; gap: 8px; margin-top: 8px; }
+    .team-modal-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+    .team-modal-actions button { min-height: 44px; }
+
+    @media (max-width: 900px) {
+      .team-stat-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+    @media (max-width: 640px) {
+      .team-matchup-score { gap: 6px; }
+      .team-matchup-side { padding: 9px; }
+      .team-matchup-points { font-size: 21px; }
+      .team-matchup-proj { font-size: 10.5px; }
+      .team-stat-value { font-size: 16px; }
+      button.team-link { min-height: 32px; }
+      .team-roster-meta .game-status-badge { display: none; }  /* matchup lineups above already show game state */
+    }
+    @media (max-width: 430px) {
+      .team-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .team-roster-head, .team-roster-row { grid-template-columns: 30px minmax(0,1fr) 46px 46px; gap: 6px; }
+      .team-roster-row { padding: 7px 7px; }
+      .team-roster-num { font-size: 12px; }
+      .team-matchup-vs { font-size: 9px; }
+    }
   </style>
 </head>
 <body>
@@ -2223,6 +2327,21 @@
     </section>
   </main>
 
+  <div class="player-modal-backdrop team-modal-backdrop" id="teamModalBackdrop" aria-hidden="true">
+    <section class="player-modal team-modal" id="teamModal" role="dialog" aria-modal="true" aria-labelledby="teamModalName">
+      <header class="player-modal-head team-modal-head">
+        <img class="player-headshot" id="teamModalAvatar" alt="" />
+        <div class="player-headshot-fallback" id="teamModalAvatarFallback" aria-hidden="true">TM</div>
+        <div>
+          <h2 class="player-modal-name" id="teamModalName">Team</h2>
+          <div class="player-modal-subtitle" id="teamModalSubtitle"></div>
+        </div>
+        <button class="player-modal-close" id="teamModalClose" type="button" aria-label="Close team details">×</button>
+      </header>
+      <div class="player-modal-body" id="teamModalBody"></div>
+    </section>
+  </div>
+
   <div class="player-modal-backdrop" id="playerModalBackdrop" aria-hidden="true">
     <section class="player-modal" id="playerModal" role="dialog" aria-modal="true" aria-labelledby="playerModalName">
       <header class="player-modal-head">
@@ -2245,8 +2364,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '2.8.1';
+    const APP_VERSION = '2.9';
+    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row';
     const PATCH_NOTES = [
+      { version: '2.9', note: 'Select any team in Current Standings to open a team popup: live current-week matchup with actual, original and live projected scores for both sides, full lineups, a lineup check (empty slots, byes, injury tags), season record/PF/PA/FAAB, recent form and lineup efficiency, the live standings forecast, a position-grouped roster with season points and weekly projections, and this week\'s moves. Opponent names open their team; players open the player popup. Live Projected Standings rows also get an Open team details button.' },
       { version: '2.8.1', note: 'Game Day is now a persistent expandable matchup bar across all tabs, showing your selected team, opponent, live scores, original/live projections, starters, and benches. It follows the current week independently of historical Matchups views. Header collapse is a separate remembered control.' },
       { version: '2.8.0', note: 'Added a remembered compact Game Day mode with a small league/week header, refresh, and expandable controls. Recent score changes and projected record/PF/rank updates briefly highlight; corrections use amber. Highlights fade and respect reduced-motion settings.' },
       { version: '2.7.7', note: 'The floating mobile Menu button can now be dragged anywhere within the screen and remembers its position. Navigation opens in the available space, the hamburger animates into a close icon, and Reset position restores the top-left corner.' },
@@ -2377,6 +2498,14 @@
       settingsGrid: document.getElementById('settingsGrid'),
       rawJson: document.getElementById('rawJson'),
       playerModalBackdrop: document.getElementById('playerModalBackdrop'),
+      teamModalBackdrop: document.getElementById('teamModalBackdrop'),
+      teamModal: document.getElementById('teamModal'),
+      teamModalAvatar: document.getElementById('teamModalAvatar'),
+      teamModalAvatarFallback: document.getElementById('teamModalAvatarFallback'),
+      teamModalName: document.getElementById('teamModalName'),
+      teamModalSubtitle: document.getElementById('teamModalSubtitle'),
+      teamModalClose: document.getElementById('teamModalClose'),
+      teamModalBody: document.getElementById('teamModalBody'),
       playerModal: document.getElementById('playerModal'),
       playerModalClose: document.getElementById('playerModalClose'),
       playerModalHeadshot: document.getElementById('playerModalHeadshot'),
@@ -2403,6 +2532,8 @@
       isRefreshing: false,
       activePlayerId: null,
       activePlayerData: null,
+      playerModalReturnFocus: null,
+      teamModal: { rosterId: null, data: null, returnFocus: null },
       teamLeaderSeeds: new Map(),
       statsLeaders: { matchupLoadedAt: 0, matchupError: '', gameDayProjectionError: '', expandedTeams: new Set(), teamRows: [], teamData: null, teamLoadedAt: 0, teamError: '', previousTeams: {}, position: 'ALL', rows: [], previous: {}, stats: {}, data: null, key: null, loading: false, loadedAt: 0, error: '', timer: null },
       activePlayerStats: null,
@@ -2702,7 +2833,7 @@
     }
 
     function playerFromId(id) {
-      if (!id) return { player_id: id, full_name: 'Empty', position: '', team: '' };
+      if (!id || String(id) === '0') return { player_id: id, full_name: 'Empty', position: '', team: '' };
       const p = app.playerMap[id];
       if (p) {
         const full = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || p.search_full_name || id;
@@ -3014,6 +3145,7 @@
 
     async function openPlayerModal(playerId, leaderData = null) {
       if (!app.data || !playerId) return;
+      if (!els.playerModalBackdrop.classList.contains('open')) app.playerModalReturnFocus = document.activeElement;
       app.activePlayerId = String(playerId);
       app.activePlayerData = leaderData;
       app.activePlayerStats = null;
@@ -3044,7 +3176,377 @@
       app.activePlayerStats = null;
       els.playerModalBackdrop.classList.remove('open');
       els.playerModalBackdrop.setAttribute('aria-hidden', 'true');
+      // Keep the page locked while the team popup is still open underneath.
+      if (!teamModalIsOpen()) document.body.classList.remove('modal-open');
+      const previous = app.playerModalReturnFocus;
+      app.playerModalReturnFocus = null;
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
+      else if (teamModalIsOpen()) els.teamModalClose.focus({ preventScroll: true });
+    }
+
+    /* ===== V2.9 team detail popup (opened from Current Standings) ===== */
+
+    // Same ordering the Current Standings table uses: wins, then fewer losses, then PF.
+    function currentStandingsOrder(rosters = []) {
+      return [...rosters].sort((a,b) => {
+        const aw = Number(a.settings?.wins ?? 0), bw = Number(b.settings?.wins ?? 0);
+        if (bw !== aw) return bw - aw;
+        const al = Number(a.settings?.losses ?? 0), bl = Number(b.settings?.losses ?? 0);
+        if (al !== bl) return al - bl;
+        return getPoints(b.settings, 'fpts', 'fpts_decimal') - getPoints(a.settings, 'fpts', 'fpts_decimal');
+      });
+    }
+
+    function teamModalIsOpen() {
+      return Boolean(els.teamModalBackdrop?.classList.contains('open'));
+    }
+
+    // Current-week data only. Matchups can be showing a past week, so app.data is used
+    // only when it is the current week (same rule as the Game Day bar).
+    function teamModalWeekData() {
+      return gameDayData();
+    }
+
+    function teamModalRecordText(settings = {}) {
+      const ties = Number(settings.ties ?? 0);
+      return `${settings.wins ?? 0}-${settings.losses ?? 0}${ties ? `-${ties}` : ''}`;
+    }
+
+    function teamModalTile(label, value, sub = '', cls = '') {
+      return `<div class="team-stat-tile ${cls}">
+        <div class="team-stat-label">${escapeHtml(label)}</div>
+        <div class="team-stat-value">${escapeHtml(value)}</div>
+        ${sub ? `<div class="team-stat-sub">${escapeHtml(sub)}</div>` : ''}
+      </div>`;
+    }
+
+    function teamModalSeasonHtml(roster, base) {
+      const league = base.league || {};
+      const settings = roster.settings || {};
+      const order = currentStandingsOrder(base.rosters || []);
+      const rank = order.findIndex(r => String(r.roster_id) === String(roster.roster_id)) + 1;
+      const wins = Number(settings.wins ?? 0), losses = Number(settings.losses ?? 0), ties = Number(settings.ties ?? 0);
+      const games = wins + losses + ties;
+      const pf = getPoints(settings, 'fpts', 'fpts_decimal');
+      const pa = getPoints(settings, 'fpts_against', 'fpts_against_decimal');
+      const hasPotential = 'ppts' in settings || 'ppts_decimal' in settings;
+      const potential = hasPotential ? getPoints(settings, 'ppts', 'ppts_decimal') : null;
+      const faabBudget = Number(league.settings?.waiver_budget ?? 0);
+      const used = Number(settings.waiver_budget_used ?? 0);
+      const streak = String(roster.metadata?.streak || '').trim();
+      const form = String(roster.metadata?.record || '').toUpperCase().replace(/[^WLT]/g, '').slice(-5);
+
+      const tiles = [
+        teamModalTile('Standing', rank ? `#${rank}` : '—', `of ${(base.rosters || []).length} teams`),
+        teamModalTile('Record', teamModalRecordText(settings), streak ? `Streak ${streak}` : games ? `${Math.round((wins + ties / 2) / games * 1000) / 10}% win rate` : ''),
+        teamModalTile('Points For', numberOrDash(pf, 2), games ? `${numberOrDash(pf / games, 2)} per game` : ''),
+        teamModalTile('Points Against', numberOrDash(pa, 2), games ? `${numberOrDash(pa / games, 2)} per game` : ''),
+        faabBudget
+          ? teamModalTile('FAAB Left', `$${Math.max(0, faabBudget - used)}`, `$${used} of $${faabBudget} spent`)
+          : teamModalTile('Waiver', `#${settings.waiver_position ?? '—'}`, 'Waiver priority'),
+        teamModalTile('Moves', settings.total_moves ?? '—', 'Season transactions')
+      ];
+
+      const extras = [];
+      if (form) {
+        extras.push(`<div class="team-form"><span class="small">Last ${form.length}</span>${[...form].map(r => `<span class="team-form-chip ${r === 'W' ? 'win' : r === 'L' ? 'loss' : 'tie'}">${r}</span>`).join('')}</div>`);
+      }
+      if (potential && potential > 0 && pf > 0) {
+        extras.push(`<div class="small">Lineup efficiency <strong>${Math.round(pf / potential * 1000) / 10}%</strong> · ${numberOrDash(pf, 2)} of ${numberOrDash(potential, 2)} possible points</div>`);
+      }
+
+      const hub = app.statsLeaders;
+      const forecastReady = hub.teamLoadedAt && String(hub.teamData?.league?.league_id) === String(base.league?.league_id);
+      const forecast = forecastReady ? (hub.teamRows || []).find(row => String(row.roster_id) === String(roster.roster_id)) : null;
+      if (forecast) {
+        const movement = forecast.rank === null ? 0 : forecast.entering_rank - forecast.rank;
+        const move = movement ? ` <span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '';
+        const result = forecast.result ? ` · ${forecast.matchup_final ? 'Final' : 'Projected'} <span class="projected-result ${escapeHtml(forecast.result)}">${escapeHtml(forecast.result)}</span>` : '';
+        extras.push(`<div class="small team-forecast-line">If this week holds (Week ${escapeHtml(hub.teamData.selectedWeek)}): <strong>${forecast.record_ready ? escapeHtml(teamRecordText(forecast.projected)) : '—'}</strong> · ${forecast.rank !== null ? `<strong>#${forecast.rank}</strong>${move}` : 'rank pending'}${forecast.projected_pf !== null ? ` · PF ${numberOrDash(forecast.projected_pf, 2)}` : ''}${result}</div>`);
+      }
+
+      return `<section class="player-modal-section">
+        <div class="player-modal-section-title">Season</div>
+        <div class="team-stat-grid">${tiles.join('')}</div>
+        ${extras.length ? `<div class="team-season-extras">${extras.join('')}</div>` : ''}
+      </section>`;
+    }
+
+    function teamLineupAlerts(matchup, roster, ctx) {
+      const league = (ctx || app.data)?.league || {};
+      const slots = (league.roster_positions || []).filter(p => !['BN','IR','TAXI'].includes(p));
+      const starters = matchup?.starters || roster?.starters || [];
+      const alerts = [];
+      slots.forEach((slot, i) => {
+        const id = starters[i];
+        if (!id || String(id) === '0') alerts.push({ level: 'bad', text: `Empty ${formatSlot(slot)} slot` });
+      });
+      for (const id of starters) {
+        if (!id || String(id) === '0') continue;
+        const p = playerFromId(id);
+        const info = ctx ? playerGameInfo(id, ctx) : null;
+        if (info && ['live','final'].includes(info.key)) continue;   // already playing / played
+        if (info?.key === 'bye') { alerts.push({ level: 'bad', text: `${p.full_name} · on bye` }); continue; }
+        if (info?.key === 'canceled') { alerts.push({ level: 'warn', text: `${p.full_name} · game canceled` }); continue; }
+        const injury = String(p.injury_status || '').trim();
+        if (!injury) continue;
+        const level = /^(out|ir|pup|sus|nfi|na|cov)/i.test(injury) ? 'bad' : 'warn';
+        alerts.push({ level, text: `${p.full_name} · ${injury}` });
+      }
+      return alerts;
+    }
+
+    function teamModalMatchupSideHtml(matchup, ctx, { focus = false, align = 'left' } = {}) {
+      if (!matchup) {
+        return `<div class="team-matchup-side ${align === 'right' ? 'right' : ''}"><div class="team-matchup-name">Bye / no opponent</div><div class="team-matchup-points">—</div></div>`;
+      }
+      const roster = (ctx.rosters || []).find(r => String(r.roster_id) === String(matchup.roster_id));
+      const name = roster ? teamName(ownerForRoster(roster, ctx.users || []), roster) : `Roster ${matchup.roster_id}`;
+      const projection = gameDayProjection(matchup, ctx);
+      const actual = Number(matchup.custom_points ?? matchup.points ?? 0);
+      const selected = String(matchup.roster_id) === String(els.myTeam.value || '');
+      const nameHtml = focus
+        ? `<div class="team-matchup-name">${escapeHtml(name)}</div>`
+        : `<button type="button" class="team-link team-matchup-name" data-open-team="${escapeHtml(matchup.roster_id)}" title="Open ${escapeHtml(name)} team details">${escapeHtml(name)} <span aria-hidden="true">›</span></button>${selected ? ' <span class="pill me">SELECTED</span>' : ''}`;
+      return `<div class="team-matchup-side ${focus ? 'focus' : ''} ${align === 'right' ? 'right' : ''}">
+        ${nameHtml}
+        <div ${liveChangeAttrs('teammodal', `team:${matchup.roster_id}`, 'score', 'team-matchup-points')}>${numberOrDash(actual, 2)}</div>
+        <div class="team-matchup-proj">
+          <span class="matchup-proj-original">Orig ${projection.original === null ? '—' : numberOrDash(projection.original, 2)}</span>
+          <span ${liveChangeAttrs('teammodal', `team:${matchup.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live, 2)}</span>
+          ${projectionDeltaHtml(projection.original, projection.live)}
+        </div>
+        <div class="matchup-state-summary">${escapeHtml(matchupStatusSummary(matchup, ctx))}</div>
+      </div>`;
+    }
+
+    function teamModalMatchupHtml(rosterId, ctx) {
+      const base = app.data;
+      if (!ctx) {
+        const week = base?.state?.week || base?.state?.leg || '';
+        return `<section class="player-modal-section"><div class="player-modal-section-title">Current Matchup</div><div class="player-modal-loading">Loading the current Week ${escapeHtml(week)} matchup…</div></section>`;
+      }
+      const week = ctx.selectedWeek || ctx.state?.week || ctx.state?.leg || '—';
+      const mine = (ctx.matchups || []).find(m => String(m.roster_id) === String(rosterId));
+      if (!mine) {
+        return `<section class="player-modal-section"><div class="player-modal-section-title">Week ${escapeHtml(week)} Matchup</div><div class="player-modal-loading">No matchup this week for this team.</div></section>`;
+      }
+      const opponent = mine.matchup_id == null ? null : (ctx.matchups || []).find(m =>
+        String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== String(rosterId));
+
+      const liveRows = [];
+      for (const matchup of [mine, opponent].filter(Boolean)) {
+        const projection = gameDayProjection(matchup, ctx);
+        liveRows.push([`team:${matchup.roster_id}`, { score: Number(matchup.custom_points ?? matchup.points ?? 0), projection: projection.live }]);
+        for (const id of new Set([...(matchup.players || []), ...(matchup.starters || [])])) {
+          liveRows.push([`player:${matchup.roster_id}:${id}`, { score: actualPlayerPoints(matchup, id), projection: adjustedPlayerProjection(matchup, id, ctx) }]);
+        }
+      }
+      recordLiveChanges('teammodal', `${liveChangeContext(ctx)}|${rosterId}`, liveRows);
+
+      const mineLive = gameDayProjection(mine, ctx).live;
+      const oppLive = opponent ? gameDayProjection(opponent, ctx).live : null;
+      const starters = (mine.starters || []).filter(id => id && String(id) !== '0');
+      const allDone = starters.length > 0 && starters.every(id => ['final','bye','canceled'].includes(playerGameInfo(id, ctx).key))
+        && (!opponent || (opponent.starters || []).filter(id => id && String(id) !== '0').every(id => ['final','bye','canceled'].includes(playerGameInfo(id, ctx).key)));
+      let outlook = '';
+      if (opponent && Number.isFinite(mineLive) && Number.isFinite(oppLive)) {
+        const margin = Math.round((mineLive - oppLive) * 100) / 100;
+        const roster = (ctx.rosters || []).find(r => String(r.roster_id) === String(rosterId));
+        const oppRoster = (ctx.rosters || []).find(r => String(r.roster_id) === String(opponent.roster_id));
+        const leader = margin >= 0 ? roster : oppRoster;
+        const leaderName = leader ? teamName(ownerForRoster(leader, ctx.users || []), leader) : 'Team';
+        outlook = Math.abs(margin) < 0.005
+          ? `<div class="team-matchup-outlook">${allDone ? 'Final' : 'Live projection'}: <strong>dead even</strong></div>`
+          : `<div class="team-matchup-outlook ${margin >= 0 ? 'ahead' : 'behind'}">${allDone ? 'Final' : 'Live projection'}: <strong>${escapeHtml(leaderName)} by ${numberOrDash(Math.abs(margin), 2)}</strong></div>`;
+      }
+
+      const roster = (ctx.rosters || app.data?.rosters || []).find(r => String(r.roster_id) === String(rosterId));
+      const alerts = allDone ? [] : teamLineupAlerts(mine, roster, ctx);
+      const alertsHtml = allDone ? '' : alerts.length
+        ? `<div class="team-lineup-check"><span class="team-lineup-check-label">Lineup check</span>${alerts.map(a => `<span class="team-alert ${a.level}">${escapeHtml(a.text)}</span>`).join('')}</div>`
+        : '<div class="team-lineup-check ok"><span class="team-lineup-check-label">Lineup check</span><span class="small">No empty slots, byes or injury tags among starters.</span></div>';
+
+      return `<section class="player-modal-section">
+        <div class="player-modal-section-title">Week ${escapeHtml(week)} Matchup</div>
+        <div class="team-matchup-score">
+          ${teamModalMatchupSideHtml(mine, ctx, { focus: true })}
+          <div class="team-matchup-vs">VS</div>
+          ${teamModalMatchupSideHtml(opponent, ctx, { align: 'right' })}
+        </div>
+        ${outlook}
+        ${alertsHtml}
+        <div class="matchup-lineups team-modal-lineups ${opponent ? '' : 'single'}">
+          ${renderLineupSide(mine, ctx, 'teammodal')}
+          ${opponent ? renderLineupSide(opponent, ctx, 'teammodal') : ''}
+        </div>
+        <div class="small team-modal-note">Pts = actual · Orig = original projection · Live = Brojees live estimate. Tap a player for details.</div>
+      </section>`;
+    }
+
+    const TEAM_ROSTER_POSITION_ORDER = ['QB','RB','WR','TE','K','DEF'];
+
+    function teamModalRosterHtml(roster, ctx) {
+      const base = app.data;
+      const mine = ctx ? (ctx.matchups || []).find(m => String(m.roster_id) === String(roster.roster_id)) : null;
+      const starters = new Set((mine?.starters || roster.starters || []).map(String).filter(id => id && id !== '0'));
+      const reserve = new Set((roster.reserve || []).map(String));
+      const taxi = new Set((roster.taxi || []).map(String));
+      const ids = [...new Set([...(roster.players || []), ...(roster.reserve || []), ...(roster.taxi || [])].map(String))].filter(id => id && id !== '0');
+      const week = ctx?.selectedWeek || ctx?.state?.week || '';
+
+      const rows = ids.map(id => {
+        const p = playerFromId(id);
+        const rank = positionRankForPlayer(id, base);
+        const role = reserve.has(id) ? 'IR' : taxi.has(id) ? 'Taxi' : starters.has(id) ? 'Starter' : 'Bench';
+        const season = Number(rank?.points);
+        return {
+          id, p, role,
+          position: String(p.position || p.fantasy_positions?.[0] || '—').toUpperCase(),
+          season: Number.isFinite(season) ? season : null,
+          rankText: rank && Number.isFinite(Number(rank.rank)) ? `${rank.position || p.position} #${rank.rank}` : '',
+          proj: ctx ? originalProjectedPoints(id, ctx) : null,
+          opponent: ctx ? waiverOpponent(id, ctx) : '',
+          gameInfo: ctx ? playerGameInfo(id, ctx) : null
+        };
+      });
+
+      const posIndex = pos => { const i = TEAM_ROSTER_POSITION_ORDER.indexOf(pos); return i === -1 ? 99 : i; };
+      rows.sort((a,b) => posIndex(a.position) - posIndex(b.position) || a.position.localeCompare(b.position)
+        || (b.season ?? -1) - (a.season ?? -1) || a.p.full_name.localeCompare(b.p.full_name));
+
+      const counts = {};
+      for (const row of rows) counts[row.position] = (counts[row.position] || 0) + 1;
+      const countChips = Object.entries(counts)
+        .sort((a,b) => posIndex(a[0]) - posIndex(b[0]))
+        .map(([pos, n]) => `<span class="team-pos-count">${escapeHtml(pos)} ${n}</span>`).join('');
+      const injured = rows.filter(row => row.p.injury_status && row.role !== 'IR').length;
+
+      const rowHtml = row => {
+        const meta = [row.p.team || 'FA', row.opponent, row.rankText].filter(Boolean).join(' · ');
+        const roleCls = row.role.toLowerCase();
+        const showInjury = row.p.injury_status && !(row.role === 'IR' && /^ir$/i.test(String(row.p.injury_status).trim()));
+        return `<div class="team-roster-row" data-player-id="${escapeHtml(row.id)}" role="button" tabindex="0" aria-label="Open ${escapeHtml(row.p.full_name)} player details">
+          <div class="team-roster-pos">${escapeHtml(row.position)}</div>
+          <div class="team-roster-main">
+            <div class="team-roster-name"><span class="team-roster-player">${escapeHtml(row.p.full_name)}</span></div>
+            <div class="team-roster-meta"><span class="team-role ${escapeHtml(roleCls)}">${escapeHtml(row.role)}</span> ${escapeHtml(meta)}${showInjury ? ` · <span class="injury">${escapeHtml(row.p.injury_status)}</span>` : ''}${row.gameInfo && ['live','final','canceled'].includes(row.gameInfo.key) ? ` ${gameStatusBadge(row.gameInfo)}` : ''}</div>
+          </div>
+          <div class="team-roster-num"><span>${row.season === null ? '—' : numberOrDash(row.season, 1)}</span></div>
+          <div class="team-roster-num proj"><span>${row.proj === null || row.proj === undefined ? '—' : numberOrDash(row.proj, 1)}</span></div>
+        </div>`;
+      };
+
+      return `<section class="player-modal-section">
+        <div class="player-modal-section-title">Roster · ${rows.length} players${injured ? ` · ${injured} with injury tags` : ''}</div>
+        <div class="team-pos-counts">${countChips}</div>
+        <div class="team-roster-head"><span></span><span>Player</span><span>Season</span><span>${week ? `Wk ${escapeHtml(week)}` : 'Wk'} proj</span></div>
+        <div class="team-roster-list">${rows.map(rowHtml).join('') || '<div class="small">No players on this roster.</div>'}</div>
+        <div class="small team-modal-note">Season = season-to-date fantasy points with this league's scoring. Wk proj = original projection for the current week.</div>
+      </section>`;
+    }
+
+    function teamModalMovesHtml(rosterId) {
+      const base = app.data;
+      const currentWeek = Number(base?.state?.week || base?.state?.leg || 0);
+      if (!base || Number(base.selectedWeek) !== currentWeek) return '';
+      const moves = (base.transactions || [])
+        .filter(tx => (tx?.roster_ids || []).map(String).includes(String(rosterId)))
+        .sort((a,b) => Number(b?.created || 0) - Number(a?.created || 0));
+      return `<section class="player-modal-section">
+        <details class="team-modal-details" data-team-section="moves">
+          <summary>This week's moves (${moves.length})</summary>
+          <div class="team-moves">${moves.length ? moves.slice(0, 8).map(tx => transactionCardHtml(tx, base)).join('') : '<div class="small">No adds, drops, claims or trades for this team in Week ' + escapeHtml(currentWeek) + '.</div>'}</div>
+        </details>
+      </section>`;
+    }
+
+    function renderTeamModal() {
+      if (!teamModalIsOpen() || !app.teamModal.rosterId || !app.data) return;
+      const rosterId = String(app.teamModal.rosterId);
+      const base = app.data;
+      const ctx = teamModalWeekData();
+      app.teamModal.data = ctx;
+      const roster = (ctx?.rosters || []).find(r => String(r.roster_id) === rosterId)
+        || (base.rosters || []).find(r => String(r.roster_id) === rosterId);
+      if (!roster) { closeTeamModal(); return; }
+      const users = ctx?.users || base.users || [];
+      const owner = ownerForRoster(roster, users);
+      const name = teamName(owner, roster);
+      const selected = String(els.myTeam.value || '') === rosterId;
+      const rank = currentStandingsOrder(base.rosters || []).findIndex(r => String(r.roster_id) === rosterId) + 1;
+
+      els.teamModalName.innerHTML = `${escapeHtml(name)}${selected ? ' <span class="pill me">SELECTED</span>' : ''}`;
+      els.teamModalSubtitle.textContent = [owner?.display_name || owner?.username || `Roster ${rosterId}`, rank ? `#${rank} in standings` : '', teamModalRecordText(roster.settings || {})].filter(Boolean).join(' · ');
+      const avatar = avatarUrl(owner);
+      const showImage = Boolean(avatar) && els.teamModalAvatar.dataset.failed !== avatar;
+      if (showImage && els.teamModalAvatar.getAttribute('src') !== avatar) els.teamModalAvatar.src = avatar;
+      if (!avatar) els.teamModalAvatar.removeAttribute('src');
+      els.teamModalAvatar.style.display = showImage ? '' : 'none';
+      els.teamModalAvatarFallback.style.display = showImage ? 'none' : 'grid';
+      els.teamModalAvatarFallback.textContent = (name.match(/\b\w/g) || ['T']).slice(0, 2).join('').toUpperCase();
+      els.teamModalAvatar.alt = `${name} avatar`;
+
+      const seconds = activeLeaderboardRefreshSeconds();
+      const checked = ctx === app.statsLeaders.data ? app.statsLeaders.matchupLoadedAt : app.lastFetchAt;
+      const actions = `<div class="team-modal-actions">
+        <span class="small">${checked ? `Scores checked ${escapeHtml(new Date(checked).toLocaleTimeString())}` : ''}${seconds ? ` · updates every ${seconds}s` : ''}</span>
+        ${selected ? '' : `<button type="button" class="btn-ghost" data-set-my-team="${escapeHtml(rosterId)}">Set as my team</button>`}
+      </div>`;
+
+      const openSections = new Set([...els.teamModalBody.querySelectorAll('details[data-team-section]')].filter(d => d.open).map(d => d.dataset.teamSection));
+      const scrollTop = els.teamModal.scrollTop;
+      replaceLiveContent(els.teamModalBody, [
+        teamModalMatchupHtml(rosterId, ctx),
+        teamModalSeasonHtml(roster, base),
+        teamModalRosterHtml(roster, ctx),
+        teamModalMovesHtml(rosterId),
+        actions
+      ].join(''));
+      els.teamModalBody.querySelectorAll('details[data-team-section]').forEach(d => { d.open = openSections.has(d.dataset.teamSection); });
+      els.teamModal.scrollTop = scrollTop;
+    }
+
+    function openTeamModal(rosterId) {
+      if (!app.data || rosterId === null || rosterId === undefined || rosterId === '') return;
+      const switching = teamModalIsOpen();
+      if (!switching) app.teamModal.returnFocus = document.activeElement;
+      app.teamModal.rosterId = String(rosterId);
+      els.teamModalBackdrop.classList.add('open');
+      els.teamModalBackdrop.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      els.teamModalBody.innerHTML = '';
+      els.teamModal.scrollTop = 0;
+      renderTeamModal();
+      // If Matchups is showing a past week and the live scoreboard hasn't loaded yet,
+      // fetch the current week. renderStatsLeaders() re-renders this popup when done.
+      if (!teamModalWeekData()) loadStatsLeaders({ force: true });
+      requestAnimationFrame(() => els.teamModalClose.focus({ preventScroll: true }));
+    }
+
+    function closeTeamModal() {
+      if (!teamModalIsOpen()) return;
+      if (els.playerModalBackdrop.classList.contains('open')) closePlayerModal();
+      const rosterId = app.teamModal.rosterId;
+      app.teamModal.rosterId = null;
+      app.teamModal.data = null;
+      els.teamModalBackdrop.classList.remove('open');
+      els.teamModalBackdrop.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
+      const previous = app.teamModal.returnFocus;
+      app.teamModal.returnFocus = null;
+      const target = previous?.isConnected ? previous
+        : [...document.querySelectorAll('[data-team-roster]')].find(el => el.dataset.teamRoster === String(rosterId));
+      target?.focus?.({ preventScroll: true });
+    }
+
+    // Player popups opened from inside the team popup use the same current-week data.
+    function playerModalContextForRow(row) {
+      if (row.closest('#gameDayRosters')) return app.gameDayData;
+      if (row.closest('#teamModal')) return app.teamModal.data && app.teamModal.data === app.statsLeaders.data ? app.teamModal.data : null;
+      if (row.classList.contains('team-leader-player')) return app.statsLeaders.teamData;
+      if (row.classList.contains('leader-row')) return app.statsLeaders.data;
+      return null;
     }
 
     async function refreshOpenPlayerStats(playerId) {
@@ -4651,13 +5153,7 @@
       const myRosterId = Number(els.myTeam.value || 0);
       const myRoster = rosters.find(r => Number(r.roster_id) === myRosterId);
 
-      const sorted = [...rosters].sort((a,b) => {
-        const aw = Number(a.settings?.wins ?? 0), bw = Number(b.settings?.wins ?? 0);
-        if (bw !== aw) return bw - aw;
-        const al = Number(a.settings?.losses ?? 0), bl = Number(b.settings?.losses ?? 0);
-        if (al !== bl) return al - bl;
-        return getPoints(b.settings, 'fpts', 'fpts_decimal') - getPoints(a.settings, 'fpts', 'fpts_decimal');
-      });
+      const sorted = currentStandingsOrder(rosters);
 
       const cards = [
         ['Season / Week', `${league.season} · Wk ${state?.week ?? state?.leg ?? '—'}`, `${prettyKey(league.status || 'unknown')} · ${prettyKey(state?.season_type || league.season_type || '')}`],
@@ -4673,7 +5169,7 @@
         const remaining = faabBudget ? Math.max(0, faabBudget - used) : null;
         const avatar = avatarUrl(owner);
         return `
-          <tr>
+          <tr class="standings-row ${me ? 'me' : ''}" data-team-roster="${escapeHtml(r.roster_id)}" tabindex="0" aria-label="Open ${escapeHtml(teamName(owner, r))} team details" title="Open team details">
             <td>${index + 1}</td>
             <td>
               <div class="team-cell">
@@ -4682,6 +5178,7 @@
                   <div class="team-name">${escapeHtml(teamName(owner, r))} ${me ? '<span class="pill me">SELECTED</span>' : ''}</div>
                   <div class="owner-name">${escapeHtml(owner?.display_name || owner?.username || `Roster ${r.roster_id}`)}</div>
                 </div>
+                <span class="standings-open" aria-hidden="true">›</span>
               </div>
             </td>
             <td>${escapeHtml(`${r.settings?.wins ?? 0}-${r.settings?.losses ?? 0}${Number(r.settings?.ties ?? 0) ? `-${r.settings.ties}` : ''}`)}</td>
@@ -4699,6 +5196,7 @@
         ${patchNotesHtml()}`;
 
       els.currentStandingsContent.innerHTML = `
+          <div class="small standings-hint">Select a team for its live matchup, projections and roster.</div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>${faabBudget ? 'FAAB Left' : 'Waiver'}</th><th>Moves</th></tr></thead>
@@ -5335,7 +5833,7 @@
                 ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="">` : '<div class="avatar"></div>'}
                 <div><div class="team-name">${escapeHtml(row.name)} ${selected ? '<span class="pill me">SELECTED</span>' : ''}</div><div class="owner-name">${escapeHtml(owner?.display_name || owner?.username || `Roster ${row.roster_id}`)}</div></div>
               </div></summary>
-              <div class="projected-team-detail"><div class="small">Entering week: ${teamRecordText(row.entering)} · PF ${points(row.entering.pf)} · Actual this week ${points(row.actual_points)}</div><div class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · Opponent live proj ${points(row.opponent_points)}` : 'No opponent available'}</div>${lineup || '<div class="small">No starters listed.</div>'}</div>
+              <div class="projected-team-detail"><button type="button" class="btn-ghost team-details-btn" data-open-team="${escapeHtml(row.roster_id)}">Open team details</button><div class="small">Entering week: ${teamRecordText(row.entering)} · PF ${points(row.entering.pf)} · Actual this week ${points(row.actual_points)}</div><div class="small">${row.opponent ? `vs ${escapeHtml(row.opponent)} · Opponent live proj ${points(row.opponent_points)}` : 'No opponent available'}</div>${lineup || '<div class="small">No starters listed.</div>'}</div>
             </details></td>
             <td ${liveChangeAttrs('standings', row.roster_id, 'record', '', `Entering week: ${teamRecordText(row.entering)}`)}>${row.record_ready ? teamRecordText(row.projected) : '—'}</td>
             <td ${liveChangeAttrs('standings', row.roster_id, 'pf', 'projected-pf', `Entering PF: ${points(row.entering.pf)}`)}>${points(row.projected_pf)}</td>
@@ -5440,6 +5938,7 @@
 
     function renderStatsLeaders() {
       renderGameDayBar();
+      renderTeamModal();
       const hub = app.statsLeaders;
       renderTeamLeaders();
       const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
@@ -5841,17 +6340,41 @@
       if (refreshBtn) {
         event.preventDefault(); event.stopPropagation(); refreshOpenPlayerStats(refreshBtn.dataset.playerId); return;
       }
-      const playerRow = event.target.closest('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
-      if (playerRow) openPlayerModal(playerRow.dataset.playerId, playerRow.closest('#gameDayRosters') ? app.gameDayData : playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null);
+      const setMyTeam = event.target.closest('[data-set-my-team]');
+      if (setMyTeam) {
+        const id = setMyTeam.dataset.setMyTeam;
+        if ([...els.myTeam.options].some(o => o.value === String(id))) {
+          els.myTeam.value = String(id);
+          els.myTeam.dispatchEvent(new Event('change'));
+          renderTeamModal();
+        }
+        return;
+      }
+      const openTeam = event.target.closest('[data-open-team]');
+      if (openTeam) { event.preventDefault(); openTeamModal(openTeam.dataset.openTeam); return; }
+      const playerRow = event.target.closest(PLAYER_ROW_SELECTOR);
+      if (playerRow) { openPlayerModal(playerRow.dataset.playerId, playerModalContextForRow(playerRow)); return; }
+      const teamRow = event.target.closest('[data-team-roster]');
+      if (teamRow) openTeamModal(teamRow.dataset.teamRoster);
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && els.playerModalBackdrop.classList.contains('open')) { closePlayerModal(); return; }
+      if (event.key === 'Escape' && teamModalIsOpen()) { closeTeamModal(); return; }
       if ((event.key === 'Enter' || event.key === ' ') && !els.playerModalBackdrop.classList.contains('open')) {
-        const playerRow = event.target.closest?.('[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player');
-        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerRow.closest('#gameDayRosters') ? app.gameDayData : playerRow.classList.contains('team-leader-player') ? app.statsLeaders.teamData : playerRow.classList.contains('leader-row') ? app.statsLeaders.data : null); }
+        const playerRow = event.target.closest?.(PLAYER_ROW_SELECTOR);
+        if (playerRow) { event.preventDefault(); openPlayerModal(playerRow.dataset.playerId, playerModalContextForRow(playerRow)); return; }
+        const teamRow = event.target.closest?.('[data-team-roster]');
+        if (teamRow && event.target === teamRow) { event.preventDefault(); openTeamModal(teamRow.dataset.teamRoster); }
       }
     });
     els.playerModalClose.addEventListener('click', closePlayerModal);
+    els.teamModalClose.addEventListener('click', closeTeamModal);
+    els.teamModalBackdrop.addEventListener('click', event => { if (event.target === els.teamModalBackdrop) closeTeamModal(); });
+    els.teamModalAvatar.addEventListener('error', () => {
+      els.teamModalAvatar.dataset.failed = els.teamModalAvatar.getAttribute('src') || '';
+      els.teamModalAvatar.style.display = 'none';
+      els.teamModalAvatarFallback.style.display = 'grid';
+    });
     els.playerModalBackdrop.addEventListener('click', event => { if (event.target === els.playerModalBackdrop) closePlayerModal(); });
     els.playerModalHeadshot.addEventListener('error', () => { els.playerModalHeadshot.style.display = 'none'; els.playerModalHeadshotFallback.style.display = 'grid'; });
 
@@ -5959,6 +6482,7 @@
     });
 
     els.myTeam.addEventListener('change', () => {
+      if (teamModalIsOpen()) requestAnimationFrame(renderTeamModal);
       renderGameDayBar();
       if (!app.data) return;
       localStorage.setItem(`sleeper_selected_roster_${app.data.league.league_id}`, els.myTeam.value);
