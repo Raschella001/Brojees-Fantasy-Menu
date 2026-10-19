@@ -10,6 +10,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Brojees" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <title>Brojees Fantasy Menu</title>
@@ -3179,6 +3181,57 @@
       .home-side.theirs .home-proj { justify-content: flex-start; }
       .home-side.theirs button.home-side-name { margin-left: 0; text-align: left; }
     }
+
+    /* ===== V3.2 floating Menu button: inverted so it stands apart from every card ===== */
+    @media (max-width: 760px) {
+      .mobile-nav-toggle {
+        gap: 10px;
+        min-height: 54px;
+        padding: 6px 14px 6px 6px;
+        background: var(--ink);
+        color: var(--surface);
+        border: 2px solid var(--ink);
+        border-radius: 10px;
+        /* Background-coloured ring cuts it out from whatever scrolls underneath. */
+        box-shadow: 0 0 0 3px var(--bg), 6px 6px 0 2px var(--accent);
+      }
+      .mobile-nav-action {
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 6px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: .12em;
+      }
+      .mobile-nav-current {
+        padding-left: 0;
+        border-left: 0;
+        color: var(--surface);
+        font-size: 15px;
+        font-weight: 800;
+      }
+      .mobile-nav-toggle:active { transform: translate(2px, 2px); box-shadow: 0 0 0 3px var(--bg), 3px 3px 0 2px var(--accent); }
+      .dashboard-nav.is-dragging .mobile-nav-toggle {
+        background: var(--ink);
+        box-shadow: 0 0 0 3px var(--bg), 9px 9px 0 2px var(--accent);
+      }
+      .dashboard-nav.is-open .mobile-nav-action { background: var(--surface); color: var(--text); }
+      .mobile-nav-toggle:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+
+      /* Two attention pulses when the page first loads. */
+      @keyframes nav-beacon {
+        0% { box-shadow: 0 0 0 3px var(--bg), 6px 6px 0 2px var(--accent), 0 0 0 3px rgb(var(--accent-rgb) / .7); }
+        100% { box-shadow: 0 0 0 3px var(--bg), 6px 6px 0 2px var(--accent), 0 0 0 18px rgb(var(--accent-rgb) / 0); }
+      }
+      .mobile-nav-toggle { animation: nav-beacon 1.1s ease-out .6s 2 both; }
+
+      .dashboard-nav .tabs {
+        border: 2px solid var(--ink);
+        box-shadow: 0 0 0 3px var(--bg), 6px 6px 0 2px var(--accent);
+      }
+    }
   </style>
 </head>
 <body>
@@ -3665,9 +3718,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.1';
+    const APP_VERSION = '3.2';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.2', note: 'New Brojees logo for the app icon, Home Screen icon and browser tab. The floating Menu button on phones now stands out: an inverted button with a solid blue Menu block and a blue offset shadow, and it pulses twice when the page opens so it\'s easy to find.' },
       { version: '3.1', note: 'New My Week home screen: your live score vs your opponent with an estimated win chance, lineup warnings, the best possible lineup (points you could add by swapping in bench players), FAAB and waiver position, and a Start/Sit comparison with Orig, Live, Sleeper, ESPN and consensus projections. New League tab with weekly awards (high score, blowout, luckiest win, bench blunder and more), power rankings from all-play records, and all-time head-to-head history including past seasons. Links to tabs, matchups, teams and players can be shared to the group chat, and the phone Back button closes popups. Pull down to refresh on phones, with an "Updated 12s ago" stamp. Install it as an app from your browser (Add to Home Screen on iPhone). The floating Menu button now starts in the bottom-right corner and opens upward.' },
       { version: '3.0', note: 'New hard-edged cards and solid offset shadows, condensed labels, monospace numbers and numbered sections. The header now has a live clock and sync light, searches look like a command line (press / to jump to search), game states use indicator lights, and empty states read like a terminal. Choose Paper, Dark or Auto (follows your device) from the header; the choice is saved on this device.' },
       { version: '2.9', note: 'Select any team in Current Standings to open a team popup: live current-week matchup with actual, original and live projected scores for both sides, full lineups, a lineup check (empty slots, byes, injury tags), season record/PF/PA/FAAB, recent form and lineup efficiency, the live standings forecast, a position-grouped roster with season points and weekly projections, and this week\'s moves. Opponent names open their team; players open the player popup. Live Projected Standings rows also get an Open team details button.' },
