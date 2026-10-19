@@ -3356,6 +3356,25 @@
     .home-instrument { margin-bottom: 14px; }
     .home-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     @media (max-width: 640px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    /* ===== V3.6 ===== */
+    .proj-count { font-family: var(--font-mono); font-size: 11px; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 3px; padding: 0 5px; }
+    .winbar-result { font-size: 22px; font-weight: 800; }
+    .winbar.won .winbar-result { color: var(--good); }
+    .winbar.lost .winbar-result { color: var(--danger); }
+    .winbar.is-final .winbar-fill { background: var(--inv-accent); }
+    .winbar.lost .winbar-fill { background: var(--inv-muted); }
+    .winbar-track.has-mid::after { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--inv-text); }
+    .winbar-scores { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px; font-size: 12px; color: var(--inv-muted); }
+    .winbar-scores span:last-child { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 640px) {
+      .proj-table-wrap { display: none; }
+      .proj-card { grid-template-columns: 34px 34px minmax(0, 1fr) auto; }
+      .proj-card .standing-rank { display: grid; gap: 1px; }
+      .proj-card .team-rank-move { font-size: 11px; }
+      .proj-card .standing-stats { overflow-wrap: anywhere; }
+      .proj-card .projected-result { margin-left: 4px; }
+    }
   </style>
 </head>
 <body>
@@ -3852,9 +3871,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.5';
+    const APP_VERSION = '3.6';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.6', note: 'Original projections now total the starters that have one (a starter on bye counts as 0) with a small "8 of 9 projected" note, instead of showing a dash. Finished matchups on My Week say "Won by" or "Lost by" with the final score. The Game Day bar now turns itself on when your matchup\'s players are playing (or about to kick off) and off again afterward; tap Hide and it stays off for the rest of the day. Live Projected Standings show as cards on phones.' },
       { version: '3.5', note: 'My Week now opens with the key-numbers strip: week progress, your record and standing, league scoring, and your FAAB left with waiver position. The Season section below shows points for and against, power rank and moves.' },
       { version: '3.4', note: 'Phone upgrades: the big header is tucked away behind a slim top bar with the logo, week, "Updated Xs ago" and a refresh button (tap ▾ to open the full header). Switching tabs jumps back to the top. On Matchups, your game stays open and the others become one-line scoreboards; tap one to see the lineups. Standings show as cards instead of a sideways table. The Menu shows small badges for live matchups, new transactions since your last look and lineup warnings, with a dot on the Menu button when something needs a look. Swipe down on a player or team popup to close it.' },
       { version: '3.3', note: 'The header now shows the new Brojees nameplate logo in place of the old BFM plate.' },
@@ -4140,13 +4160,21 @@
       return base && Number(base.selectedWeek) === currentWeek ? base : null;
     }
 
+    // Orig totals whichever starters have a projection (a starter on bye or without one
+    // counts as 0); `projected` / `starters` let the UI say "8 of 9 projected".
     function gameDayProjection(matchup, data) {
-      if (!matchup) return { original: null, live: null };
+      if (!matchup) return { original: null, live: null, projected: 0, starters: 0 };
       const ids = (matchup.starters || []).filter(id => id && String(id) !== '0');
-      const originalsReady = ids.length && ids.every(id => Number.isFinite(originalProjectedPoints(id, data)));
+      const projected = ids.filter(id => Number.isFinite(originalProjectedPoints(id, data))).length;
       const liveReady = ids.length && ids.every(id => Number.isFinite(originalProjectedPoints(id, data)) || ['final','bye','canceled'].includes(playerGameInfo(id, data).key));
-      return { original: originalsReady ? originalMatchupProjectionTotal(matchup, data) : null,
-        live: liveReady ? adjustedMatchupProjectionTotal(matchup, data) : null };
+      return { original: projected ? originalMatchupProjectionTotal(matchup, data) : null,
+        live: liveReady ? adjustedMatchupProjectionTotal(matchup, data) : null,
+        projected, starters: ids.length };
+    }
+
+    function projectedCountNote(projection) {
+      return projection.starters && projection.projected < projection.starters
+        ? `<span class="proj-count" title="Starters without a projection count as 0">${projection.projected} of ${projection.starters} projected</span>` : '';
     }
 
     function renderGameDayBar() {
@@ -4837,6 +4865,7 @@
           <span class="matchup-proj-original">Orig ${projection.original === null ? '—' : numberOrDash(projection.original, 2)}</span>
           <span ${liveChangeAttrs('teammodal', `team:${matchup.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live, 2)}</span>
           ${projectionDeltaHtml(projection.original, projection.live)}
+          ${projectedCountNote(projection)}
         </div>
         <div class="matchup-state-summary">${escapeHtml(matchupStatusSummary(matchup, ctx))}</div>
       </div>`;
@@ -7473,7 +7502,27 @@
         : !ready ? 'Refresh the league to load the entering-week standings and live forecast.'
         : `Week ${hub.teamData.selectedWeek} forecast · ${new Date(hub.teamLoadedAt).toLocaleTimeString()} · ${hub.teamComplete ? 'Projected record → PF.' : 'Incomplete forecast · entering ranks shown.'}${hub.teamMedian ? ' Includes the extra league-median result.' : ''}${hub.teamRegular === false ? ' Regular-season record stays fixed during postseason.' : ''}`;
       const points = value => value === null ? '—' : Number(value).toFixed(2);
-      const standingsHtml = rows.length ? `<div class="table-wrap"><table class="projected-standings-table">
+      // Phones: one card per team (tap for the team popup) instead of the wide table.
+      const cardsHtml = rows.map(row => {
+        const selected = String(row.roster_id) === String(els.myTeam.value);
+        const roster = hub.teamData.rosters.find(r => String(r.roster_id) === String(row.roster_id));
+        const owner = roster ? ownerForRoster(roster, hub.teamData.users || []) : null;
+        const avatar = avatarUrl(owner);
+        const movement = row.rank === null ? 0 : row.entering_rank - row.rank;
+        const move = movement ? `<span class="team-rank-move ${movement > 0 ? 'up' : 'down'}">${movement > 0 ? '↑' : '↓'}${Math.abs(movement)}</span>` : '';
+        const result = row.result ? `<span class="projected-result ${row.result}">${row.matchup_final ? 'Final' : 'Proj'} ${row.result}</span>` : '';
+        return `<button type="button" class="standing-card proj-card ${selected ? 'me' : ''}" data-team-roster="${escapeHtml(row.roster_id)}" aria-label="Open ${escapeHtml(row.name)} team details">
+          <span class="standing-rank mono"><span ${liveChangeAttrs('standings', row.roster_id, 'rank')}>${String(row.rank ?? row.entering_rank).padStart(2, '0')}</span>${move}</span>
+          ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="" loading="lazy" />` : initialsBoxHtml(row.name)}
+          <span class="standing-main">
+            <strong>${escapeHtml(row.name)}${selected ? ' <span class="pill me">YOU</span>' : ''}</strong>
+            <span class="standing-stats mono">Wk <span ${liveChangeAttrs('standings', row.roster_id, 'week')}>${points(row.week_points)}</span>${row.opponent ? ` vs ${escapeHtml(row.opponent)}` : ''} ${result}</span>
+            <span class="standing-stats mono">Proj PF <span ${liveChangeAttrs('standings', row.roster_id, 'pf')}>${points(row.projected_pf)}</span></span>
+          </span>
+          <span ${liveChangeAttrs('standings', row.roster_id, 'record', 'standing-record mono')}>${row.record_ready ? teamRecordText(row.projected) : '—'}</span>
+        </button>`;
+      }).join('');
+      const standingsHtml = rows.length ? `<div class="standing-cards proj-cards">${cardsHtml}</div><div class="table-wrap proj-table-wrap"><table class="projected-standings-table">
         <thead><tr><th>#</th><th>Team</th><th title="Projected record after this week">Proj Record</th><th title="Projected total points for after this week">Proj PF</th><th title="Live projected matchup score this week">Week Proj</th><th>Proj Result</th><th title="Rank movement from entering this week">Proj Move</th></tr></thead>
         <tbody>${rows.map(row => {
           const selected = String(row.roster_id) === String(els.myTeam.value);
@@ -8375,11 +8424,11 @@
       btn.addEventListener('click', () => activateTab(btn.dataset.tab, { restoreFocus: true }));
     });
 
-    els.gameDayToggle.addEventListener('click', () => setGameDayMode(!app.gameDayMode));
-    els.gameDayExit.addEventListener('click', () => setGameDayMode(false));
+    els.gameDayToggle.addEventListener('click', () => setGameDayManually(!app.gameDayMode));
+    els.gameDayExit.addEventListener('click', () => setGameDayManually(false));
     els.mobileGameDayToggle.addEventListener('click', () => {
       setMobileNavOpen(false);
-      setGameDayMode(!app.gameDayMode);
+      setGameDayManually(!app.gameDayMode);
     });
     els.headerToggle.addEventListener('click', () => setHeaderCollapsed(!app.headerCollapsed));
     els.gameDayExpand.addEventListener('click', () => setGameDayExpanded(!app.gameDayExpanded));
@@ -8643,7 +8692,7 @@
         <div class="home-side-tag">${mine ? 'You' : 'Opponent'}</div>
         ${nameHtml}
         <div ${liveChangeAttrs('home', `team:${matchup.roster_id}`, 'score', 'home-score')}>${numberOrDash(actual, 2)}</div>
-        <div class="home-proj"><span class="matchup-proj-original">Orig ${projection.original === null ? '—' : numberOrDash(projection.original, 2)}</span><span ${liveChangeAttrs('home', `team:${matchup.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live, 2)}</span></div>
+        <div class="home-proj"><span class="matchup-proj-original">Orig ${projection.original === null ? '—' : numberOrDash(projection.original, 2)}</span><span ${liveChangeAttrs('home', `team:${matchup.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live, 2)}</span>${projectedCountNote(projection)}</div>
         <div class="matchup-state-summary">${escapeHtml(matchupStatusSummary(matchup, ctx))}</div>
       </div>`;
     }
@@ -8661,14 +8710,24 @@
       const chance = winChance(mine, opp, ctx);
       const final = opp && matchupAllFinal(mine, ctx) && matchupAllFinal(opp, ctx);
       let winHtml = '';
-      if (chance !== null) {
-        const pct = Math.round(chance * 100);
+      if (final) {
+        // Final: show the result and margin; the bar is your share of the combined points.
         const myPts = Number(mine.custom_points ?? mine.points ?? 0), oppPts = Number(opp.custom_points ?? opp.points ?? 0);
-        const label = final ? (myPts > oppPts ? 'Final · you won' : myPts < oppPts ? 'Final · you lost' : 'Final · tie') : 'Win chance · estimate';
-        winHtml = `<div class="winbar ${final ? 'is-final' : ''}">
-          <div class="winbar-head"><span class="winbar-label">${escapeHtml(label)}</span><span class="winbar-pct mono">${final ? '' : `${pct}%`}</span></div>
-          <div class="winbar-track" role="img" aria-label="${escapeHtml(final ? label : `Estimated win chance ${pct} percent`)}"><span class="winbar-fill" style="width:${final ? (myPts >= oppPts ? 100 : 0) : pct}%"></span></div>
-          ${final ? '' : '<div class="small winbar-note">From the live projection gap and how many points are still to be scored. Not a guarantee.</div>'}
+        const margin = Math.abs(myPts - oppPts);
+        const outcome = myPts > oppPts ? 'won' : myPts < oppPts ? 'lost' : 'tie';
+        const result = outcome === 'tie' ? 'Tied' : `${outcome === 'won' ? 'Won' : 'Lost'} by ${numberOrDash(margin, 2)}`;
+        const share = myPts + oppPts > 0 ? Math.round(myPts / (myPts + oppPts) * 1000) / 10 : 50;
+        winHtml = `<div class="winbar is-final ${outcome}">
+          <div class="winbar-head"><span class="winbar-label">Final</span><span class="winbar-result mono">${escapeHtml(result)}</span></div>
+          <div class="winbar-track has-mid" role="img" aria-label="${escapeHtml(`${result}, ${numberOrDash(myPts, 2)} to ${numberOrDash(oppPts, 2)}`)}"><span class="winbar-fill" style="width:${share}%"></span></div>
+          <div class="winbar-scores mono"><span>You ${numberOrDash(myPts, 2)}</span><span>${numberOrDash(oppPts, 2)} ${escapeHtml(rosterName(opp.roster_id, ctx))}</span></div>
+        </div>`;
+      } else if (chance !== null) {
+        const pct = Math.round(chance * 100);
+        winHtml = `<div class="winbar">
+          <div class="winbar-head"><span class="winbar-label">Win chance · estimate</span><span class="winbar-pct mono">${pct}%</span></div>
+          <div class="winbar-track" role="img" aria-label="${escapeHtml(`Estimated win chance ${pct} percent`)}"><span class="winbar-fill" style="width:${pct}%"></span></div>
+          <div class="small winbar-note">From the live projection gap and how many points are still to be scored. Not a guarantee.</div>
         </div>`;
       }
       const h2h = opp ? h2hSummary(rosterId, String(opp.roster_id)) : null;
@@ -8834,6 +8893,7 @@
       if (!root) return;
       updateAgoStamps();
       updateNavBadges();
+      maybeAutoGameDay();
       const st = league31();
       if (root.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') { st.homeDirty = true; return; }
       st.homeDirty = false;
@@ -9607,6 +9667,58 @@
     });
     setupSheetSwipe();
     updateNavBadges();
+
+
+    /* ===== V3.6 automatic Game Day bar ===== */
+    function localDayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    }
+
+    // Any Game Day button press is a manual choice: Hide keeps it off for the rest of today.
+    function setGameDayManually(enabled) {
+      league31().gameDayAuto = false;
+      try {
+        if (enabled) localStorage.removeItem('brojees_gameday_dismissed');
+        else localStorage.setItem('brojees_gameday_dismissed', localDayKey());
+      } catch (_) { /* choice just won't stick across reloads */ }
+      setGameDayMode(enabled);
+    }
+
+    // Shows the docked bar while your matchup's starters are playing (or kick off within
+    // 30 minutes) and hides it again once nothing is live or starting in the next 2 hours.
+    function maybeAutoGameDay() {
+      const st = league31();
+      if (st.autoGameDayBusy || !app.data) return;
+      const ctx = gameDayData();
+      const rosterId = String(els.myTeam.value || '');
+      if (!ctx || !rosterId) return;
+      const mine = (ctx.matchups || []).find(m => String(m.roster_id) === rosterId);
+      if (!mine) return;
+      const opp = mine.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== rosterId);
+      const ids = [...(mine.starters || []), ...(opp?.starters || [])].filter(id => id && String(id) !== '0');
+      const now = Date.now();
+      const live = ids.some(id => playerGameInfo(id, ctx).key === 'live');
+      const kicksOffWithin = ms => ids.some(id => {
+        if (playerGameInfo(id, ctx).key !== 'pre') return false;
+        const t = Date.parse(playerKickoffInfo(id, ctx).iso || '');
+        return Number.isFinite(t) && t > now && t - now <= ms;
+      });
+      let dismissed = false;
+      try { dismissed = localStorage.getItem('brojees_gameday_dismissed') === localDayKey(); } catch (_) {}
+      st.autoGameDayBusy = true;
+      try {
+        if (!app.gameDayMode && !dismissed && (live || kicksOffWithin(30 * 60 * 1000))) {
+          st.gameDayAuto = true;
+          setGameDayMode(true, { persist: false, focus: false });
+        } else if (app.gameDayMode && st.gameDayAuto && !live && !kicksOffWithin(2 * 60 * 60 * 1000)) {
+          st.gameDayAuto = false;
+          setGameDayMode(false, { persist: false, focus: false });
+        }
+      } finally {
+        st.autoGameDayBusy = false;
+      }
+    }
 
     restoreLastSnapshot();
     startLeaderRefresh();
