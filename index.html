@@ -3375,6 +3375,9 @@
       .proj-card .standing-stats { overflow-wrap: anywhere; }
       .proj-card .projected-result { margin-left: 4px; }
     }
+
+    /* ===== V3.7 My Week score cell ===== */
+    .instrument-reading { flex-wrap: wrap; row-gap: 2px; }
   </style>
 </head>
 <body>
@@ -3871,9 +3874,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.6';
+    const APP_VERSION = '3.7';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.7', note: 'The My Week strip now shows this week\'s score against your opponent in place of the scoring format: live projections and an estimated win chance meter during games, then "Won by" or "Lost by" once it\'s final. Overview still shows the scoring format.' },
       { version: '3.6', note: 'Original projections now total the starters that have one (a starter on bye counts as 0) with a small "8 of 9 projected" note, instead of showing a dash. Finished matchups on My Week say "Won by" or "Lost by" with the final score. The Game Day bar now turns itself on when your matchup\'s players are playing (or about to kick off) and off again afterward; tap Hide and it stays off for the rest of the day. Live Projected Standings show as cards on phones.' },
       { version: '3.5', note: 'My Week now opens with the key-numbers strip: week progress, your record and standing, league scoring, and your FAAB left with waiver position. The Season section below shows points for and against, power rank and moves.' },
       { version: '3.4', note: 'Phone upgrades: the big header is tucked away behind a slim top bar with the logo, week, "Updated Xs ago" and a refresh button (tap ▾ to open the full header). Switching tabs jumps back to the top. On Matchups, your game stays open and the others become one-line scoreboards; tap one to see the lineups. Standings show as cards instead of a sideways table. The Menu shows small badges for live matchups, new transactions since your last look and lineup warnings, with a dot on the Menu button when something needs a look. Swipe down on a player or team popup to close it.' },
@@ -6673,7 +6677,7 @@
       const hasNum = Number.isFinite(cell.num);
       const value = hasNum
         ? `<span class="instrument-value" data-count-to="${cell.num}" data-count-from="${changed && Number.isFinite(previous) ? previous : (changed ? 0 : cell.num)}" data-prefix="${escapeHtml(cell.prefix || '')}">${escapeHtml(`${cell.prefix || ''}${cell.num}`)}</span>`
-        : `<span class="instrument-value text">${escapeHtml(cell.text ?? '—')}</span>`;
+        : `<span class="instrument-value ${cell.mono ? '' : 'text'}">${escapeHtml(cell.text ?? '—')}</span>`;
       let meter = '';
       if (cell.meter && cell.meter.total > 0) {
         const total = Math.min(cell.meter.total, 24);
@@ -6754,6 +6758,31 @@
       if (app.standingsView === 'projected') loadStatsLeaders({ force: false });
     }
 
+    // My Week strip: this week's score vs your opponent. While games are on, the meter is the
+    // estimated win chance (10 segments); once both sides are final it shows the result.
+    function weekScoreCard(myRoster, week) {
+      const ctx = gameDayData();
+      const mine = (ctx?.matchups || []).find(m => String(m.roster_id) === String(myRoster.roster_id));
+      if (!mine) return null;
+      const opp = mine.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== String(myRoster.roster_id));
+      const myPts = Number(mine.custom_points ?? mine.points ?? 0);
+      const label = `Week ${ctx.selectedWeek || week} score`;
+      if (!opp) return { key: 'score', label, text: numberOrDash(myPts, 2), mono: true, sub: 'No opponent this week' };
+      const oppPts = Number(opp.custom_points ?? opp.points ?? 0);
+      const oppName = rosterName(opp.roster_id, ctx);
+      const card = { key: 'score', label, text: numberOrDash(myPts, 2), mono: true, unit: `– ${numberOrDash(oppPts, 2)}` };
+      if (matchupAllFinal(mine, ctx) && matchupAllFinal(opp, ctx)) {
+        const margin = numberOrDash(Math.abs(myPts - oppPts), 2);
+        card.sub = `vs ${oppName} · ${myPts > oppPts ? `Won by ${margin}` : myPts < oppPts ? `Lost by ${margin}` : 'Tied'}`;
+        return card;
+      }
+      const myLive = gameDayProjection(mine, ctx).live, oppLive = gameDayProjection(opp, ctx).live;
+      const chance = winChance(mine, opp, ctx);
+      card.sub = `vs ${oppName}${Number.isFinite(myLive) && Number.isFinite(oppLive) ? ` · Live ${numberOrDash(myLive, 1)}–${numberOrDash(oppLive, 1)}` : ''}${chance !== null ? ` · ${Math.round(chance * 100)}% win` : ''}`;
+      if (chance !== null) card.meter = { total: 10, on: Math.round(chance * 10) };
+      return card;
+    }
+
     // Key-number cells for the instrument strip. Overview shows league facts; My Week
     // (forHome) swaps the team count for your record and standing.
     function instrumentCardsFor(data, { forHome = false } = {}) {
@@ -6784,7 +6813,8 @@
           meter: { total: regularWeeks, on: Math.min(week, regularWeeks) }
         },
         second,
-        { key: 'scoring', label: 'Scoring', text: scoring, sub: `Pass TD ${league.scoring_settings?.pass_td ?? '—'} · Rec ${league.scoring_settings?.rec ?? '—'}` },
+        (forHome && myRoster && weekScoreCard(myRoster, week))
+          || { key: 'scoring', label: 'Scoring', text: scoring, sub: `Pass TD ${league.scoring_settings?.pass_td ?? '—'} · Rec ${league.scoring_settings?.rec ?? '—'}` },
         faabBudget
           ? (myFaabLeft !== null
             ? { key: 'faab', label: 'FAAB left', num: myFaabLeft, prefix: '$', unit: `/ $${faabBudget}`,
