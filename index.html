@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#080c15" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Brojees" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <title>Brojees Fantasy Menu</title>
   <script>
     // Apply the saved theme before first paint (dark = control room, light = paper, auto = follow device).
@@ -2954,9 +2962,227 @@
       .cmd-cursor, .empty::after, .waiver-empty::after, .transaction-empty::after,
       .projection-empty::after, .player-modal-loading::after { animation: none !important; }
     }
+
+    /* ===== V3.1 My Week, League, links, pull-to-refresh ===== */
+    @media (pointer: coarse) { html, body { overscroll-behavior-y: contain; } }
+
+    /* Menu button now lives bottom-right: drop the top gutter it needed, keep room at the bottom. */
+    @media (max-width: 760px) {
+      .shell { padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+      body.game-day-docked .shell { padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+      .header-disclosure { justify-content: flex-start; }
+    }
+
+    .home-topline {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 12px; padding: 8px 10px 8px 12px;
+      border: 1.5px solid var(--ink-border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--sh-sm);
+    }
+    .home-updated { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 13px; color: var(--text-2); }
+    .home-topline-actions { display: inline-flex; gap: 8px; }
+    .home-topline-actions button { min-height: 40px; padding: 7px 12px; font-size: 14px; }
+    .install-hint {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.45;
+      border: 1.5px dashed var(--accent); border-radius: var(--radius); background: var(--surface);
+    }
+    .install-hint[hidden] { display: none; }
+
+    .home-section { margin-top: 0; margin-bottom: 14px; }
+    .home-section .panel-head { margin-bottom: 12px; }
+
+    .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px; }
+    .picker-team {
+      display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 10px 12px; text-align: left;
+      background: var(--surface-2); color: var(--text); border: 1.5px solid var(--line-strong); border-radius: 6px;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .picker-team:hover { transform: translate(-1px, -1px); border-color: var(--ink-border); box-shadow: var(--sh-sm); }
+    .picker-team:active { transform: translate(1px, 1px); box-shadow: none; }
+    .picker-team-text { display: grid; gap: 2px; min-width: 0; }
+    .picker-team-text strong { font-family: var(--font-cond); font-size: 17px; letter-spacing: .02em; overflow-wrap: anywhere; }
+    .home-picker-copy { margin: -4px 0 12px; }
+
+    .home-scoreboard { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: stretch; }
+    .home-side { min-width: 0; padding: 12px; border: 1.5px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); }
+    .home-side.mine { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .home-side.theirs { text-align: right; }
+    .home-side-tag { font-family: var(--font-cond); font-weight: 700; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .home-side.mine .home-side-tag { color: var(--accent); }
+    .home-side-name { display: block; max-width: 100%; margin-top: 2px; font-family: var(--font-cond); font-weight: 800; font-size: 17px; letter-spacing: .02em; line-height: 1.15; overflow-wrap: anywhere; }
+    .home-side.theirs button.home-side-name { margin-left: auto; text-align: right; }
+    .home-score { margin-top: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: clamp(28px, 7vw, 38px); font-weight: 800; line-height: 1; }
+    .home-proj { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 6px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+    .home-side.theirs .home-proj { justify-content: flex-end; }
+    .home-side .matchup-state-summary { margin-top: 4px; }
+    .home-vs { align-self: center; display: grid; place-items: center; width: 34px; height: 26px; border: 1.5px solid var(--ink-border); border-radius: 4px; background: var(--surface); font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .08em; }
+
+    .winbar { margin-top: 12px; padding: 10px 12px; border: 1.5px solid var(--ink-border); border-radius: 6px; background: var(--inv-bg); color: var(--inv-text); }
+    .winbar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .winbar-label { font-family: var(--font-cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--inv-muted); }
+    .winbar-pct { font-size: 26px; font-weight: 800; }
+    .winbar-track { position: relative; height: 12px; margin-top: 8px; border: 1px solid var(--inv-line); background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--inv-line) calc(10% - 2px) 10%); }
+    .winbar-fill { position: absolute; inset: 0 auto 0 0; background: var(--inv-accent); transition: width .6s cubic-bezier(.2,.7,.2,1); }
+    .winbar.is-final .winbar-label { color: var(--inv-text); }
+    .winbar-note { margin-top: 7px; color: var(--inv-muted); }
+    .home-h2h { margin-top: 10px; }
+    .home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+    .home-actions button { min-height: 44px; }
+
+    .home-alerts { display: flex; flex-wrap: wrap; gap: 6px; }
+    .home-alerts .team-alert { font-size: 13px; padding: 5px 9px; }
+    .home-ok { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--text-2); }
+    .home-best { margin-top: 12px; padding: 12px; border: 1.5px solid var(--accent); border-radius: 6px; background: var(--surface-2); display: grid; gap: 8px; }
+    .home-best.is-ok { border-color: var(--line-strong); }
+    .home-best-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .home-best-label { font-family: var(--font-cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+    .home-best-gain { font-size: 22px; font-weight: 800; color: var(--good-ink); }
+    .home-best.is-ok .home-best-gain { color: var(--good-ink); font-size: 18px; }
+    .home-swap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .home-swap-label { min-width: 46px; font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .home-player {
+      display: inline-flex; align-items: center; gap: 7px; min-height: 40px; max-width: 100%; padding: 6px 10px; text-align: left;
+      background: var(--surface); color: var(--text); border: 1px solid var(--line-strong); border-radius: 5px; font-size: 13.5px;
+    }
+    .home-player:hover { border-color: var(--ink-border); box-shadow: var(--sh-sm); transform: translate(-1px, -1px); }
+    .home-player .slot { font-size: 11px; }
+    .home-player-name { font-weight: 600; overflow-wrap: anywhere; }
+    .home-player-val { color: var(--data); font-size: 12.5px; }
+    .home-last { margin-top: 10px; }
+    .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .ss-pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ss-pickers select { width: 100%; }
+    .ss-compare { margin-top: 12px; border: 1.5px solid var(--ink-border); border-radius: 6px; overflow: hidden; }
+    .ss-heads { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1.5px solid var(--ink-border); }
+    .ss-player { min-width: 0; padding: 10px 12px; display: grid; gap: 3px; background: var(--surface-2); }
+    .ss-player + .ss-player { border-left: 1px dashed var(--line-strong); text-align: right; justify-items: end; }
+    .ss-name { min-height: 36px; padding: 4px 8px; font-family: var(--font-cond); font-size: 16px; }
+    .ss-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px dashed var(--line); }
+    .ss-row:first-of-type { border-top: 0; }
+    .ss-key { font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; }
+    .ss-val { font-size: 15px; font-weight: 700; color: var(--text-2); }
+    .ss-row .ss-val:last-child { text-align: right; }
+    .ss-val.win { color: var(--good-ink); }
+    .ss-val.win::after { content: " ◂"; color: var(--good); }
+    .ss-row .ss-val:last-child.win::after { content: ""; }
+    .ss-row .ss-val:last-child.win::before { content: "▸ "; color: var(--good); }
+    .ss-verdict { margin-top: 10px; padding: 10px 12px; border-left: 4px solid var(--accent); background: var(--surface-2); font-size: 14px; }
+
+    .league-week-field { min-width: 140px; }
+    .league-note { margin-top: 10px; }
+    .award-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
+    .award-card { border: 1.5px solid var(--ink-border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--sh-sm); overflow: hidden; }
+    .award-card.is-me { border-color: var(--accent); box-shadow: 3px 3px 0 var(--accent); }
+    .award-card.is-bad .tag-label { background: var(--danger); color: #fff; }
+    .award-card.is-me .tag-label { background: var(--accent); color: var(--accent-ink); }
+    .award-body { padding: 10px 12px 12px; display: grid; gap: 5px; justify-items: start; }
+    .award-value { font-size: 26px; font-weight: 800; line-height: 1; }
+    .award-team { font-family: var(--font-cond); font-size: 17px; text-align: left; }
+    button.award-team.home-player { font-size: 15px; }
+
+    .power-list { display: grid; gap: 8px; }
+    .power-row {
+      display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; grid-template-areas: "rank main side" "rank meter meter";
+      align-items: center; gap: 4px 12px; width: 100%; padding: 10px 12px; text-align: left; color: var(--text);
+      background: var(--surface-2); border: 1.5px solid var(--line-strong); border-radius: 6px;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .power-row:hover { transform: translate(-1px, -1px); border-color: var(--ink-border); box-shadow: var(--sh-sm); }
+    .power-row:active { transform: translate(1px, 1px); box-shadow: none; }
+    .power-row.is-me { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .power-rank { grid-area: rank; font-size: 20px; font-weight: 800; }
+    .power-main { grid-area: main; display: grid; gap: 3px; min-width: 0; }
+    .power-main strong { font-family: var(--font-cond); font-size: 17px; letter-spacing: .02em; overflow-wrap: anywhere; }
+    .power-side { grid-area: side; display: grid; justify-items: end; gap: 2px; }
+    .power-score { font-size: 20px; font-weight: 800; color: var(--accent); }
+    .power-luck { font-size: 11.5px; color: var(--muted); }
+    .power-luck.lucky { color: var(--warn-ink); }
+    .power-luck.unlucky { color: var(--data); }
+    .power-meter { grid-area: meter; margin-top: 4px; height: 6px; }
+    .power-meter i { border-color: var(--line-strong); }
+    .power-meter i.on { background: var(--accent); border-color: var(--accent); }
+
+    .h2h-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .h2h-controls select { width: 100%; }
+    .h2h-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; padding: 12px; border: 2px solid var(--ink-border); border-radius: 6px; background: var(--inv-bg); color: var(--inv-text); }
+    .h2h-summary .small { color: var(--inv-muted); overflow-wrap: anywhere; }
+    .h2h-side { display: grid; gap: 3px; min-width: 0; }
+    .h2h-side.right { text-align: right; justify-items: end; }
+    .h2h-wins { font-size: 38px; font-weight: 800; line-height: 1; }
+    .h2h-mid { display: grid; justify-items: center; gap: 3px; font-size: 12px; }
+    .h2h-list { margin-top: 10px; border: 1.5px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+    .h2h-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 32px; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px dashed var(--line); background: var(--surface); }
+    .h2h-row:first-child { border-top: 0; }
+    .h2h-when { font-size: 12px; color: var(--muted); }
+    .h2h-score { font-size: 14px; font-weight: 700; }
+    .h2h-result { display: grid; place-items: center; width: 26px; height: 24px; border: 1.5px solid var(--line-strong); border-radius: 3px; font-family: var(--font-cond); font-weight: 800; }
+    .h2h-row.won .h2h-result { color: var(--good-ink); border-color: var(--good); }
+    .h2h-row.lost .h2h-result { color: var(--danger-ink); border-color: var(--danger); }
+
+    /* Share button inside a matchup tag strip. */
+    .tag-right { display: inline-flex; align-items: center; gap: 2px; }
+    .tag-share {
+      min-height: 0; margin: 3px 6px 3px 0; padding: 3px 9px; border: 1px solid var(--line-strong); border-radius: 4px;
+      background: var(--surface); color: var(--text-2); font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    }
+    .tag-share:hover { border-color: var(--ink-border); color: var(--text); }
+    .team-modal-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+    @keyframes route-flash { 0%, 30% { box-shadow: 0 0 0 4px var(--accent), var(--sh); } 100% { box-shadow: var(--sh); } }
+    .matchup-card.route-flash { animation: route-flash 2.2s ease-out; }
+
+    /* Pull-to-refresh indicator. */
+    .ptr {
+      --pull: 0px;
+      position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) - 46px); z-index: 1200;
+      display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px;
+      background: var(--surface); color: var(--text); border: 2px solid var(--ink-border); border-radius: 6px; box-shadow: var(--sh);
+      font-family: var(--font-cond); font-weight: 700; font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
+      transform: translate(-50%, var(--pull)); opacity: 0; pointer-events: none; transition: opacity .15s ease;
+    }
+    .ptr.show { opacity: 1; }
+    .ptr:not(.show) { transition: opacity .15s ease, transform .2s ease; }
+    .ptr-light { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--pre); }
+    .ptr.armed .ptr-light { background: var(--accent); box-shadow: 0 0 6px rgb(var(--accent-rgb) / .7); }
+    .ptr.busy .ptr-light { background: var(--warning); box-shadow: 0 0 6px rgb(var(--warning-rgb) / .7); animation: eng-blink .7s steps(1, end) infinite; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 10001;
+      max-width: calc(100vw - 32px); padding: 10px 16px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+      background: var(--inv-bg); color: var(--inv-text); border: 2px solid var(--ink-border); border-radius: 6px; box-shadow: var(--sh);
+      font-size: 14px; transition: opacity .18s ease, transform .18s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 640px) {
+      .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .home-scoreboard { gap: 6px; }
+      .home-side { padding: 10px; }
+      .home-side-name { font-size: 15px; }
+      .home-proj { font-size: 11.5px; }
+      .ss-pickers, .h2h-controls { grid-template-columns: 1fr; }
+      .ss-pickers select, .h2h-controls select, #awardsWeek { font-size: 16px; }
+      .ss-row { padding: 8px 10px; }
+      .ss-key { font-size: 11px; letter-spacing: .08em; }
+      .panel-head .league-week-field { width: 100%; }
+      .award-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .award-card .tag-code { display: none; }
+      .award-card .tag-label { font-size: 10.5px; padding-right: 18px; letter-spacing: .1em; }
+      .award-body { padding: 8px 10px 10px; }
+      .award-value { font-size: 20px; }
+      .award-team { font-size: 15px; overflow-wrap: anywhere; }
+    }
+    @media (max-width: 380px) {
+      .home-scoreboard { grid-template-columns: 1fr; }
+      .home-vs { justify-self: center; }
+      .home-side.theirs { text-align: left; }
+      .home-side.theirs .home-proj { justify-content: flex-start; }
+      .home-side.theirs button.home-side-name { margin-left: 0; text-align: left; }
+    }
   </style>
 </head>
 <body>
+  <div class="ptr" id="ptrIndicator" aria-hidden="true"><span class="ptr-light"></span><span id="ptrText">Pull to refresh</span></div>
   <main class="shell">
     <section class="game-day-bar" id="gameDayBar" aria-label="Game Day matchup" hidden>
       <div class="game-day-panel" id="gameDayPanel" role="region" aria-label="Game Day roster details and controls" tabindex="0" hidden>
@@ -3035,12 +3261,14 @@
     <span class="mobile-nav-instructions" id="mobileNavInstructions">Tap to open navigation. Drag the Menu button to move it. Keyboard: hold Alt and use the arrow keys to move it.</span>
     <div class="dashboard-nav" id="dashboardNav">
       <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="dashboardTabs" aria-label="Open navigation menu" aria-describedby="mobileNavInstructions" title="Tap to open · Drag to move">
-        <span class="mobile-nav-current" id="mobileNavCurrent">Overview</span>
+        <span class="mobile-nav-current" id="mobileNavCurrent">My Week</span>
         <span class="mobile-nav-action" aria-hidden="true"><span id="mobileNavAction">Menu</span><span class="hamburger-icon"><span></span><span></span><span></span></span></span>
       </button>
     <nav class="tabs" id="dashboardTabs" aria-label="Dashboard sections">
-      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn active" data-tab="home">My Week</button>
+      <button class="tab-btn" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="matchups">Matchups</button>
+      <button class="tab-btn" data-tab="league">League</button>
       <button class="tab-btn" data-tab="transactions">Transactions</button>
       <button class="tab-btn" data-tab="leaders">Stats Leaders</button>
       <button class="tab-btn" data-tab="waivers">Waivers</button>
@@ -3052,7 +3280,48 @@
     </nav>
     </div>
 
-    <section id="overview" class="tab active">
+    <section id="home" class="tab active" aria-label="My Week">
+      <div class="home-topline">
+        <span class="home-updated"><span class="status-dot" id="homeSyncDot"></span><span data-updated-ago>Not updated yet</span></span>
+        <span class="home-topline-actions">
+          <button class="btn-secondary home-install" id="installAppBtn" type="button" hidden>Install app</button>
+          <button class="btn-ghost" id="homeRefreshBtn" type="button">Refresh</button>
+        </span>
+      </div>
+      <div class="install-hint" id="installHint" hidden>
+        <span><strong>Add Brojees to your Home Screen:</strong> tap <span class="mono">Share</span> then <span class="mono">Add to Home Screen</span> for a full-screen app.</span>
+        <button class="btn-ghost" id="installHintDismiss" type="button" aria-label="Dismiss install tip">Got it</button>
+      </div>
+      <div id="homeContent"><div class="empty">Loading your league…</div></div>
+    </section>
+
+    <section id="league" class="tab" aria-label="League">
+      <div class="panel" id="awardsPanel">
+        <div class="panel-head">
+          <div><h2>Weekly Awards</h2><div class="small" id="awardsStatus">Completed weeks only, scored with this league's settings.</div></div>
+          <div class="field league-week-field"><label for="awardsWeek">Week</label><select id="awardsWeek"><option value="">—</option></select></div>
+        </div>
+        <div id="awardsContent"><div class="empty">Open this tab after the league loads to see awards.</div></div>
+      </div>
+      <div class="panel" id="powerPanel">
+        <div class="panel-head">
+          <div><h2>Power Rankings</h2><div class="small">All-play record = your score each week vs every other team, not just your opponent.</div></div>
+        </div>
+        <div id="powerContent"><div class="empty">Power rankings appear after Week 1 is complete.</div></div>
+      </div>
+      <div class="panel" id="h2hPanel">
+        <div class="panel-head">
+          <div><h2>Head-to-Head</h2><div class="small" id="h2hStatus">Every meeting between two managers, including past seasons of this league.</div></div>
+        </div>
+        <div class="h2h-controls">
+          <div class="field"><label for="h2hTeamA">Team</label><select id="h2hTeamA"></select></div>
+          <div class="field"><label for="h2hTeamB">Opponent</label><select id="h2hTeamB"></select></div>
+        </div>
+        <div id="h2hContent"><div class="empty">Pick two teams to compare their history.</div></div>
+      </div>
+    </section>
+
+    <section id="overview" class="tab">
       <div class="empty" id="overviewEmpty">
         League data refreshes automatically while this page is open. Use <strong>Refresh League</strong> any time you want an immediate update.
       </div>
@@ -3396,9 +3665,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.0';
-    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row';
+    const APP_VERSION = '3.1';
+    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.1', note: 'New My Week home screen: your live score vs your opponent with an estimated win chance, lineup warnings, the best possible lineup (points you could add by swapping in bench players), FAAB and waiver position, and a Start/Sit comparison with Orig, Live, Sleeper, ESPN and consensus projections. New League tab with weekly awards (high score, blowout, luckiest win, bench blunder and more), power rankings from all-play records, and all-time head-to-head history including past seasons. Links to tabs, matchups, teams and players can be shared to the group chat, and the phone Back button closes popups. Pull down to refresh on phones, with an "Updated 12s ago" stamp. Install it as an app from your browser (Add to Home Screen on iPhone). The floating Menu button now starts in the bottom-right corner and opens upward.' },
       { version: '3.0', note: 'New hard-edged cards and solid offset shadows, condensed labels, monospace numbers and numbered sections. The header now has a live clock and sync light, searches look like a command line (press / to jump to search), game states use indicator lights, and empty states read like a terminal. Choose Paper, Dark or Auto (follows your device) from the header; the choice is saved on this device.' },
       { version: '2.9', note: 'Select any team in Current Standings to open a team popup: live current-week matchup with actual, original and live projected scores for both sides, full lineups, a lineup check (empty slots, byes, injury tags), season record/PF/PA/FAAB, recent form and lineup efficiency, the live standings forecast, a position-grouped roster with season points and weekly projections, and this week\'s moves. Opponent names open their team; players open the player popup. Live Projected Standings rows also get an Open team details button.' },
       { version: '2.8.1', note: 'Game Day is now a persistent expandable matchup bar across all tabs, showing your selected team, opponent, live scores, original/live projections, starters, and benches. It follows the current week independently of historical Matchups views. Header collapse is a separate remembered control.' },
@@ -3793,6 +4063,8 @@
       els.statusDot.className = 'status-dot' + (state ? ` ${state}` : '');
       els.tbSyncDot.className = els.statusDot.className;
       els.tbSyncText.textContent = state === 'good' ? 'Online' : state === 'busy' ? 'Syncing' : state === 'bad' ? 'Fault' : 'Standby';
+      const homeDot = document.getElementById('homeSyncDot');
+      if (homeDot) homeDot.className = els.statusDot.className;
       renderGameDayBar();
     }
 
@@ -4182,7 +4454,7 @@
           <div id="playerLiveGameScore">${livePlayerGameScoreHtml(playerId, data)}</div>
         </section>
         <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p, data)}</div></section>
-        <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
+        <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" type="button" data-share="player/${escapeHtml(playerId)}" data-share-title="${escapeHtml(p.full_name || 'Player')}">Share link</button><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
     }
 
     async function openPlayerModal(playerId, leaderData = null) {
@@ -4204,6 +4476,7 @@
       els.playerModalBackdrop.classList.add('open');
       els.playerModalBackdrop.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
+      routePopupOpened('player', playerId);
       requestAnimationFrame(() => els.playerModalClose.focus());
       const stats = leaderData ? app.statsLeaders.stats[String(playerId)] || {} : await fetchPlayerWeekStats(playerId, app.data);
       if (String(app.activePlayerId) !== String(playerId)) return;
@@ -4218,6 +4491,7 @@
       app.activePlayerStats = null;
       els.playerModalBackdrop.classList.remove('open');
       els.playerModalBackdrop.setAttribute('aria-hidden', 'true');
+      routePopupClosed();
       // Keep the page locked while the team popup is still open underneath.
       if (!teamModalIsOpen()) document.body.classList.remove('modal-open');
       const previous = app.playerModalReturnFocus;
@@ -4284,7 +4558,7 @@
         teamModalTile('Points For', numberOrDash(pf, 2), games ? `${numberOrDash(pf / games, 2)} per game` : ''),
         teamModalTile('Points Against', numberOrDash(pa, 2), games ? `${numberOrDash(pa / games, 2)} per game` : ''),
         faabBudget
-          ? teamModalTile('FAAB Left', `$${Math.max(0, faabBudget - used)}`, `$${used} of $${faabBudget} spent`)
+          ? teamModalTile('FAAB Left', `$${Math.max(0, faabBudget - used)}`, faabSpentText(used, faabBudget))
           : teamModalTile('Waiver', `#${settings.waiver_position ?? '—'}`, 'Waiver priority'),
         teamModalTile('Moves', settings.total_moves ?? '—', 'Season transactions')
       ];
@@ -4533,7 +4807,10 @@
       const checked = ctx === app.statsLeaders.data ? app.statsLeaders.matchupLoadedAt : app.lastFetchAt;
       const actions = `<div class="team-modal-actions">
         <span class="small">${checked ? `Scores checked ${escapeHtml(new Date(checked).toLocaleTimeString())}` : ''}${seconds ? ` · updates every ${seconds}s` : ''}</span>
-        ${selected ? '' : `<button type="button" class="btn-ghost" data-set-my-team="${escapeHtml(rosterId)}">Set as my team</button>`}
+        <span class="team-modal-buttons">
+          <button type="button" class="btn-ghost" data-share="team/${escapeHtml(rosterId)}" data-share-title="${escapeHtml(name)}">Share link</button>
+          ${selected ? '' : `<button type="button" class="btn-ghost" data-set-my-team="${escapeHtml(rosterId)}">Set as my team</button>`}
+        </span>
       </div>`;
 
       const openSections = new Set([...els.teamModalBody.querySelectorAll('details[data-team-section]')].filter(d => d.open).map(d => d.dataset.teamSection));
@@ -4559,6 +4836,7 @@
       document.body.classList.add('modal-open');
       els.teamModalBody.innerHTML = '';
       els.teamModal.scrollTop = 0;
+      routePopupOpened('team', rosterId);
       renderTeamModal();
       // If Matchups is showing a past week and the live scoreboard hasn't loaded yet,
       // fetch the current week. renderStatsLeaders() re-renders this popup when done.
@@ -4575,6 +4853,7 @@
       els.teamModalBackdrop.classList.remove('open');
       els.teamModalBackdrop.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
+      routePopupClosed();
       const previous = app.teamModal.returnFocus;
       app.teamModal.returnFocus = null;
       const target = previous?.isConnected ? previous
@@ -4585,6 +4864,7 @@
     // Player popups opened from inside the team popup use the same current-week data.
     function playerModalContextForRow(row) {
       if (row.closest('#gameDayRosters')) return app.gameDayData;
+      if (row.closest('#home')) return gameDayData() === app.statsLeaders.data ? app.statsLeaders.data : null;
       if (row.closest('#teamModal')) return app.teamModal.data && app.teamModal.data === app.statsLeaders.data ? app.teamModal.data : null;
       if (row.classList.contains('team-leader-player')) return app.statsLeaders.teamData;
       if (row.classList.contains('leader-row')) return app.statsLeaders.data;
@@ -6433,8 +6713,8 @@
         const bAdjusted = b ? adjustedMatchupProjectionTotal(b, data) : 0;
         const matchupCode = `WK${String(data.selectedWeek || data.state?.week || 0).padStart(2, '0')} · M${String((a || b)?.matchup_id ?? '—').padStart(2, '0')}`;
         return `
-          <article class="matchup-card ${(aMe || bMe) ? 'me' : ''}">
-            <div class="tag-strip ${(aMe || bMe) ? 'is-selected' : ''}"><span class="tag-label">${(aMe || bMe) ? 'Selected matchup' : 'Matchup'}</span><span class="tag-code">${escapeHtml(matchupCode)}</span></div>
+          <article class="matchup-card ${(aMe || bMe) ? 'me' : ''}" data-matchup-id="${escapeHtml(String((a || b)?.matchup_id ?? ''))}">
+            <div class="tag-strip ${(aMe || bMe) ? 'is-selected' : ''}"><span class="tag-label">${(aMe || bMe) ? 'Selected matchup' : 'Matchup'}</span><span class="tag-right"><span class="tag-code">${escapeHtml(matchupCode)}</span>${(a || b)?.matchup_id != null ? `<button type="button" class="tag-share" data-share="matchup/${escapeHtml(String(data.selectedWeek || data.state?.week || ''))}/${escapeHtml(String((a || b).matchup_id))}" data-share-title="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}`)}">Share</button>` : ''}</span></div>
             <div class="matchup-head">
               <div class="matchup-team">
                 <div class="matchup-team-name">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</div>
@@ -7055,6 +7335,7 @@
     function renderStatsLeaders() {
       renderGameDayBar();
       renderTeamModal();
+      renderHome();
       const hub = app.statsLeaders;
       renderTeamLeaders();
       const sameLeague = String(hub.data?.league?.league_id) === String(app.data?.league?.league_id);
@@ -7156,7 +7437,7 @@
           recordLiveChanges('leaders', liveChangeContext(context), hub.rows.map(row => [row.player_id, { score: row.points }]));
           hub.stats = statsResult.stats; hub.loadedAt = Date.now();
         } else { hub.error = statsResult.error.message; }
-        if (app.gameDayMode) {
+        if (app.gameDayMode || isTabActive('home')) {
           try {
             if (!Object.keys(context.projections || {}).length) context.projections = await fetchWeekProjections(season, week, fetchLeaderJson);
             if (!context.originalProjectionSnapshot) context.originalProjectionSnapshot = await loadOrCreateOriginalProjectionSnapshot(base.league.league_id, season, week, context.projections, context.league, matchups);
@@ -7197,7 +7478,7 @@
       const intervals = [];
       if (document.getElementById('overview').classList.contains('active')) intervals.push(Number(els.standingsLive.value));
       if (document.getElementById('leaders').classList.contains('active')) intervals.push(Number(els.leaderLive.value));
-      if (app.gameDayMode) intervals.push(Number(els.gameDayLive.value));
+      if (app.gameDayMode || isTabActive('home')) intervals.push(Number(els.gameDayLive.value));
       const enabled = intervals.filter(seconds => seconds > 0);
       return enabled.length ? Math.min(...enabled) : 0;
     }
@@ -7221,7 +7502,7 @@
       renderTransactions(data);
       renderWaivers(data);
       renderStatsLeaders();
-      if (document.getElementById('leaders').classList.contains('active') || document.getElementById('overview').classList.contains('active') || app.gameDayMode) loadStatsLeaders({ force: true });
+      if (isTabActive('leaders') || isTabActive('overview') || isTabActive('home') || app.gameDayMode) loadStatsLeaders({ force: true });
       resetProjectionHubIfWeekChanged(data);
       renderRosters(data);
       renderSettings(data);
@@ -7236,6 +7517,9 @@
       els.lastUpdated.textContent = `Last update: ${updated.toLocaleString()}`;
       localStorage.setItem('sleeper_dashboard_last_snapshot', JSON.stringify(app.exportSnapshot));
       renderGameDayBar();
+      renderHome();
+      onLeagueDataForHistory(data);
+      applyPendingRoute();
     }
 
     async function fetchLiveRefreshData(leagueId, baseData) {
@@ -7609,6 +7893,10 @@
       if (app.projectionHub.loaded) renderMultiProjections(app.data);
       app.exportSnapshot = buildExport(app.data);
       els.rawJson.textContent = JSON.stringify(app.exportSnapshot, null, 2);
+      league31().h2hPicked = false;
+      league31().startSit = null;
+      renderHome();
+      renderLeague();
     });
 
     const dashboardNav = document.getElementById('dashboardNav');
@@ -7619,8 +7907,11 @@
     const mobileNavBounds = document.getElementById('mobileNavBounds');
     const mobileNavReset = document.getElementById('mobileNavReset');
     const mobileNavMedia = window.matchMedia('(max-width: 760px)');
-    const mobileNavPositionKey = 'sleeper_mobile_nav_position_v1';
-    let mobileNavPosition = { x: 0, y: 0 };
+    // V3.1: the Menu button starts bottom-right, in easy thumb reach; the menu opens upward.
+    // New storage key so everyone gets the new starting spot once; dragging still saves a position.
+    const mobileNavPositionKey = 'sleeper_mobile_nav_position_v2';
+    const MOBILE_NAV_DEFAULT = { x: 1, y: 1 };
+    let mobileNavPosition = { ...MOBILE_NAV_DEFAULT };
     let mobileNavDrag = null;
     let mobileNavSuppressClickUntil = 0;
 
@@ -7641,7 +7932,12 @@
       const left = Math.max(safe.left, offsetLeft + 12);
       const top = Math.max(safe.top, offsetTop + 12);
       const right = Math.max(left, Math.min(safe.right, offsetLeft + width - 12));
-      const bottom = Math.max(top, Math.min(safe.bottom, offsetTop + height - 12));
+      let bottom = Math.max(top, Math.min(safe.bottom, offsetTop + height - 12));
+      // Keep clear of the docked Game Day bar.
+      if (app.gameDayMode && !els.gameDayBar.hidden) {
+        const barTop = els.gameDayBar.getBoundingClientRect().top;
+        if (barTop > top + 60) bottom = Math.min(bottom, barTop - 10);
+      }
       const buttonWidth = mobileNavToggle.offsetWidth;
       const buttonHeight = mobileNavToggle.offsetHeight;
       return { left, top, right, bottom, buttonWidth, buttonHeight,
@@ -7751,7 +8047,7 @@
       saveMobileNavPosition();
     });
     mobileNavReset.addEventListener('click', () => {
-      mobileNavPosition = { x: 0, y: 0 };
+      mobileNavPosition = { ...MOBILE_NAV_DEFAULT };
       try { localStorage.removeItem(mobileNavPositionKey); } catch (_) {}
       setMobileNavOpen(false, true);
     });
@@ -7776,29 +8072,37 @@
       window.visualViewport.addEventListener('scroll', layoutMobileNav);
     }
     layoutMobileNav();
+    if (window.ResizeObserver) new ResizeObserver(() => layoutMobileNav()).observe(els.gameDayBar);
+
+    function activateTab(tabId, { updateHash = true, restoreFocus = false } = {}) {
+      const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.tab === tabId);
+      if (!btn) return;
+      mobileNavCurrent.textContent = btn.textContent.trim();
+      setMobileNavOpen(false, restoreFocus);
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === tabId));
+      if (updateHash) setTabHash(tabId);
+
+      startLeaderRefresh();
+      if (['leaders', 'overview', 'home'].includes(tabId)) loadStatsLeaders({ force: false });
+      if (tabId === 'home') renderHome();
+      if (tabId === 'league') { renderLeague(); ensureLeagueHistory(); }
+
+      if (tabId === 'transactions') {
+        if (app.data) renderTransactions(app.data);
+      }
+
+      if (tabId === 'projections') {
+        if (!app.data) {
+          els.multiProjectionStatus.textContent = 'Refresh the league first, then reopen this tab.';
+          return;
+        }
+        loadMultiProjectionSources({ force: false });
+      }
+    }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        mobileNavCurrent.textContent = btn.textContent.trim();
-        setMobileNavOpen(false, true);
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === btn.dataset.tab));
-
-        startLeaderRefresh();
-        if (btn.dataset.tab === 'leaders' || btn.dataset.tab === 'overview') loadStatsLeaders({ force: false });
-
-        if (btn.dataset.tab === 'transactions') {
-          if (app.data) renderTransactions(app.data);
-        }
-
-        if (btn.dataset.tab === 'projections') {
-          if (!app.data) {
-            els.multiProjectionStatus.textContent = 'Refresh the league first, then reopen this tab.';
-            return;
-          }
-          loadMultiProjectionSources({ force: false });
-        }
-      });
+      btn.addEventListener('click', () => activateTab(btn.dataset.tab, { restoreFocus: true }));
     });
 
     els.gameDayToggle.addEventListener('click', () => setGameDayMode(!app.gameDayMode));
@@ -7838,6 +8142,7 @@
       const now = new Date();
       els.tbDate.textContent = now.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
       els.tbClock.textContent = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      updateAgoStamps();
     }
     tickTitleBlockClock();
     setInterval(tickTitleBlockClock, 1000);
@@ -7848,6 +8153,8 @@
       const value = ['light', 'dark', 'auto'].includes(theme) ? theme : 'dark';
       document.documentElement.setAttribute('data-theme', value);
       themeButtons.forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.themeSet === value)));
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) themeMeta.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#080c15';
       if (persist) { try { localStorage.setItem('brojees_theme', value); } catch (_) {} }
     }
     themeButtons.forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.themeSet)));
@@ -7871,6 +8178,981 @@
     if (savedAutoMinutes !== null && [...els.autoRefresh.options].some(o => o.value === savedAutoMinutes)) {
       els.autoRefresh.value = savedAutoMinutes;
     }
+
+    /* ===== V3.1 My Week, League history, shareable links, pull-to-refresh, install =====
+       Everything here is function declarations plus state on `app.v31`, because
+       renderHome() can be reached from earlier init code before this block runs. */
+
+    function isTabActive(id) {
+      return Boolean(document.getElementById(id)?.classList.contains('active'));
+    }
+
+    function league31() {
+      if (!app.v31) {
+        app.v31 = { history: null, historyKey: null, historyLeagueId: null, historyLoading: false, historyError: '',
+          awardsWeek: null, h2hPicked: false, startSit: null, homeDirty: false, deferredInstall: null, ptrBusy: false };
+      }
+      return app.v31;
+    }
+
+    function routeState() {
+      if (!app.route) app.route = { depth: 0, pendingBack: 0, applying: false, pending: null };
+      return app.route;
+    }
+
+    /* ---------- "Updated 12s ago" ---------- */
+    function latestUpdateAt() {
+      return Math.max(Number(app.lastFetchAt) || 0, Number(app.statsLeaders?.matchupLoadedAt) || 0);
+    }
+
+    function agoText(ts) {
+      if (!ts) return app.isRefreshing ? 'Updating…' : 'Not updated yet';
+      const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+      if (s < 5) return 'Updated just now';
+      if (s < 60) return `Updated ${s}s ago`;
+      const m = Math.floor(s / 60);
+      if (m < 60) return `Updated ${m}m ago`;
+      return `Updated ${Math.floor(m / 60)}h ${m % 60}m ago`;
+    }
+
+    function updateAgoStamps() {
+      const text = agoText(latestUpdateAt());
+      document.querySelectorAll('[data-updated-ago]').forEach(el => { if (el.textContent !== text) el.textContent = text; });
+    }
+
+    /* ---------- Lineup math ---------- */
+    function slotEligibility(slot) {
+      const map = {
+        FLEX: ['RB', 'WR', 'TE'], WRRB_FLEX: ['WR', 'RB'], REC_FLEX: ['WR', 'TE'], SUPER_FLEX: ['QB', 'RB', 'WR', 'TE'],
+        IDP_FLEX: ['DL', 'DE', 'DT', 'LB', 'DB', 'CB', 'S', 'SS', 'FS'], DL: ['DL', 'DE', 'DT'], DB: ['DB', 'CB', 'S', 'SS', 'FS']
+      };
+      return map[slot] || [slot];
+    }
+
+    function playerPositions(id) {
+      const p = playerFromId(id);
+      const list = Array.isArray(p.fantasy_positions) && p.fantasy_positions.length ? p.fantasy_positions : [p.position];
+      return list.filter(Boolean).map(pos => String(pos).toUpperCase());
+    }
+
+    function starterSlots(league) {
+      return (league?.roster_positions || []).filter(p => !['BN', 'IR', 'TAXI'].includes(p));
+    }
+
+    // Best lineup from a player pool. Locked starters keep their slot and locked bench
+    // players can't come in (Sleeper locks at kickoff). Narrow slots fill before flex
+    // slots, so flex spots choose from whoever is left.
+    function optimalLineup(slots, starters, pool, valueOf, isLocked = () => false) {
+      const assigned = new Array(slots.length).fill(null);
+      const used = new Set();
+      slots.forEach((slot, i) => {
+        const id = starters[i];
+        if (id && String(id) !== '0' && isLocked(String(id))) { assigned[i] = String(id); used.add(String(id)); }
+      });
+      const open = slots.map((_, i) => i).filter(i => !assigned[i])
+        .sort((a, b) => slotEligibility(slots[a]).length - slotEligibility(slots[b]).length);
+      const candidates = [...new Set((pool || []).map(String))].filter(id => id && id !== '0' && !used.has(id) && !isLocked(id));
+      for (const i of open) {
+        const allowed = slotEligibility(slots[i]);
+        let best = null, bestValue = -Infinity;
+        for (const id of candidates) {
+          if (used.has(id) || !playerPositions(id).some(pos => allowed.includes(pos))) continue;
+          const value = valueOf(id);
+          if (value > bestValue) { bestValue = value; best = id; }
+        }
+        if (best) { assigned[i] = best; used.add(best); }
+      }
+      const total = assigned.reduce((sum, id) => sum + (id ? valueOf(id) : 0), 0);
+      return { assigned, total: Math.round(total * 100) / 100 };
+    }
+
+    function bestLineupThisWeek(matchup, ctx) {
+      if (!matchup || !ctx) return null;
+      const slots = starterSlots(ctx.league);
+      const starters = (matchup.starters || []).map(String);
+      const valueOf = id => { const v = Number(adjustedPlayerProjection(matchup, id, ctx)); return Number.isFinite(v) ? v : 0; };
+      const isLocked = id => ['live', 'final', 'canceled'].includes(playerGameInfo(id, ctx).key);
+      const best = optimalLineup(slots, starters, matchup.players || [], valueOf, isLocked);
+      const current = Math.round(starters.slice(0, slots.length).reduce((sum, id) => sum + (id && id !== '0' ? valueOf(id) : 0), 0) * 100) / 100;
+      const starterSet = new Set(starters.filter(id => id && id !== '0'));
+      const bestSet = new Set(best.assigned.filter(Boolean));
+      const ins = [...bestSet].filter(id => !starterSet.has(id)).sort((a, b) => valueOf(b) - valueOf(a));
+      const outs = [...starterSet].filter(id => !bestSet.has(id)).sort((a, b) => valueOf(a) - valueOf(b));
+      const emptyFilled = starters.slice(0, slots.length).filter(id => !id || id === '0').length;
+      return { current, best: best.total, gain: Math.round((best.total - current) * 100) / 100, ins, outs, valueOf, emptyFilled };
+    }
+
+    // Completed week: points left on the bench = best possible starting score - actual starting score.
+    function benchLeftForRow(row, slots) {
+      if (!row?.players?.length) return null;
+      const valueOf = id => { const v = Number(row.pp?.[id]); return Number.isFinite(v) ? v : 0; };
+      const best = optimalLineup(slots, row.starters || [], row.players, valueOf);
+      const actual = (row.starters || []).reduce((sum, id) => sum + (id && String(id) !== '0' ? valueOf(String(id)) : 0), 0);
+      return { best: best.total, actual: Math.round(actual * 100) / 100, left: Math.max(0, Math.round((best.total - actual) * 100) / 100) };
+    }
+
+    /* ---------- Win chance (estimate) ---------- */
+    function normalCdf(z) {
+      const x = Math.abs(z) / Math.SQRT2;
+      const t = 1 / (1 + 0.3275911 * x);
+      const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+      return z >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+    }
+
+    // Projected margin from the live estimates, with uncertainty that shrinks as the
+    // points still to be scored shrink (about ±28 pts per team before kickoff).
+    function winChance(mine, opp, ctx) {
+      if (!mine || !opp) return null;
+      const a = gameDayProjection(mine, ctx).live, b = gameDayProjection(opp, ctx).live;
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+      const remA = Math.max(0, a - Number(mine.custom_points ?? mine.points ?? 0));
+      const remB = Math.max(0, b - Number(opp.custom_points ?? opp.points ?? 0));
+      const sigma = Math.sqrt(6.5 * remA + 6.5 * remB);
+      if (sigma < 0.5) return a > b ? 1 : a < b ? 0 : 0.5;
+      return normalCdf((a - b) / sigma);
+    }
+
+    function matchupAllFinal(matchup, ctx) {
+      const ids = (matchup?.starters || []).filter(id => id && String(id) !== '0');
+      return ids.length > 0 && ids.every(id => ['final', 'bye', 'canceled'].includes(playerGameInfo(id, ctx).key));
+    }
+
+    /* ---------- My Week (Home) ---------- */
+    function rosterName(rosterId, ctx = app.data) {
+      const roster = (ctx?.rosters || app.data?.rosters || []).find(r => String(r.roster_id) === String(rosterId));
+      return roster ? teamName(ownerForRoster(roster, ctx?.users || app.data?.users || []), roster) : `Roster ${rosterId}`;
+    }
+
+    // Sleeper reports FAAB received in trades as negative spending.
+    function faabSpentText(used, budget) {
+      return used < 0 ? `+$${-used} from trades · $${budget} budget` : `$${used} of $${budget} spent`;
+    }
+
+    function homeSection(title, body, extraHead = '') {
+      return `<section class="panel home-section"><div class="panel-head"><h2>${escapeHtml(title)}</h2>${extraHead}</div>${body}</section>`;
+    }
+
+    function homeTeamPickerHtml(base) {
+      const order = currentStandingsOrder(base.rosters || []);
+      const buttons = order.map(r => {
+        const owner = ownerForRoster(r, base.users || []);
+        const name = teamName(owner, r);
+        const avatar = avatarUrl(owner);
+        return `<button type="button" class="picker-team" data-set-my-team="${escapeHtml(r.roster_id)}">
+          ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="" loading="lazy" />` : initialsBoxHtml(name)}
+          <span class="picker-team-text"><strong>${escapeHtml(name)}</strong><span class="small">${escapeHtml(owner?.display_name || owner?.username || '')} · ${escapeHtml(teamModalRecordText(r.settings || {}))}</span></span>
+        </button>`;
+      }).join('');
+      return homeSection('Which team is yours?', `<p class="small home-picker-copy">Pick once and this device remembers it. You can switch any time from the header or a team's popup.</p><div class="picker-grid">${buttons}</div>`);
+    }
+
+    function homeSideHtml(matchup, ctx, mine) {
+      if (!matchup) return `<div class="home-side ${mine ? 'mine' : 'theirs'}"><div class="home-side-name">Bye / no opponent</div><div class="home-score">—</div></div>`;
+      const name = rosterName(matchup.roster_id, ctx);
+      const projection = gameDayProjection(matchup, ctx);
+      const actual = Number(matchup.custom_points ?? matchup.points ?? 0);
+      const nameHtml = mine
+        ? `<div class="home-side-name">${escapeHtml(name)}</div>`
+        : `<button type="button" class="team-link home-side-name" data-open-team="${escapeHtml(matchup.roster_id)}">${escapeHtml(name)} <span aria-hidden="true">›</span></button>`;
+      return `<div class="home-side ${mine ? 'mine' : 'theirs'}">
+        <div class="home-side-tag">${mine ? 'You' : 'Opponent'}</div>
+        ${nameHtml}
+        <div ${liveChangeAttrs('home', `team:${matchup.roster_id}`, 'score', 'home-score')}>${numberOrDash(actual, 2)}</div>
+        <div class="home-proj"><span class="matchup-proj-original">Orig ${projection.original === null ? '—' : numberOrDash(projection.original, 2)}</span><span ${liveChangeAttrs('home', `team:${matchup.roster_id}`, 'projection', 'matchup-proj-adjusted')}>Live ${projection.live === null ? '—' : numberOrDash(projection.live, 2)}</span></div>
+        <div class="matchup-state-summary">${escapeHtml(matchupStatusSummary(matchup, ctx))}</div>
+      </div>`;
+    }
+
+    function homeMatchupHtml(rosterId, ctx) {
+      const base = app.data;
+      const week = ctx?.selectedWeek || base.state?.week || base.state?.leg || '—';
+      const title = `Week ${week} matchup`;
+      if (!ctx) return homeSection(title, '<div class="player-modal-loading">Loading the current-week scoreboard…</div>');
+      const mine = (ctx.matchups || []).find(m => String(m.roster_id) === rosterId);
+      if (!mine) return homeSection(title, '<div class="empty">No matchup for your team this week.</div>');
+      const opp = mine.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== rosterId);
+      recordLiveChanges('home', `${liveChangeContext(ctx)}|${rosterId}`, [mine, opp].filter(Boolean).map(m => [`team:${m.roster_id}`, { score: Number(m.custom_points ?? m.points ?? 0), projection: gameDayProjection(m, ctx).live }]));
+
+      const chance = winChance(mine, opp, ctx);
+      const final = opp && matchupAllFinal(mine, ctx) && matchupAllFinal(opp, ctx);
+      let winHtml = '';
+      if (chance !== null) {
+        const pct = Math.round(chance * 100);
+        const myPts = Number(mine.custom_points ?? mine.points ?? 0), oppPts = Number(opp.custom_points ?? opp.points ?? 0);
+        const label = final ? (myPts > oppPts ? 'Final · you won' : myPts < oppPts ? 'Final · you lost' : 'Final · tie') : 'Win chance · estimate';
+        winHtml = `<div class="winbar ${final ? 'is-final' : ''}">
+          <div class="winbar-head"><span class="winbar-label">${escapeHtml(label)}</span><span class="winbar-pct mono">${final ? '' : `${pct}%`}</span></div>
+          <div class="winbar-track" role="img" aria-label="${escapeHtml(final ? label : `Estimated win chance ${pct} percent`)}"><span class="winbar-fill" style="width:${final ? (myPts >= oppPts ? 100 : 0) : pct}%"></span></div>
+          ${final ? '' : '<div class="small winbar-note">From the live projection gap and how many points are still to be scored. Not a guarantee.</div>'}
+        </div>`;
+      }
+      const h2h = opp ? h2hSummary(rosterId, String(opp.roster_id)) : null;
+      const h2hLine = h2h && h2h.meetings.length
+        ? `<div class="small home-h2h">All-time vs ${escapeHtml(rosterName(opp.roster_id, ctx))}: <strong class="mono">${h2h.wins}-${h2h.losses}${h2h.ties ? `-${h2h.ties}` : ''}</strong> in ${h2h.meetings.length} meeting${h2h.meetings.length === 1 ? '' : 's'}</div>`
+        : '';
+      const route = `matchup/${week}/${mine.matchup_id}`;
+      const actions = `<div class="home-actions">
+        ${mine.matchup_id != null ? `<button type="button" class="btn-secondary" data-route="${escapeHtml(route)}">Full matchup</button>` : ''}
+        ${mine.matchup_id != null ? `<button type="button" class="btn-ghost" data-share="${escapeHtml(route)}" data-share-title="${escapeHtml(`${rosterName(rosterId, ctx)} vs ${opp ? rosterName(opp.roster_id, ctx) : 'Bye'}`)}">Share</button>` : ''}
+      </div>`;
+      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${winHtml}${h2hLine}${actions}`);
+    }
+
+    function homePlayerChip(id, value, ctx) {
+      const p = playerFromId(id);
+      return `<button type="button" class="home-player" data-player-id="${escapeHtml(id)}"><span class="slot">${escapeHtml(p.position || '—')}</span><span class="home-player-name">${escapeHtml(p.full_name)}</span><span class="mono home-player-val">${numberOrDash(value, 2)}</span></button>`;
+    }
+
+    function homeLineupHtml(rosterId, roster, ctx) {
+      const base = app.data;
+      const mine = ctx ? (ctx.matchups || []).find(m => String(m.roster_id) === rosterId) : null;
+      const allDone = mine && matchupAllFinal(mine, ctx);
+      const alerts = allDone ? [] : teamLineupAlerts(mine, roster, ctx || null);
+      const alertHtml = allDone
+        ? '<div class="small">All your starters have played this week.</div>'
+        : alerts.length
+          ? `<div class="home-alerts">${alerts.map(a => `<span class="team-alert ${a.level}">${escapeHtml(a.text)}</span>`).join('')}</div>`
+          : '<div class="home-ok"><span class="status-dot good"></span>No empty slots, byes or injury tags among your starters.</div>';
+
+      let bestHtml = '';
+      const best = mine ? bestLineupThisWeek(mine, ctx) : null;
+      if (best) {
+        bestHtml = best.gain > 0.05
+          ? `<div class="home-best">
+              <div class="home-best-head"><span class="home-best-label">Best possible lineup</span><span class="mono home-best-gain">+${numberOrDash(best.gain, 2)}</span></div>
+              <div class="small">Your lineup projects <strong class="mono">${numberOrDash(best.current, 2)}</strong>; the best one available projects <strong class="mono">${numberOrDash(best.best, 2)}</strong>${best.emptyFilled ? ' (includes filling an empty slot)' : ''}.</div>
+              <div class="home-swap"><span class="home-swap-label">Start</span>${best.ins.map(id => homePlayerChip(id, best.valueOf(id), ctx)).join('')}</div>
+              ${best.outs.length ? `<div class="home-swap"><span class="home-swap-label">Bench</span>${best.outs.map(id => homePlayerChip(id, best.valueOf(id), ctx)).join('')}</div>` : ''}
+              <div class="small">Uses live projections. Players whose games have started are locked and stay put.</div>
+            </div>`
+          : `<div class="home-best is-ok"><div class="home-best-head"><span class="home-best-label">Best possible lineup</span><span class="mono home-best-gain">✓</span></div><div class="small">Your current lineup is already the best projected lineup (${numberOrDash(best.current, 2)}).</div></div>`;
+      }
+
+      const last = lastWeekBench(rosterId);
+      const lastHtml = last ? `<div class="small home-last">Week ${escapeHtml(last.week)}: you scored <strong class="mono">${numberOrDash(last.actual, 2)}</strong> of a possible <strong class="mono">${numberOrDash(last.best, 2)}</strong>${last.left > 0.05 ? ` · <strong class="mono">${numberOrDash(last.left, 2)}</strong> left on the bench` : ' · perfect lineup'}.</div>` : '';
+
+      return homeSection('Lineup check', `${alertHtml}${bestHtml}${lastHtml}`);
+    }
+
+    function homeSeasonHtml(roster, base) {
+      const settings = roster.settings || {};
+      const order = currentStandingsOrder(base.rosters || []);
+      const rank = order.findIndex(r => String(r.roster_id) === String(roster.roster_id)) + 1;
+      const wins = Number(settings.wins ?? 0), losses = Number(settings.losses ?? 0), ties = Number(settings.ties ?? 0);
+      const games = wins + losses + ties;
+      const pf = getPoints(settings, 'fpts', 'fpts_decimal');
+      const budget = Number(base.league.settings?.waiver_budget ?? 0);
+      const used = Number(settings.waiver_budget_used ?? 0);
+      const power = powerRankings();
+      const mine = power?.rows.find(row => String(row.rid) === String(roster.roster_id));
+      const tiles = [
+        teamModalTile('Standing', rank ? `#${rank}` : '—', `of ${(base.rosters || []).length}`),
+        teamModalTile('Record', teamModalRecordText(settings), roster.metadata?.streak ? `Streak ${roster.metadata.streak}` : ''),
+        teamModalTile('Points for', numberOrDash(pf, 1), games ? `${numberOrDash(pf / games, 1)} / game` : ''),
+        budget ? teamModalTile('FAAB left', `$${Math.max(0, budget - used)}`, faabSpentText(used, budget)) : teamModalTile('Waiver', `#${settings.waiver_position ?? '—'}`, 'Priority'),
+        budget ? teamModalTile('Waiver #', `#${settings.waiver_position ?? '—'}`, 'Tiebreak order') : teamModalTile('Moves', settings.total_moves ?? '—', 'This season'),
+        mine ? teamModalTile('Power rank', `#${mine.rank}`, `All-play ${mine.apW}-${mine.apL}`) : teamModalTile('Moves', settings.total_moves ?? '—', 'This season')
+      ];
+      return homeSection('Season & waivers', `<div class="team-stat-grid home-tiles">${tiles.join('')}</div>
+        <div class="home-actions"><button type="button" class="btn-secondary" data-open-team="${escapeHtml(roster.roster_id)}">Open my team</button><button type="button" class="btn-ghost" data-route="league">League &amp; awards</button></div>`);
+    }
+
+    function startSitCandidates(roster) {
+      const reserve = new Set((roster.reserve || []).map(String));
+      const taxi = new Set((roster.taxi || []).map(String));
+      return (roster.players || []).map(String).filter(id => id && id !== '0' && !reserve.has(id) && !taxi.has(id));
+    }
+
+    // Default to the closest bench-vs-starter call at the same position, preferring
+    // players whose games haven't started (the decisions you can still make).
+    function defaultStartSitPair(ids, starters, projOf, isLocked = () => false) {
+      const starterSet = new Set(starters.map(String));
+      const closestPair = pool => {
+        let best = null;
+        for (const benchId of pool.filter(id => !starterSet.has(id))) {
+          const pos = playerPositions(benchId)[0];
+          const rivals = pool.filter(id => starterSet.has(id) && playerPositions(id).includes(pos));
+          if (!rivals.length || projOf(benchId) <= 0) continue;
+          const weakest = rivals.sort((a, b) => projOf(a) - projOf(b))[0];
+          const gap = Math.abs(projOf(weakest) - projOf(benchId));
+          if (!best || gap < best.gap) best = { a: weakest, b: benchId, gap };
+        }
+        return best ? [best.a, best.b] : null;
+      };
+      return closestPair(ids.filter(id => !isLocked(id))) || closestPair(ids) || [ids[0] || '', ids[1] || ''];
+    }
+
+    function homeStartSitHtml(rosterId, roster, ctx) {
+      const data = ctx || app.data;
+      const st = league31();
+      const mine = (data?.matchups || []).find(m => String(m.roster_id) === rosterId) || null;
+      const ids = startSitCandidates(roster);
+      if (ids.length < 2) return '';
+      const orig = id => { const v = Number(originalProjectedPoints(id, data)); return Number.isFinite(v) ? v : null; };
+      const live = id => { const v = Number(mine ? adjustedPlayerProjection(mine, id, data) : originalProjectedPoints(id, data)); return Number.isFinite(v) ? v : null; };
+      if (!st.startSit || st.startSit.rosterId !== rosterId || !ids.includes(st.startSit.a) || !ids.includes(st.startSit.b)) {
+        const [a, b] = defaultStartSitPair(ids, mine?.starters || roster.starters || [], id => orig(id) ?? 0,
+          id => ['live', 'final', 'canceled'].includes(playerGameInfo(id, data).key));
+        st.startSit = { rosterId, a, b };
+      }
+      const starterSet = new Set((mine?.starters || roster.starters || []).map(String));
+      const hubReady = app.projectionHub.loaded && app.projectionHub.week === Number(data?.selectedWeek || data?.state?.week);
+      const groups = {};
+      for (const id of ids) { const pos = playerPositions(id)[0] || 'Other'; (groups[pos] = groups[pos] || []).push(id); }
+      const order = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+      const optionHtml = selected => Object.keys(groups).sort((x, y) => { const ix = order.indexOf(x), iy = order.indexOf(y); return (ix === -1 ? 99 : ix) - (iy === -1 ? 99 : iy); }).map(pos =>
+        `<optgroup label="${escapeHtml(pos)}">${groups[pos].map(id => { const p = playerFromId(id); return `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(p.full_name)}${starterSet.has(id) ? ' · starter' : ''}</option>`; }).join('')}</optgroup>`).join('');
+
+      const col = id => {
+        const p = playerFromId(id);
+        const comp = hubReady ? projectionComparisonForPlayer(id, data) : null;
+        const info = playerGameInfo(id, data);
+        const rank = positionRankForPlayer(id, data);
+        return { id, p, info, opp: waiverOpponent(id, data), kickoff: playerKickoffInfo(id, data).display, rank,
+          orig: orig(id), live: live(id), sleeper: comp?.sleeper ?? null, espn: comp?.espn ?? null, consensus: comp?.consensus ?? null, spread: comp?.spread ?? null,
+          locked: ['live', 'final', 'canceled'].includes(info.key), starter: starterSet.has(id) };
+      };
+      const A = col(st.startSit.a), B = col(st.startSit.b);
+      const metric = (label, key, digits = 2, higherBetter = true) => {
+        const a = A[key], b = B[key];
+        const better = Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) > 0.004 ? ((a > b) === higherBetter ? 'a' : 'b') : '';
+        return `<div class="ss-row"><span class="mono ss-val ${better === 'a' ? 'win' : ''}">${Number.isFinite(a) ? numberOrDash(a, digits) : '—'}</span><span class="ss-key">${escapeHtml(label)}</span><span class="mono ss-val ${better === 'b' ? 'win' : ''}">${Number.isFinite(b) ? numberOrDash(b, digits) : '—'}</span></div>`;
+      };
+      const head = c => `<div class="ss-player">
+        <button type="button" class="home-player ss-name" data-player-id="${escapeHtml(c.id)}"><span class="home-player-name">${escapeHtml(c.p.full_name)}</span></button>
+        <div class="small">${escapeHtml([c.p.position, c.p.team || 'FA', c.opp].filter(Boolean).join(' · '))}</div>
+        <div class="small">${gameStatusBadge(c.info) || escapeHtml(c.kickoff || c.info.label)}${c.p.injury_status ? ` <span class="injury">${escapeHtml(c.p.injury_status)}</span>` : ''}</div>
+        <div class="small">${c.starter ? 'Starting' : 'On bench'}${c.rank?.rank ? ` · ${escapeHtml(c.rank.position || c.p.position)} #${escapeHtml(c.rank.rank)} season` : ''}</div>
+      </div>`;
+      const basis = Number.isFinite(A.consensus) && Number.isFinite(B.consensus) ? ['consensus', 'consensus'] : ['live', 'live projection'];
+      const diff = Number.isFinite(A[basis[0]]) && Number.isFinite(B[basis[0]]) ? Math.round((A[basis[0]] - B[basis[0]]) * 100) / 100 : null;
+      const bothFinal = A.info.key === 'final' && B.info.key === 'final';
+      const finalDiff = bothFinal ? Math.round((A.live - B.live) * 100) / 100 : null;
+      const lean = bothFinal && Number.isFinite(finalDiff)
+        ? (Math.abs(finalDiff) < 0.005 ? 'Final: they scored the same.' : `Final: <strong>${escapeHtml((finalDiff > 0 ? A : B).p.full_name)}</strong> outscored ${escapeHtml((finalDiff > 0 ? B : A).p.full_name)} by <span class="mono">${numberOrDash(Math.abs(finalDiff), 2)}</span>.`)
+        : diff === null ? 'Not enough projection data to compare yet.'
+        : Math.abs(diff) < 0.5 ? `Toss-up: within ${numberOrDash(Math.abs(diff), 2)} on ${basis[1]}.`
+        : `Lean <strong>${escapeHtml((diff > 0 ? A : B).p.full_name)}</strong> by <span class="mono">${numberOrDash(Math.abs(diff), 2)}</span> on ${basis[1]}.`;
+      const lockNote = !bothFinal && (A.locked || B.locked) ? `<div class="small">${escapeHtml([A, B].filter(c => c.locked).map(c => c.p.full_name).join(' and '))} ${A.locked && B.locked ? 'are' : 'is'} locked (game started).</div>` : '';
+      const loadBtn = hubReady ? '' : `<button type="button" class="btn-ghost" data-action="load-consensus" ${app.projectionHub.loading ? 'disabled' : ''}>${app.projectionHub.loading ? 'Loading ESPN…' : 'Add ESPN + consensus'}</button>`;
+      return homeSection('Start / sit', `
+        <div class="ss-pickers">
+          <div class="field"><label for="ssPlayerA">Player A</label><select id="ssPlayerA" data-startsit="a">${optionHtml(A.id)}</select></div>
+          <div class="field"><label for="ssPlayerB">Player B</label><select id="ssPlayerB" data-startsit="b">${optionHtml(B.id)}</select></div>
+        </div>
+        <div class="ss-compare">
+          <div class="ss-heads">${head(A)}${head(B)}</div>
+          ${metric('Orig proj', 'orig')}${metric('Live proj', 'live')}${metric('Sleeper', 'sleeper')}${metric('ESPN', 'espn')}${metric('Consensus', 'consensus')}${metric('Source spread', 'spread', 2, false)}
+        </div>
+        <div class="ss-verdict">${lean}</div>${lockNote}
+        <div class="home-actions">${loadBtn}<span class="small">Projections use this league's scoring. A lean is a projection, not a sure thing.</span></div>`);
+    }
+
+    function renderHome() {
+      const root = document.getElementById('homeContent');
+      if (!root) return;
+      updateAgoStamps();
+      const st = league31();
+      if (root.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') { st.homeDirty = true; return; }
+      st.homeDirty = false;
+      if (!app.data) {
+        root.innerHTML = `<div class="empty">${app.isRefreshing ? 'Loading your league…' : 'Loading your league. If this stays empty, pull down or tap Refresh.'}</div>`;
+        return;
+      }
+      const rosterId = String(els.myTeam.value || '');
+      const roster = (app.data.rosters || []).find(r => String(r.roster_id) === rosterId);
+      if (!roster) { replaceLiveContent(root, homeTeamPickerHtml(app.data)); return; }
+      const ctx = gameDayData();
+      replaceLiveContent(root, [
+        homeMatchupHtml(rosterId, ctx),
+        homeLineupHtml(rosterId, roster, ctx),
+        homeSeasonHtml(roster, app.data),
+        homeStartSitHtml(rosterId, roster, ctx)
+      ].join(''));
+    }
+
+    /* ---------- League history (current + past seasons) ---------- */
+    async function loadSeasonHistory(league, rosters, users, { throughWeek, detailed }) {
+      const start = Math.max(1, Number(league.settings?.start_week || 1));
+      const last = Math.min(18, Number(throughWeek) || 0);
+      const weeks = [];
+      for (let w = start; w <= last; w++) weeks.push(w);
+      const results = await Promise.all(weeks.map(w => fetchJson(`${API}/league/${league.league_id}/matchups/${w}`).catch(() => [])));
+      const weekRows = weeks.map((week, i) => ({
+        week,
+        rows: (Array.isArray(results[i]) ? results[i] : []).filter(r => r && r.roster_id != null).map(r => {
+          const row = { rid: String(r.roster_id), mid: r.matchup_id ?? null, pts: Math.round(Number(r.custom_points ?? r.points ?? 0) * 100) / 100 };
+          if (detailed) { row.starters = (r.starters || []).map(String); row.players = (r.players || []).map(String); row.pp = r.players_points || {}; }
+          return row;
+        })
+      })).filter(w => w.rows.some(r => r.pts > 0));
+      return {
+        league_id: String(league.league_id), season: String(league.season || ''),
+        playoffStart: Number(league.settings?.playoff_week_start || 0),
+        slots: starterSlots(league),
+        owners: Object.fromEntries((rosters || []).map(r => [String(r.roster_id), String(r.owner_id || '')])),
+        names: Object.fromEntries((users || []).map(u => [String(u.user_id), u.metadata?.team_name || u.display_name || u.username || 'Manager'])),
+        previous_league_id: league.previous_league_id && league.previous_league_id !== '0' ? String(league.previous_league_id) : null,
+        weeks: weekRows
+      };
+    }
+
+    async function loadPastSeasonCached(leagueId) {
+      const cacheKey = `brojees_history_${leagueId}_v1`;
+      try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+        if (cached?.weeks) return cached;
+      } catch (_) { /* refetch */ }
+      const [league, rosters, users] = await Promise.all([
+        fetchJson(`${API}/league/${leagueId}`),
+        fetchJson(`${API}/league/${leagueId}/rosters`).catch(() => []),
+        fetchJson(`${API}/league/${leagueId}/users`).catch(() => [])
+      ]);
+      if (!league?.league_id) return null;
+      const season = await loadSeasonHistory(league, rosters, users, { throughWeek: 18, detailed: false });
+      if (league.status === 'complete') { try { localStorage.setItem(cacheKey, JSON.stringify(season)); } catch (_) { /* storage full */ } }
+      return season;
+    }
+
+    async function ensureLeagueHistory({ force = false } = {}) {
+      const st = league31();
+      const base = app.data;
+      if (!base?.league) return;
+      const currentWeek = Number(base.state?.week || base.state?.leg || 1);
+      const key = `${base.league.league_id}:${currentWeek}`;
+      if (!force && st.historyKey === key && (st.history || st.historyLoading)) return;
+      st.historyKey = key;
+      st.historyLoading = true;
+      st.historyError = '';
+      renderLeague();
+      try {
+        const seasonDone = base.league.status === 'complete';
+        const current = await loadSeasonHistory(base.league, base.rosters, base.users, { throughWeek: seasonDone ? 18 : currentWeek - 1, detailed: true });
+        const past = [];
+        let prev = current.previous_league_id;
+        for (let i = 0; prev && i < 6; i++) {
+          const season = await loadPastSeasonCached(prev).catch(() => null);
+          if (!season) break;
+          past.push(season);
+          prev = season.previous_league_id;
+        }
+        if (String(app.data?.league?.league_id) !== String(base.league.league_id)) return;
+        st.history = { current, past };
+      } catch (err) {
+        st.historyError = err.message || 'Could not load league history';
+      } finally {
+        st.historyLoading = false;
+        renderLeague();
+        renderHome();
+      }
+    }
+
+    function onLeagueDataForHistory(data) {
+      const st = league31();
+      const leagueId = String(data?.league?.league_id || '');
+      if (st.historyLeagueId && st.historyLeagueId !== leagueId) { st.history = null; st.historyKey = null; st.h2hPicked = false; }
+      st.historyLeagueId = leagueId;
+      if (isTabActive('league') || isTabActive('home')) ensureLeagueHistory();
+      if (isTabActive('league')) renderLeague();
+    }
+
+    function regularWeeks(season) {
+      return season.weeks.filter(w => !season.playoffStart || w.week < season.playoffStart);
+    }
+
+    function lastWeekBench(rosterId) {
+      const cur = league31().history?.current;
+      if (!cur?.weeks.length) return null;
+      const week = cur.weeks[cur.weeks.length - 1];
+      const row = week.rows.find(r => r.rid === String(rosterId));
+      const bench = benchLeftForRow(row, cur.slots);
+      return bench ? { week: week.week, ...bench } : null;
+    }
+
+    function powerRankings() {
+      const cur = league31().history?.current;
+      if (!cur) return null;
+      const weeks = regularWeeks(cur);
+      if (!weeks.length) return null;
+      const stats = {};
+      const ensure = rid => (stats[rid] = stats[rid] || { rid, apW: 0, apL: 0, apT: 0, recentW: 0, recentG: 0, pf: 0, games: 0, expected: 0 });
+      weeks.forEach((week, index) => {
+        const recent = index >= weeks.length - 3;
+        for (const row of week.rows) {
+          const s = ensure(row.rid);
+          const others = week.rows.filter(o => o.rid !== row.rid);
+          const beat = others.filter(o => row.pts > o.pts).length;
+          const tied = others.filter(o => row.pts === o.pts).length;
+          s.apW += beat; s.apL += others.length - beat - tied; s.apT += tied;
+          if (others.length) s.expected += (beat + tied / 2) / others.length;
+          if (recent) { s.recentW += beat + tied / 2; s.recentG += others.length; }
+          s.pf += row.pts; s.games++;
+        }
+      });
+      const rosters = app.data?.rosters || [];
+      const rows = Object.values(stats).map(s => {
+        const roster = rosters.find(r => String(r.roster_id) === s.rid);
+        const wins = Number(roster?.settings?.wins ?? 0) + Number(roster?.settings?.ties ?? 0) / 2;
+        const apGames = s.apW + s.apL + s.apT;
+        const apPct = apGames ? (s.apW + s.apT / 2) / apGames : 0;
+        const recentPct = s.recentG ? s.recentW / s.recentG : apPct;
+        return { ...s, apPct, recentPct, luck: Math.round((wins - s.expected) * 10) / 10, avg: s.games ? s.pf / s.games : 0,
+          score: Math.round((apPct * 0.6 + recentPct * 0.4) * 1000) / 10, record: roster ? teamModalRecordText(roster.settings || {}) : '—' };
+      }).sort((a, b) => b.score - a.score || b.pf - a.pf);
+      rows.forEach((row, i) => { row.rank = i + 1; });
+      return { rows, weeks: weeks.length };
+    }
+
+    function weeklyAwards(weekNumber) {
+      const cur = league31().history?.current;
+      const week = cur?.weeks.find(w => w.week === Number(weekNumber));
+      if (!week) return [];
+      const rows = week.rows.filter(r => Number.isFinite(r.pts));
+      if (!rows.length) return [];
+      const name = rid => rosterName(rid);
+      const awards = [];
+      const byPts = [...rows].sort((a, b) => b.pts - a.pts);
+      awards.push({ label: 'High score', rid: byPts[0].rid, value: numberOrDash(byPts[0].pts, 2), detail: 'Most points this week' });
+      awards.push({ label: 'Low score', rid: byPts[byPts.length - 1].rid, value: numberOrDash(byPts[byPts.length - 1].pts, 2), detail: 'Fewest points this week', tone: 'bad' });
+
+      const pairs = Object.values(rows.reduce((groups, row) => { if (row.mid != null) (groups[row.mid] = groups[row.mid] || []).push(row); return groups; }, {})).filter(g => g.length === 2)
+        .map(([x, y]) => { const winner = x.pts >= y.pts ? x : y, loser = winner === x ? y : x; return { winner, loser, margin: Math.round((winner.pts - loser.pts) * 100) / 100 }; })
+        .filter(p => p.margin > 0);
+      if (pairs.length) {
+        const blowout = [...pairs].sort((a, b) => b.margin - a.margin)[0];
+        const close = [...pairs].sort((a, b) => a.margin - b.margin)[0];
+        const lucky = [...pairs].sort((a, b) => a.winner.pts - b.winner.pts)[0];
+        const tough = [...pairs].sort((a, b) => b.loser.pts - a.loser.pts)[0];
+        awards.push({ label: 'Blowout', rid: blowout.winner.rid, value: `+${numberOrDash(blowout.margin, 2)}`, detail: `Beat ${name(blowout.loser.rid)} ${numberOrDash(blowout.winner.pts, 2)}–${numberOrDash(blowout.loser.pts, 2)}` });
+        awards.push({ label: 'Nail-biter', rid: close.winner.rid, value: `+${numberOrDash(close.margin, 2)}`, detail: `Edged ${name(close.loser.rid)} ${numberOrDash(close.winner.pts, 2)}–${numberOrDash(close.loser.pts, 2)}` });
+        const median = byPts[Math.floor(byPts.length / 2)].pts;
+        awards.push({ label: 'Luckiest win', rid: lucky.winner.rid, value: numberOrDash(lucky.winner.pts, 2), detail: `Won with the week's lowest winning score${lucky.winner.pts < median ? ' (below the league median)' : ''}` });
+        awards.push({ label: 'Toughest loss', rid: tough.loser.rid, value: numberOrDash(tough.loser.pts, 2), detail: `Highest score in a loss, to ${name(tough.winner.rid)}`, tone: 'bad' });
+      }
+      const bench = rows.map(r => ({ r, b: benchLeftForRow(r, cur.slots) })).filter(x => x.b);
+      if (bench.length) {
+        const blunder = [...bench].sort((a, b) => b.b.left - a.b.left)[0];
+        if (blunder.b.left > 0.05) awards.push({ label: 'Bench blunder', rid: blunder.r.rid, value: numberOrDash(blunder.b.left, 2), detail: `Left on the bench · scored ${numberOrDash(blunder.b.actual, 2)} of ${numberOrDash(blunder.b.best, 2)} possible`, tone: 'bad' });
+        const sharp = [...bench].filter(x => x.b.best > 0).sort((a, b) => (b.b.actual / b.b.best) - (a.b.actual / a.b.best) || b.b.actual - a.b.actual)[0];
+        if (sharp) awards.push({ label: 'Sharpest lineup', rid: sharp.r.rid, value: `${Math.round(sharp.b.actual / sharp.b.best * 1000) / 10}%`, detail: sharp.b.left <= 0.05 ? 'Started the best possible lineup' : `Only ${numberOrDash(sharp.b.left, 2)} left on the bench` });
+      }
+      let mvp = null;
+      for (const row of rows) for (const id of row.starters || []) {
+        const pts = Number(row.pp?.[id]);
+        if (id && id !== '0' && Number.isFinite(pts) && (!mvp || pts > mvp.pts)) mvp = { id, pts, rid: row.rid };
+      }
+      if (mvp) awards.push({ label: 'Player of the week', rid: mvp.rid, player: mvp.id, value: numberOrDash(mvp.pts, 2), detail: `Top starter in the league · ${name(mvp.rid)}` });
+      return awards;
+    }
+
+    function h2hSummary(rosterA, rosterB) {
+      const hist = league31().history;
+      const base = app.data;
+      if (!hist || !base) return null;
+      const ownerOf = rid => String((base.rosters || []).find(r => String(r.roster_id) === String(rid))?.owner_id || '');
+      const ownerA = ownerOf(rosterA), ownerB = ownerOf(rosterB);
+      if (!ownerA || !ownerB || ownerA === ownerB) return null;
+      const meetings = [];
+      for (const season of [hist.current, ...hist.past]) {
+        const ridA = Object.keys(season.owners).find(rid => season.owners[rid] === ownerA);
+        const ridB = Object.keys(season.owners).find(rid => season.owners[rid] === ownerB);
+        if (!ridA || !ridB) continue;
+        for (const week of season.weeks) {
+          const a = week.rows.find(r => r.rid === ridA), b = week.rows.find(r => r.rid === ridB);
+          if (!a || !b || a.mid == null || String(a.mid) !== String(b.mid)) continue;
+          meetings.push({ season: season.season, week: week.week, a: a.pts, b: b.pts, playoff: Boolean(season.playoffStart && week.week >= season.playoffStart) });
+        }
+      }
+      meetings.sort((x, y) => Number(y.season) - Number(x.season) || y.week - x.week);
+      const wins = meetings.filter(m => m.a > m.b).length, losses = meetings.filter(m => m.a < m.b).length;
+      return { meetings, wins, losses, ties: meetings.length - wins - losses, seasons: 1 + hist.past.length };
+    }
+
+    /* ---------- League tab rendering ---------- */
+    function renderLeague() {
+      const awardsEl = document.getElementById('awardsContent');
+      if (!awardsEl) return;
+      const st = league31();
+      const base = app.data;
+      const powerEl = document.getElementById('powerContent');
+      const h2hEl = document.getElementById('h2hContent');
+      const weekSel = document.getElementById('awardsWeek');
+      const selA = document.getElementById('h2hTeamA'), selB = document.getElementById('h2hTeamB');
+      if (!base) {
+        awardsEl.innerHTML = '<div class="empty">Waiting for league data.</div>';
+        return;
+      }
+      // Team pickers for head-to-head.
+      const teamOptions = currentStandingsOrder(base.rosters || []).map(r => `<option value="${escapeHtml(r.roster_id)}">${escapeHtml(rosterName(r.roster_id))}</option>`).join('');
+      if (selA.dataset.options !== teamOptions) { selA.innerHTML = teamOptions; selB.innerHTML = teamOptions; selA.dataset.options = teamOptions; }
+      if (!st.h2hPicked) {
+        const me = String(els.myTeam.value || base.rosters?.[0]?.roster_id || '');
+        const ctx = gameDayData() || base;
+        const mine = (ctx.matchups || []).find(m => String(m.roster_id) === me);
+        const opp = mine?.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== me);
+        selA.value = me;
+        selB.value = String(opp?.roster_id || (base.rosters || []).find(r => String(r.roster_id) !== me)?.roster_id || '');
+      }
+
+      if (st.historyLoading && !st.history) {
+        const msg = '<div class="player-modal-loading">Loading every completed week of league history…</div>';
+        awardsEl.innerHTML = msg; powerEl.innerHTML = msg; h2hEl.innerHTML = msg;
+        return;
+      }
+      if (st.historyError && !st.history) {
+        const msg = `<div class="empty">League history unavailable: ${escapeHtml(st.historyError)}. Pull down to retry.</div>`;
+        awardsEl.innerHTML = msg; powerEl.innerHTML = msg; h2hEl.innerHTML = msg;
+        return;
+      }
+      if (!st.history) { awardsEl.innerHTML = '<div class="empty">Open this tab to load league history.</div>'; return; }
+
+      // Awards
+      const weeks = st.history.current.weeks.map(w => w.week).sort((a, b) => b - a);
+      const weekOptions = weeks.map(w => `<option value="${w}">Week ${w}</option>`).join('') || '<option value="">No completed weeks</option>';
+      if (weekSel.dataset.options !== weekOptions) { weekSel.innerHTML = weekOptions; weekSel.dataset.options = weekOptions; }
+      if (!weeks.includes(Number(st.awardsWeek))) st.awardsWeek = weeks[0] ?? null;
+      if (st.awardsWeek !== null) weekSel.value = String(st.awardsWeek);
+      const awards = st.awardsWeek !== null ? weeklyAwards(st.awardsWeek) : [];
+      const me = String(els.myTeam.value || '');
+      awardsEl.innerHTML = awards.length ? `<div class="award-grid">${awards.map(a => `
+        <article class="award-card ${a.rid === me ? 'is-me' : ''} ${a.tone === 'bad' ? 'is-bad' : ''}">
+          <div class="tag-strip ${a.rid === me ? 'is-selected' : ''}"><span class="tag-label">${escapeHtml(a.label)}</span><span class="tag-code">WK${String(st.awardsWeek).padStart(2, '0')}</span></div>
+          <div class="award-body">
+            <div class="award-value mono">${escapeHtml(a.value)}</div>
+            ${a.player ? `<button type="button" class="home-player award-team" data-player-id="${escapeHtml(a.player)}"><span class="home-player-name">${escapeHtml(playerFromId(a.player).full_name)}</span></button>`
+              : `<button type="button" class="team-link award-team" data-open-team="${escapeHtml(a.rid)}">${escapeHtml(rosterName(a.rid))}${a.rid === me ? ' <span class="pill me">YOU</span>' : ''}</button>`}
+            <div class="small">${escapeHtml(a.detail)}</div>
+          </div>
+        </article>`).join('')}</div>
+        <div class="small league-note">Bench figures use each week's actual points and this league's lineup slots.</div>`
+        : '<div class="empty">No completed weeks yet. Awards appear once Week 1 is final.</div>';
+      document.getElementById('awardsStatus').textContent = weeks.length ? `${weeks.length} completed week${weeks.length === 1 ? '' : 's'} · scored with this league's settings.` : 'Completed weeks only.';
+
+      // Power rankings
+      const power = powerRankings();
+      powerEl.innerHTML = power ? `<div class="power-list">${power.rows.map(row => `
+        <button type="button" class="power-row ${row.rid === me ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
+          <span class="power-rank mono">${String(row.rank).padStart(2, '0')}</span>
+          <span class="power-main"><strong>${escapeHtml(rosterName(row.rid))}${row.rid === me ? ' <span class="pill me">YOU</span>' : ''}</strong>
+            <span class="small">Record <span class="mono">${escapeHtml(row.record)}</span> · All-play <span class="mono">${row.apW}-${row.apL}${row.apT ? `-${row.apT}` : ''}</span> · <span class="mono">${numberOrDash(row.avg, 1)}</span> avg</span></span>
+          <span class="power-side"><span class="power-score mono">${numberOrDash(row.score, 1)}</span><span class="power-luck mono ${row.luck > 0.4 ? 'lucky' : row.luck < -0.4 ? 'unlucky' : ''}">${row.luck > 0 ? '+' : ''}${numberOrDash(row.luck, 1)} luck</span></span>
+          <span class="meter power-meter" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<i class="${i < Math.round(row.score / 10) ? 'on' : ''}"></i>`).join('')}</span>
+        </button>`).join('')}</div>
+        <div class="small league-note">Power score = 60% season all-play win rate + 40% last 3 weeks. Luck = actual wins minus the wins your scores would earn on average (+ means your record is better than your scoring).</div>`
+        : '<div class="empty">Power rankings appear after Week 1 is complete.</div>';
+
+      // Head-to-head
+      const a = selA.value, b = selB.value;
+      const h2h = a && b && a !== b ? h2hSummary(a, b) : null;
+      document.getElementById('h2hStatus').textContent = st.history.past.length
+        ? `Every meeting between these two managers across ${st.history.past.length + 1} seasons of this league.`
+        : 'Every meeting between these two managers this season (no earlier seasons found for this league).';
+      if (a === b) { h2hEl.innerHTML = '<div class="empty">Pick two different teams.</div>'; return; }
+      if (!h2h) { h2hEl.innerHTML = '<div class="empty">No head-to-head data for these managers.</div>'; return; }
+      const avgA = h2h.meetings.length ? h2h.meetings.reduce((s, m) => s + m.a, 0) / h2h.meetings.length : 0;
+      const avgB = h2h.meetings.length ? h2h.meetings.reduce((s, m) => s + m.b, 0) / h2h.meetings.length : 0;
+      h2hEl.innerHTML = h2h.meetings.length ? `
+        <div class="h2h-summary">
+          <div class="h2h-side"><span class="small">${escapeHtml(rosterName(a))}</span><span class="h2h-wins mono">${h2h.wins}</span><span class="small mono">${numberOrDash(avgA, 1)} avg</span></div>
+          <div class="h2h-mid"><span class="small">All-time</span><span class="mono">${h2h.ties ? `${h2h.ties} tie${h2h.ties === 1 ? '' : 's'}` : '—'}</span></div>
+          <div class="h2h-side right"><span class="small">${escapeHtml(rosterName(b))}</span><span class="h2h-wins mono">${h2h.losses}</span><span class="small mono">${numberOrDash(avgB, 1)} avg</span></div>
+        </div>
+        <div class="h2h-list">${h2h.meetings.map(m => `<div class="h2h-row ${m.a > m.b ? 'won' : m.a < m.b ? 'lost' : ''}">
+          <span class="mono h2h-when">${escapeHtml(m.season)} · WK${String(m.week).padStart(2, '0')}${m.playoff ? ' · POST' : ''}</span>
+          <span class="mono h2h-score">${numberOrDash(m.a, 2)} – ${numberOrDash(m.b, 2)}</span>
+          <span class="h2h-result">${m.a > m.b ? 'W' : m.a < m.b ? 'L' : 'T'}</span>
+        </div>`).join('')}</div>
+        <div class="small league-note">Tracked by manager, so a team that changed names keeps its history. POST = week on or after the playoff start (may include consolation games).</div>`
+        : '<div class="empty">These two managers have not played each other yet.</div>';
+    }
+
+    /* ---------- Shareable links / routing ---------- */
+    function parseRoute(hash) {
+      const parts = String(hash || '').replace(/^#\/?/, '').split('/').filter(Boolean).map(part => { try { return decodeURIComponent(part); } catch (_) { return part; } });
+      if (!parts.length) return { kind: 'tab', tab: 'home' };
+      if (parts[0] === 'player' && parts[1]) return { kind: 'player', id: parts[1] };
+      if (parts[0] === 'team' && parts[1]) return { kind: 'team', id: parts[1] };
+      if (parts[0] === 'matchup' && parts[1]) return parts[2] ? { kind: 'matchup', week: Number(parts[1]) || null, id: parts[2] } : { kind: 'matchup', week: null, id: parts[1] };
+      const tab = document.getElementById(parts[0]);
+      if (tab && tab.classList.contains('tab')) return { kind: 'tab', tab: parts[0] };
+      return { kind: 'tab', tab: 'home' };
+    }
+
+    function currentTabId() {
+      return document.querySelector('.tab.active')?.id || 'home';
+    }
+
+    function setTabHash(tabId) {
+      const r = routeState();
+      if (r.applying || r.depth > 0) return;
+      if (location.hash !== `#${tabId}`) history.replaceState(null, '', `#${tabId}`);
+    }
+
+    // Popups get their own history entry so the phone's Back button closes them.
+    function routePopupOpened(kind, id) {
+      const r = routeState();
+      if (r.applying) return;
+      const hash = `#${kind}/${encodeURIComponent(id)}`;
+      if (location.hash === hash) return;
+      if (parseRoute(location.hash).kind === kind && r.depth > 0) { history.replaceState({ brojeesPopup: true }, '', hash); return; }
+      history.pushState({ brojeesPopup: true }, '', hash);
+      r.depth++;
+    }
+
+    function routePopupClosed() {
+      const r = routeState();
+      if (r.applying) return;
+      if (r.depth > 0) {
+        r.depth--;
+        r.pendingBack++;
+        queueMicrotask(() => {
+          if (!r.pendingBack) return;
+          const steps = r.pendingBack;
+          r.pendingBack = 0;
+          history.go(-steps);
+        });
+      } else if (['player', 'team'].includes(parseRoute(location.hash).kind)) {
+        history.replaceState(null, '', `#${currentTabId()}`);
+      }
+    }
+
+    function withRouteApplying(fn) {
+      const r = routeState();
+      r.applying = true;
+      try { fn(); } finally { r.applying = false; }
+    }
+
+    async function showMatchupRoute(route) {
+      if (route.week && Number(app.data.selectedWeek) !== Number(route.week) && route.week >= 1 && route.week <= 18) {
+        els.matchupWeek.value = String(route.week);
+        await loadSelectedWeek();
+      }
+      const card = [...document.querySelectorAll('#matchupGrid [data-matchup-id]')].find(el => el.dataset.matchupId === String(route.id));
+      if (card) {
+        card.scrollIntoView({ block: 'start' });
+        card.classList.remove('route-flash');
+        void card.offsetWidth;
+        card.classList.add('route-flash');
+      }
+    }
+
+    async function applyRoute(route, { fromPop = false } = {}) {
+      const r = routeState();
+      const closeAll = () => withRouteApplying(() => { closeTeamModal(); closePlayerModal(); });
+      if (route.kind === 'tab') {
+        if (fromPop) { closeAll(); r.depth = 0; }
+        activateTab(route.tab, { updateHash: false });
+        return;
+      }
+      if (route.kind === 'matchup') {
+        if (fromPop) { closeAll(); r.depth = 0; }
+        activateTab('matchups', { updateHash: false });
+        if (!app.data) { r.pending = route; return; }
+        await showMatchupRoute(route);
+        return;
+      }
+      if (!app.data) { r.pending = route; return; }
+      if (fromPop) {
+        withRouteApplying(() => {
+          if (route.kind === 'team') {
+            closePlayerModal();
+            if (!teamModalIsOpen() || String(app.teamModal.rosterId) !== String(route.id)) openTeamModal(route.id);
+          } else if (!els.playerModalBackdrop.classList.contains('open') || String(app.activePlayerId) !== String(route.id)) {
+            openPlayerModal(route.id);
+          }
+        });
+        r.depth = (teamModalIsOpen() ? 1 : 0) + (els.playerModalBackdrop.classList.contains('open') ? 1 : 0);
+        return;
+      }
+      // Fresh deep link: keep a tab entry underneath so Back closes the popup instead of leaving.
+      history.replaceState(null, '', `#${currentTabId()}`);
+      r.depth = 0;
+      if (route.kind === 'team') openTeamModal(route.id);
+      else openPlayerModal(route.id);
+    }
+
+    function applyPendingRoute() {
+      const r = routeState();
+      if (!r.pending || !app.data) return;
+      const route = r.pending;
+      r.pending = null;
+      applyRoute(route);
+    }
+
+    function navigateTo(path) {
+      const route = parseRoute(`#${path}`);
+      if (route.kind === 'tab') { activateTab(route.tab); window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' }); return; }
+      if (route.kind === 'matchup') history.replaceState(null, '', `#${path}`);
+      applyRoute(route);
+    }
+
+    function showToast(message) {
+      let toast = document.getElementById('brojeesToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'brojeesToast';
+        toast.className = 'toast';
+        toast.setAttribute('role', 'status');
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    async function shareRoute(path, title) {
+      const url = `${location.origin}${location.pathname}#${path}`;
+      const label = title ? `${title} · Brojees` : 'Brojees Fantasy Menu';
+      if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
+        try { await navigator.share({ title: label, url }); return; } catch (err) { if (err?.name === 'AbortError') return; }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied. Paste it in the group chat.');
+      } catch (_) {
+        window.prompt('Copy this link:', url);
+      }
+    }
+
+    /* ---------- Pull to refresh ---------- */
+    async function refreshEverything() {
+      if (!app.data) { await updateAndSave(); return; }
+      await refreshLiveData({ quiet: false });
+      await loadStatsLeaders({ force: true });
+      if (isTabActive('league')) ensureLeagueHistory({ force: true });
+      updateAgoStamps();
+    }
+
+    function setupPullToRefresh() {
+      const el = document.getElementById('ptrIndicator');
+      const text = document.getElementById('ptrText');
+      if (!el || !window.matchMedia('(pointer: coarse)').matches) return;
+      const THRESHOLD = 64;
+      let startY = null, startX = 0, pull = 0, pulling = false;
+      const blocked = target => target.closest?.('input, select, textarea, .table-wrap, .waiver-table-wrap, .game-day-bar, .dashboard-nav, .player-modal-backdrop');
+      const hide = () => { el.classList.remove('show', 'armed', 'busy'); el.style.removeProperty('--pull'); };
+      document.addEventListener('touchstart', event => {
+        const st = league31();
+        if (event.touches.length !== 1 || window.scrollY > 0 || st.ptrBusy || document.body.classList.contains('modal-open') || blocked(event.target)) { startY = null; return; }
+        startY = event.touches[0].clientY; startX = event.touches[0].clientX; pull = 0; pulling = false;
+      }, { passive: true });
+      document.addEventListener('touchmove', event => {
+        if (startY === null) return;
+        const dy = event.touches[0].clientY - startY;
+        const dx = Math.abs(event.touches[0].clientX - startX);
+        if (!pulling) {
+          if (dy < -4 || dx > 14) { startY = null; return; }
+          if (dy < 10 || dx > dy) return;
+        }
+        if (window.scrollY > 0) { startY = null; hide(); return; }
+        pulling = true;
+        pull = Math.min(120, (dy - 10) * 0.55);
+        el.style.setProperty('--pull', `${pull}px`);
+        el.classList.add('show');
+        el.classList.toggle('armed', pull >= THRESHOLD);
+        text.textContent = pull >= THRESHOLD ? 'Release to refresh' : 'Pull to refresh';
+      }, { passive: true });
+      const end = async () => {
+        if (startY === null) return;
+        startY = null;
+        if (!pulling) return;
+        pulling = false;
+        if (pull < THRESHOLD) { hide(); return; }
+        const st = league31();
+        st.ptrBusy = true;
+        el.classList.add('busy');
+        el.style.setProperty('--pull', `${THRESHOLD}px`);
+        text.textContent = 'Refreshing…';
+        try { await refreshEverything(); text.textContent = agoText(latestUpdateAt()); }
+        catch (_) { text.textContent = 'Refresh failed'; }
+        finally {
+          st.ptrBusy = false;
+          setTimeout(hide, 900);
+        }
+      };
+      document.addEventListener('touchend', end, { passive: true });
+      document.addEventListener('touchcancel', () => { startY = null; pulling = false; hide(); }, { passive: true });
+    }
+
+    /* ---------- Install as an app (PWA) ---------- */
+    function setupInstall() {
+      const st = league31();
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        navigator.serviceWorker.register('sw.js').catch(() => { /* app still works without offline support */ });
+      }
+      const btn = document.getElementById('installAppBtn');
+      const hint = document.getElementById('installHint');
+      window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); st.deferredInstall = event; btn.hidden = false; });
+      btn.addEventListener('click', async () => {
+        const prompt = st.deferredInstall;
+        if (!prompt) return;
+        st.deferredInstall = null;
+        btn.hidden = true;
+        prompt.prompt();
+        try { await prompt.userChoice; } catch (_) { /* dismissed */ }
+      });
+      window.addEventListener('appinstalled', () => { btn.hidden = true; hint.hidden = true; });
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      let dismissed = false;
+      try { dismissed = localStorage.getItem('brojees_install_hint_dismissed') === '1'; } catch (_) {}
+      if (ios && !standalone && !dismissed) hint.hidden = false;
+      document.getElementById('installHintDismiss').addEventListener('click', () => {
+        hint.hidden = true;
+        try { localStorage.setItem('brojees_install_hint_dismissed', '1'); } catch (_) {}
+      });
+      if (standalone) document.documentElement.classList.add('is-standalone');
+    }
+
+    /* ---------- Wiring ---------- */
+    document.addEventListener('click', event => {
+      const share = event.target.closest('[data-share]');
+      if (share) { event.preventDefault(); event.stopPropagation(); shareRoute(share.dataset.share, share.dataset.shareTitle || ''); return; }
+      const route = event.target.closest('[data-route]');
+      if (route) { event.preventDefault(); navigateTo(route.dataset.route); return; }
+      const action = event.target.closest('[data-action="load-consensus"]');
+      if (action) {
+        event.preventDefault();
+        action.disabled = true;
+        action.textContent = 'Loading ESPN…';
+        Promise.resolve(loadMultiProjectionSources({ force: false })).finally(() => renderHome());
+      }
+    }, true);
+    document.addEventListener('change', event => {
+      const target = event.target;
+      if (target.matches?.('[data-startsit]')) {
+        const st = league31();
+        if (st.startSit) st.startSit[target.dataset.startsit] = target.value;
+        target.blur();
+        renderHome();
+      } else if (target.id === 'awardsWeek') {
+        league31().awardsWeek = Number(target.value);
+        renderLeague();
+      } else if (target.id === 'h2hTeamA' || target.id === 'h2hTeamB') {
+        league31().h2hPicked = true;
+        renderLeague();
+      }
+    });
+    document.getElementById('homeContent').addEventListener('focusout', () => {
+      setTimeout(() => { if (league31().homeDirty) renderHome(); }, 0);
+    });
+    document.getElementById('homeRefreshBtn').addEventListener('click', async event => {
+      const btn = event.currentTarget;
+      btn.disabled = true;
+      btn.textContent = 'Refreshing…';
+      try { await refreshEverything(); } finally { btn.disabled = false; btn.textContent = 'Refresh'; }
+    });
+    window.addEventListener('popstate', () => applyRoute(parseRoute(location.hash), { fromPop: true }));
+
+    setupInstall();
+    setupPullToRefresh();
+    {
+      const initial = parseRoute(location.hash);
+      if (initial.kind === 'tab') activateTab(initial.tab, { updateHash: false });
+      else applyRoute(initial);
+    }
+
     restoreLastSnapshot();
     startLeaderRefresh();
     startAutoRefresh({ runNow: Number(els.autoRefresh.value || 0) > 0 });
