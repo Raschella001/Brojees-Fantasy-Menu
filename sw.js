@@ -2,7 +2,7 @@
 // The page itself is network-first, so a new index.html shows up on the next open;
 // the cached copy is only used when the network is down. League data (Sleeper,
 // ESPN, the Brojees Workers) is never cached here: it always comes live.
-const CACHE = 'brojees-shell-v3.3';
+const CACHE = 'brojees-shell-v3.3.1';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png', './icons/favicon-48.png', './icons/logo-plate.png'];
 
 self.addEventListener('install', event => {
@@ -24,7 +24,9 @@ self.addEventListener('activate', event => {
 async function networkFirst(request) {
   const cache = await caches.open(CACHE);
   try {
-    const response = await fetch(request);
+    // 'no-cache' revalidates with GitHub Pages instead of reusing its 10-minute HTTP cache,
+    // so a new release shows up on the very next open.
+    const response = await fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' });
     if (response && response.ok) cache.put('./index.html', response.clone());
     return response;
   } catch (err) {
