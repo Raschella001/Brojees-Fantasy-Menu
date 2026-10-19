@@ -3232,6 +3232,19 @@
         box-shadow: 0 0 0 3px var(--bg), 6px 6px 0 2px var(--accent);
       }
     }
+
+    /* ===== V3.3 header logo: the Brojees nameplate artwork ===== */
+    .brand-logo {
+      flex: 0 0 auto;
+      display: block;
+      width: 124px;
+      height: auto;
+      aspect-ratio: 360 / 286;
+      border-radius: 5% / 6.3%;
+      box-shadow: 4px 4px 0 var(--shadow-c);
+    }
+    .nameplate[hidden], .brand-logo[hidden] { display: none; }
+    @media (max-width: 640px) { .brand-logo { width: 88px; box-shadow: 3px 3px 0 var(--shadow-c); } }
   </style>
 </head>
 <body>
@@ -3248,7 +3261,8 @@
     <div class="dashboard-setup" id="dashboardSetup">
     <section class="hero title-block">
       <div class="tb-main">
-        <div class="nameplate" aria-hidden="true"><span class="screw"></span><span class="screw"></span><span class="screw"></span><span class="screw"></span><span><span class="nameplate-text">BFM</span><span class="nameplate-sub">SLEEPER</span></span></div>
+        <img class="brand-logo" src="icons/logo-plate.png" alt="Brojees" width="360" height="286" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+        <div class="nameplate" aria-hidden="true" hidden><span class="screw"></span><span class="screw"></span><span class="screw"></span><span class="screw"></span><span><span class="nameplate-text">BFM</span><span class="nameplate-sub">SLEEPER</span></span></div>
         <div>
           <div class="eyebrow">Sleeper Fantasy Football</div>
           <h1 id="leagueTitle">Brojees Fantasy Menu</h1>
@@ -3718,9 +3732,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.2';
+    const APP_VERSION = '3.3';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.3', note: 'The header now shows the new Brojees nameplate logo in place of the old BFM plate.' },
       { version: '3.2', note: 'New Brojees logo for the app icon, Home Screen icon and browser tab. The floating Menu button on phones now stands out: an inverted button with a solid blue Menu block and a blue offset shadow, and it pulses twice when the page opens so it\'s easy to find.' },
       { version: '3.1', note: 'New My Week home screen: your live score vs your opponent with an estimated win chance, lineup warnings, the best possible lineup (points you could add by swapping in bench players), FAAB and waiver position, and a Start/Sit comparison with Orig, Live, Sleeper, ESPN and consensus projections. New League tab with weekly awards (high score, blowout, luckiest win, bench blunder and more), power rankings from all-play records, and all-time head-to-head history including past seasons. Links to tabs, matchups, teams and players can be shared to the group chat, and the phone Back button closes popups. Pull down to refresh on phones, with an "Updated 12s ago" stamp. Install it as an app from your browser (Add to Home Screen on iPhone). The floating Menu button now starts in the bottom-right corner and opens upward.' },
       { version: '3.0', note: 'New hard-edged cards and solid offset shadows, condensed labels, monospace numbers and numbered sections. The header now has a live clock and sync light, searches look like a command line (press / to jump to search), game states use indicator lights, and empty states read like a terminal. Choose Paper, Dark or Auto (follows your device) from the header; the choice is saved on this device.' },
