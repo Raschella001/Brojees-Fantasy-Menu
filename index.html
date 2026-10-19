@@ -3245,11 +3245,126 @@
     }
     .nameplate[hidden], .brand-logo[hidden] { display: none; }
     @media (max-width: 640px) { .brand-logo { width: 88px; box-shadow: 3px 3px 0 var(--shadow-c); } }
+
+    /* ===== V3.4 phone quality of life ===== */
+    .phone-topbar, .matchup-compact, .tag-collapse, .standing-cards { display: none; }
+
+    /* Menu badges (desktop tabs and the phone menu). */
+    .tab-badge {
+      display: inline-block; margin-left: 8px; padding: 2px 6px; border-radius: 3px; vertical-align: 1px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: none; line-height: 1.3;
+      background: var(--raised); color: var(--text);
+    }
+    .tab-badge[hidden] { display: none; }
+    .tab-badge.warn { background: var(--warning); color: #1b1f2a; }
+    .tab-badge.live { background: transparent; color: var(--warn-ink); box-shadow: inset 0 0 0 1.5px var(--warning); }
+    .tab-badge.new { background: var(--accent); color: var(--accent-ink); }
+    .tab-btn.active .tab-badge.new { background: var(--accent-ink); color: var(--accent); }
+    .mobile-nav-dot[hidden] { display: none; }
+
+    @media (max-width: 760px) {
+      /* Slim sticky top bar replaces the big header on phones. */
+      .header-disclosure { display: none; }
+      .phone-topbar {
+        position: sticky; top: max(6px, env(safe-area-inset-top, 0px)); z-index: 850;
+        display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 6px 6px 6px 8px;
+        background: var(--surface); border: 2px solid var(--ink-border); border-radius: 8px; box-shadow: var(--sh-sm);
+      }
+      .phone-topbar-logo { flex: 0 0 auto; width: 48px; height: auto; border-radius: 3px; }
+      .phone-topbar-text { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+      .phone-topbar-text strong { font-family: var(--font-cond); font-weight: 800; font-size: 16px; letter-spacing: .02em; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .phone-topbar-meta { display: flex; align-items: center; gap: 7px; min-width: 0; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; }
+      .phone-topbar-meta .status-dot { width: 8px; height: 8px; margin: 0; flex: 0 0 auto; }
+      #phoneTopbarWeek:not(:empty) { color: var(--text-2); font-weight: 700; }
+      .phone-topbar-btn {
+        flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; min-height: 44px; padding: 0;
+        background: var(--surface-2); color: var(--text); border: 1.5px solid var(--line-strong); border-radius: 6px; font-size: 20px; line-height: 1;
+      }
+      .phone-topbar-btn:active { transform: translate(1px, 1px); }
+      .phone-refresh-icon, .phone-header-icon { display: inline-block; transition: transform .2s ease; }
+      .phone-topbar-btn.is-spinning .phone-refresh-icon, .phone-topbar.is-busy .phone-refresh-icon { animation: spin360 .9s linear infinite; }
+      .phone-topbar-btn.is-open { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+      .phone-topbar-btn.is-open .phone-header-icon { transform: rotate(180deg); }
+      @keyframes spin360 { to { transform: rotate(360deg); } }
+      /* The top bar already shows the sync stamp and refresh. */
+      .home-updated, #homeRefreshBtn { display: none; }
+      .home-topline:not(:has(#installAppBtn:not([hidden]))) { display: none; }
+
+      /* Other matchups collapse to one-line scoreboards. */
+      .matchup-grid { gap: 10px; }
+      .matchup-card.is-collapsed { box-shadow: var(--sh-sm); }
+      .matchup-card.is-collapsed .matchup-head, .matchup-card.is-collapsed .matchup-lineups { display: none; }
+      .matchup-card.is-collapsed .matchup-compact {
+        display: grid; width: 100%; min-height: 58px; padding: 10px 12px; text-align: left;
+        /* Two-line scoreboard: one team per row, score on the right, so names get the full width. */
+        grid-template-columns: minmax(0, 1fr) auto 18px; align-items: center; column-gap: 10px; row-gap: 2px;
+        background: var(--surface); color: var(--text); border: 0; border-radius: 0;
+      }
+      .matchup-card.is-open:not(.me) .tag-collapse { display: inline-block; }
+      .mc-team { min-width: 0; font-family: var(--font-cond); font-weight: 800; font-size: 16px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .matchup-compact > .mc-team:first-child { grid-row: 1; grid-column: 1; }
+      .matchup-compact > .mc-score:nth-child(2) { grid-row: 1; grid-column: 2; }
+      .matchup-compact > .mc-team.right { grid-row: 2; grid-column: 1; text-align: left; }
+      .matchup-compact > .mc-score:nth-child(4) { grid-row: 2; grid-column: 2; }
+      .mc-score { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700; color: var(--muted); text-align: right; }
+      .mc-score.lead { color: var(--text); font-weight: 800; }
+      .mc-dash { display: none; }
+      .mc-live { grid-row: 3; grid-column: 1 / 3; display: flex; align-items: center; gap: 5px; margin-top: 3px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+      .mc-live .game-dot { width: 7px; height: 7px; }
+      .mc-chev { grid-column: 3; grid-row: 1 / 4; color: var(--muted); font-size: 14px; text-align: center; }
+    }
+
+    @media (max-width: 640px) {
+      /* Standings: one card per team instead of a sideways-scrolling table. */
+      .standing-cards { display: grid; gap: 6px; }
+      .standings-table-wrap { display: none; }
+      .standing-card {
+        display: grid; grid-template-columns: 26px 34px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+        width: 100%; min-height: 60px; padding: 9px 12px; text-align: left; color: var(--text);
+        background: var(--surface-2); border: 1.5px solid var(--line-strong); border-radius: 6px;
+      }
+      .standing-card:active { transform: translate(1px, 1px); }
+      .standing-card.me { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+      .standing-rank { font-size: 14px; font-weight: 800; color: var(--muted); }
+      .standing-main { display: grid; gap: 3px; min-width: 0; }
+      .standing-main strong { font-family: var(--font-cond); font-weight: 800; font-size: 16px; letter-spacing: .02em; overflow-wrap: anywhere; }
+      .standing-stats { font-size: 11.5px; color: var(--muted); }
+      .standing-record { font-size: 18px; font-weight: 800; }
+
+      /* Bottom sheets: grab handle + drag feedback. */
+      .player-modal { transition: transform .18s ease; }
+      .player-modal.is-dragging { transition: none; }
+      .player-modal-head { padding-top: 20px; }
+      .player-modal-head::before {
+        content: ""; position: absolute; top: 7px; left: 50%; width: 44px; height: 5px; margin-left: -22px;
+        border-radius: 3px; background: var(--line-strong);
+      }
+    }
+
+    /* Badge dot on the floating Menu button when something needs a look. */
+    @media (max-width: 760px) {
+      .mobile-nav-toggle { position: relative; }
+      .mobile-nav-dot {
+        position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
+        background: var(--warning); box-shadow: 0 0 0 3px var(--bg);
+      }
+      .dashboard-nav .tab-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .dashboard-nav .tab-badge { margin-left: auto; }
+    }
   </style>
 </head>
 <body>
   <div class="ptr" id="ptrIndicator" aria-hidden="true"><span class="ptr-light"></span><span id="ptrText">Pull to refresh</span></div>
   <main class="shell">
+    <div class="phone-topbar" id="phoneTopbar">
+      <img class="phone-topbar-logo" src="icons/logo-plate.png" alt="" width="360" height="286" onerror="this.hidden=true" />
+      <div class="phone-topbar-text">
+        <strong id="phoneTopbarTitle">Brojees</strong>
+        <span class="phone-topbar-meta"><span class="status-dot" id="phoneTopbarDot"></span><span id="phoneTopbarWeek"></span><span data-updated-ago>Not updated yet</span></span>
+      </div>
+      <button class="phone-topbar-btn" id="phoneRefreshBtn" type="button" aria-label="Refresh league"><span class="phone-refresh-icon" aria-hidden="true">↻</span></button>
+      <button class="phone-topbar-btn" id="phoneHeaderBtn" type="button" aria-expanded="false" aria-controls="dashboardSetup" aria-label="Show header and controls"><span class="phone-header-icon" aria-hidden="true">▾</span></button>
+    </div>
     <section class="game-day-bar" id="gameDayBar" aria-label="Game Day matchup" hidden>
       <div class="game-day-panel" id="gameDayPanel" role="region" aria-label="Game Day roster details and controls" tabindex="0" hidden>
         <div class="game-day-controls"><div class="field"><label for="gameDayTeam">Follow team</label><select id="gameDayTeam"><option value="">Select your team</option></select></div><div class="field"><label for="gameDayLive">Game Day refresh</label><select id="gameDayLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div><button id="gameDayRefresh" class="btn-primary" type="button">Refresh</button><button id="gameDayCollapse" class="btn-secondary" type="button">Collapse rosters</button><div class="game-day-status small" id="gameDayStatus" role="status">Refresh your league, then select a team.</div><div class="game-day-status small" id="gameDayProjectionNote">Pts = actual · Orig = original projection · Live = adjusted projection</div></div>
@@ -3732,9 +3847,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.3';
+    const APP_VERSION = '3.4';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '3.4', note: 'Phone upgrades: the big header is tucked away behind a slim top bar with the logo, week, "Updated Xs ago" and a refresh button (tap ▾ to open the full header). Switching tabs jumps back to the top. On Matchups, your game stays open and the others become one-line scoreboards; tap one to see the lineups. Standings show as cards instead of a sideways table. The Menu shows small badges for live matchups, new transactions since your last look and lineup warnings, with a dot on the Menu button when something needs a look. Swipe down on a player or team popup to close it.' },
       { version: '3.3', note: 'The header now shows the new Brojees nameplate logo in place of the old BFM plate.' },
       { version: '3.2', note: 'New Brojees logo for the app icon, Home Screen icon and browser tab. The floating Menu button on phones now stands out: an inverted button with a solid blue Menu block and a blue offset shadow, and it pulses twice when the page opens so it\'s easy to find.' },
       { version: '3.1', note: 'New My Week home screen: your live score vs your opponent with an estimated win chance, lineup warnings, the best possible lineup (points you could add by swapping in bench players), FAAB and waiver position, and a Start/Sit comparison with Orig, Live, Sleeper, ESPN and consensus projections. New League tab with weekly awards (high score, blowout, luckiest win, bench blunder and more), power rankings from all-play records, and all-time head-to-head history including past seasons. Links to tabs, matchups, teams and players can be shared to the group chat, and the phone Back button closes popups. Pull down to refresh on phones, with an "Updated 12s ago" stamp. Install it as an app from your browser (Add to Home Screen on iPhone). The floating Menu button now starts in the bottom-right corner and opens upward.' },
@@ -4114,7 +4230,19 @@
       els.dashboardSetup.hidden = app.headerCollapsed;
       els.headerToggle.textContent = app.headerCollapsed ? 'Show header & controls' : 'Collapse header & controls';
       els.headerToggle.setAttribute('aria-expanded', String(!app.headerCollapsed));
-      if (persist) { try { localStorage.setItem('sleeper_header_collapsed', app.headerCollapsed ? '1' : '0'); } catch (_) {} }
+      const phoneHeaderBtn = document.getElementById('phoneHeaderBtn');
+      if (phoneHeaderBtn) {
+        phoneHeaderBtn.setAttribute('aria-expanded', String(!app.headerCollapsed));
+        phoneHeaderBtn.setAttribute('aria-label', app.headerCollapsed ? 'Show header and controls' : 'Hide header and controls');
+        phoneHeaderBtn.classList.toggle('is-open', !app.headerCollapsed);
+      }
+      // Phones collapse the header by default and remember their own choice; desktop keeps the old key.
+      if (persist) {
+        try {
+          if (isPhoneLayout()) localStorage.setItem('brojees_phone_header', app.headerCollapsed ? 'closed' : 'open');
+          else localStorage.setItem('sleeper_header_collapsed', app.headerCollapsed ? '1' : '0');
+        } catch (_) {}
+      }
     }
 
     function showNotice(message, type = '') {
@@ -4132,8 +4260,11 @@
       els.statusDot.className = 'status-dot' + (state ? ` ${state}` : '');
       els.tbSyncDot.className = els.statusDot.className;
       els.tbSyncText.textContent = state === 'good' ? 'Online' : state === 'busy' ? 'Syncing' : state === 'bad' ? 'Fault' : 'Standby';
-      const homeDot = document.getElementById('homeSyncDot');
-      if (homeDot) homeDot.className = els.statusDot.className;
+      for (const id of ['homeSyncDot', 'phoneTopbarDot']) {
+        const dot = document.getElementById(id);
+        if (dot) dot.className = els.statusDot.className;
+      }
+      document.getElementById('phoneTopbar')?.classList.toggle('is-busy', state === 'busy');
       renderGameDayBar();
     }
 
@@ -6657,9 +6788,29 @@
       runInstrumentAnimations(els.overviewContent);
       if (!els.overviewContent.classList.contains('settled')) setTimeout(() => els.overviewContent.classList.add('settled'), 700);
 
+      // Phones get one card per team instead of a sideways-scrolling table.
+      const standingCards = sorted.map((r, index) => {
+        const owner = ownerForRoster(r, users);
+        const me = Number(r.roster_id) === myRosterId;
+        const name = teamName(owner, r);
+        const avatar = avatarUrl(owner);
+        const remaining = faabBudget ? Math.max(0, faabBudget - Number(r.settings?.waiver_budget_used ?? 0)) : null;
+        const record = `${r.settings?.wins ?? 0}-${r.settings?.losses ?? 0}${Number(r.settings?.ties ?? 0) ? `-${r.settings.ties}` : ''}`;
+        return `<button type="button" class="standing-card ${me ? 'me' : ''}" data-team-roster="${escapeHtml(r.roster_id)}" aria-label="Open ${escapeHtml(name)} team details">
+          <span class="standing-rank mono">${String(index + 1).padStart(2, '0')}</span>
+          ${avatar ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="" loading="lazy" />` : initialsBoxHtml(name)}
+          <span class="standing-main">
+            <strong>${escapeHtml(name)}${me ? ' <span class="pill me">YOU</span>' : ''}</strong>
+            <span class="standing-stats mono">PF ${numberOrDash(getPoints(r.settings, 'fpts', 'fpts_decimal'), 1)} · PA ${numberOrDash(getPoints(r.settings, 'fpts_against', 'fpts_against_decimal'), 1)} · ${faabBudget ? `$${remaining}` : `WV #${r.settings?.waiver_position ?? '—'}`}</span>
+          </span>
+          <span class="standing-record mono">${escapeHtml(record)}</span>
+        </button>`;
+      }).join('');
+
       els.currentStandingsContent.innerHTML = `
           <div class="small standings-hint">Select a team for its live matchup, projections and roster.</div>
-          <div class="table-wrap">
+          <div class="standing-cards">${standingCards}</div>
+          <div class="table-wrap standings-table-wrap">
             <table>
               <thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>${faabBudget ? 'FAAB Left' : 'Waiver'}</th><th>Moves</th></tr></thead>
               <tbody>${rows}</tbody>
@@ -6781,9 +6932,23 @@
         const aAdjusted = a ? adjustedMatchupProjectionTotal(a, data) : 0;
         const bAdjusted = b ? adjustedMatchupProjectionTotal(b, data) : 0;
         const matchupCode = `WK${String(data.selectedWeek || data.state?.week || 0).padStart(2, '0')} · M${String((a || b)?.matchup_id ?? '—').padStart(2, '0')}`;
+        const mid = String((a || b)?.matchup_id ?? '');
+        const open = aMe || bMe || matchupOpenSet().has(mid);
+        const aPts = a ? Number(a.points ?? 0) : null, bPts = b ? Number(b.points ?? 0) : null;
+        const liveCount = [a, b].filter(Boolean).reduce((n, m) => n + (m.starters || []).filter(id => playerGameInfo(id, data).key === 'live').length, 0);
+        const compact = `<button type="button" class="matchup-compact" data-toggle-matchup="${escapeHtml(mid)}" aria-expanded="${open}" aria-label="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}, show lineups`)}">
+              <span class="mc-team">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</span>
+              <span class="mc-score ${aPts !== null && bPts !== null && aPts > bPts ? 'lead' : ''}">${a ? numberOrDash(aPts, 1) : '—'}</span>
+              <span class="mc-dash">–</span>
+              <span class="mc-score ${aPts !== null && bPts !== null && bPts > aPts ? 'lead' : ''}">${b ? numberOrDash(bPts, 1) : '—'}</span>
+              <span class="mc-team right">${escapeHtml(br ? teamName(bo, br) : 'Bye')}</span>
+              <span class="mc-live">Live ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${liveCount ? ` · <span class="game-dot live"></span>${liveCount} playing` : ''}</span>
+              <span class="mc-chev" aria-hidden="true">▾</span>
+            </button>`;
         return `
-          <article class="matchup-card ${(aMe || bMe) ? 'me' : ''}" data-matchup-id="${escapeHtml(String((a || b)?.matchup_id ?? ''))}">
-            <div class="tag-strip ${(aMe || bMe) ? 'is-selected' : ''}"><span class="tag-label">${(aMe || bMe) ? 'Selected matchup' : 'Matchup'}</span><span class="tag-right"><span class="tag-code">${escapeHtml(matchupCode)}</span>${(a || b)?.matchup_id != null ? `<button type="button" class="tag-share" data-share="matchup/${escapeHtml(String(data.selectedWeek || data.state?.week || ''))}/${escapeHtml(String((a || b).matchup_id))}" data-share-title="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}`)}">Share</button>` : ''}</span></div>
+          <article class="matchup-card ${(aMe || bMe) ? 'me' : ''} ${open ? 'is-open' : 'is-collapsed'}" data-matchup-id="${escapeHtml(mid)}">
+            <div class="tag-strip ${(aMe || bMe) ? 'is-selected' : ''}"><span class="tag-label">${(aMe || bMe) ? 'Selected matchup' : 'Matchup'}</span><span class="tag-right"><span class="tag-code">${escapeHtml(matchupCode)}</span>${(a || b)?.matchup_id != null ? `<button type="button" class="tag-share" data-share="matchup/${escapeHtml(String(data.selectedWeek || data.state?.week || ''))}/${escapeHtml(String((a || b).matchup_id))}" data-share-title="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}`)}">Share</button>` : ''}${aMe || bMe ? '' : `<button type="button" class="tag-share tag-collapse" data-toggle-matchup="${escapeHtml(mid)}">Hide</button>`}</span></div>
+            ${aMe || bMe ? '' : compact}
             <div class="matchup-head">
               <div class="matchup-team">
                 <div class="matchup-team-name">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</div>
@@ -8143,10 +8308,12 @@
     layoutMobileNav();
     if (window.ResizeObserver) new ResizeObserver(() => layoutMobileNav()).observe(els.gameDayBar);
 
-    function activateTab(tabId, { updateHash = true, restoreFocus = false } = {}) {
+    function activateTab(tabId, { updateHash = true, restoreFocus = false, scrollTop = true } = {}) {
       const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.tab === tabId);
       if (!btn) return;
-      mobileNavCurrent.textContent = btn.textContent.trim();
+      mobileNavCurrent.textContent = tabLabel(btn);
+      if (scrollTop) window.scrollTo(0, 0);
+      if (tabId === 'transactions') markTransactionsSeen();
       setMobileNavOpen(false, restoreFocus);
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === tabId));
@@ -8156,6 +8323,7 @@
       if (['leaders', 'overview', 'home'].includes(tabId)) loadStatsLeaders({ force: false });
       if (tabId === 'home') renderHome();
       if (tabId === 'league') { renderLeague(); ensureLeagueHistory(); }
+      updateNavBadges();
 
       if (tabId === 'transactions') {
         if (app.data) renderTransactions(app.data);
@@ -8200,7 +8368,16 @@
       const savedRefresh = localStorage.getItem('sleeper_game_day_refresh');
       if ([...els.gameDayLive.options].some(option => option.value === savedRefresh)) els.gameDayLive.value = savedRefresh;
     } catch (_) {}
-    setHeaderCollapsed(savedHeaderCollapsed, { persist: false });
+    function applyDefaultHeaderState() {
+      let phoneOpen = false;
+      try { phoneOpen = localStorage.getItem('brojees_phone_header') === 'open'; } catch (_) {}
+      setHeaderCollapsed(isPhoneLayout() ? !phoneOpen : savedHeaderCollapsed, { persist: false });
+    }
+    applyDefaultHeaderState();
+    {
+      const phoneMedia = window.matchMedia('(max-width: 760px)');
+      if (phoneMedia.addEventListener) phoneMedia.addEventListener('change', applyDefaultHeaderState);
+    }
     setGameDayMode(savedGameDayMode, { persist: false, focus: false, refresh: false });
 
     els.espnProjectionProxyUrl.value = espnProjectionProxyUrl();
@@ -8287,6 +8464,12 @@
     function updateAgoStamps() {
       const text = agoText(latestUpdateAt());
       document.querySelectorAll('[data-updated-ago]').forEach(el => { if (el.textContent !== text) el.textContent = text; });
+      const week = document.getElementById('phoneTopbarWeek');
+      const weekText = (els.tbWeek?.textContent || '').split('·').pop().trim();
+      if (week && week.textContent !== weekText) week.textContent = weekText && weekText !== '—' ? weekText : '';
+      const title = document.getElementById('phoneTopbarTitle');
+      const titleText = els.leagueTitle?.textContent?.trim() || 'Brojees';
+      if (title && title.textContent !== titleText) title.textContent = titleText;
     }
 
     /* ---------- Lineup math ---------- */
@@ -8621,6 +8804,7 @@
       const root = document.getElementById('homeContent');
       if (!root) return;
       updateAgoStamps();
+      updateNavBadges();
       const st = league31();
       if (root.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') { st.homeDirty = true; return; }
       st.homeDirty = false;
@@ -8998,6 +9182,7 @@
       }
       const card = [...document.querySelectorAll('#matchupGrid [data-matchup-id]')].find(el => el.dataset.matchupId === String(route.id));
       if (card) {
+        setMatchupOpen(card, true);
         card.scrollIntoView({ block: 'start' });
         card.classList.remove('route-flash');
         void card.offsetWidth;
@@ -9221,6 +9406,173 @@
       if (initial.kind === 'tab') activateTab(initial.tab, { updateHash: false });
       else applyRoute(initial);
     }
+
+
+    /* ===== V3.4 phone quality of life: slim top bar, compact matchups, menu badges, swipe to close ===== */
+
+    function isPhoneLayout() {
+      return Boolean(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
+    }
+
+    function tabLabel(btn) {
+      return (btn.dataset.label || btn.textContent || '').trim();
+    }
+
+    function matchupOpenSet() {
+      if (!app.v34) app.v34 = { openMatchups: new Set() };
+      return app.v34.openMatchups;
+    }
+
+    function setMatchupOpen(card, open) {
+      const id = card.dataset.matchupId;
+      if (open) matchupOpenSet().add(id); else matchupOpenSet().delete(id);
+      card.classList.toggle('is-open', open);
+      card.classList.toggle('is-collapsed', !open);
+      card.querySelectorAll('.matchup-compact').forEach(btn => btn.setAttribute('aria-expanded', String(open)));
+    }
+
+    /* ---------- Menu badges ---------- */
+    function currentWeekTransactions() {
+      const data = app.data;
+      if (!data) return [];
+      const currentWeek = Number(data.state?.week || data.state?.leg || 0);
+      if (Number(data.selectedWeek) !== currentWeek || !Array.isArray(data.transactions)) return [];
+      return data.transactions.filter(tx => !tx?.status || tx.status === 'complete');
+    }
+
+    function txSeenKey() {
+      return `brojees_tx_seen_${app.data?.league?.league_id || ''}`;
+    }
+
+    function markTransactionsSeen() {
+      if (!app.data) return;
+      const latest = currentWeekTransactions().reduce((max, tx) => Math.max(max, Number(tx?.created) || 0), 0);
+      try {
+        const seen = Number(localStorage.getItem(txSeenKey())) || 0;
+        if (latest > seen) localStorage.setItem(txSeenKey(), String(latest));
+      } catch (_) { /* badge just won't remember */ }
+    }
+
+    function newTransactionCount() {
+      const list = currentWeekTransactions();
+      if (!list.length) return 0;
+      let seen = null;
+      try { seen = localStorage.getItem(txSeenKey()); } catch (_) {}
+      // First visit ever: start counting from now rather than flagging the whole week as new.
+      if (seen === null) { markTransactionsSeen(); return 0; }
+      return list.filter(tx => (Number(tx?.created) || 0) > Number(seen)).length;
+    }
+
+    function updateNavBadges() {
+      const buttons = [...document.querySelectorAll('.tab-btn[data-tab]')];
+      if (!buttons.length) return;
+      if (isTabActive('transactions')) markTransactionsSeen();
+      const badges = { home: null, matchups: null, transactions: null };
+      const ctx = typeof gameDayData === 'function' ? gameDayData() : null;
+      if (app.data && ctx) {
+        const live = (ctx.matchups || []).filter(m => (m.starters || []).some(id => playerGameInfo(id, ctx).key === 'live'));
+        const liveMatchups = new Set(live.map(m => String(m.matchup_id ?? `solo-${m.roster_id}`))).size;
+        if (liveMatchups) badges.matchups = { text: `${liveMatchups} live`, tone: 'live' };
+        const rosterId = String(els.myTeam.value || '');
+        const mine = (ctx.matchups || []).find(m => String(m.roster_id) === rosterId);
+        const roster = (ctx.rosters || app.data.rosters || []).find(r => String(r.roster_id) === rosterId);
+        if (mine && roster && !matchupAllFinal(mine, ctx)) {
+          const alerts = teamLineupAlerts(mine, roster, ctx).length;
+          if (alerts) badges.home = { text: `⚠ ${alerts}`, tone: 'warn' };
+        }
+      }
+      const fresh = newTransactionCount();
+      if (fresh) badges.transactions = { text: `${fresh} new`, tone: 'new' };
+
+      let attention = false;
+      for (const btn of buttons) {
+        if (!btn.dataset.label) btn.dataset.label = btn.textContent.trim();
+        let badge = btn.querySelector('.tab-badge');
+        if (!badge) { badge = document.createElement('span'); badge.className = 'tab-badge'; btn.appendChild(badge); }
+        const info = badges[btn.dataset.tab];
+        badge.hidden = !info;
+        badge.textContent = info ? info.text : '';
+        badge.className = `tab-badge${info ? ` ${info.tone}` : ''}`;
+        if (info && !btn.classList.contains('active')) attention = true;
+      }
+      const toggle = document.getElementById('mobileNavToggle');
+      if (toggle) {
+        let dot = toggle.querySelector('.mobile-nav-dot');
+        if (!dot) { dot = document.createElement('span'); dot.className = 'mobile-nav-dot'; dot.setAttribute('aria-hidden', 'true'); toggle.appendChild(dot); }
+        dot.hidden = !attention;
+        toggle.classList.toggle('has-attention', attention);
+      }
+    }
+
+    /* ---------- Swipe down to close the popups (phone bottom sheets) ---------- */
+    function setupSheetSwipe() {
+      const sheets = [['playerModal', () => closePlayerModal()], ['teamModal', () => closeTeamModal()]];
+      for (const [id, close] of sheets) {
+        const sheet = document.getElementById(id);
+        if (!sheet) continue;
+        let drag = null;
+        sheet.addEventListener('touchstart', event => {
+          drag = null;
+          if (event.touches.length !== 1 || !window.matchMedia('(max-width: 640px)').matches) return;
+          if (sheet.scrollTop > 0 || event.target.closest('.table-wrap, select, input, textarea')) return;
+          drag = { y: event.touches[0].clientY, x: event.touches[0].clientX, t: Date.now(), dy: 0, active: false };
+        }, { passive: true });
+        sheet.addEventListener('touchmove', event => {
+          if (!drag) return;
+          const dy = event.touches[0].clientY - drag.y;
+          const dx = Math.abs(event.touches[0].clientX - drag.x);
+          if (!drag.active) {
+            if (dy < -4 || dx > 12) { drag = null; return; }
+            if (dy < 8 || dx > dy) return;
+            drag.active = true;
+            sheet.classList.add('is-dragging');
+          }
+          drag.dy = Math.max(0, dy - 8);
+          sheet.style.transform = `translateY(${drag.dy}px)`;
+          if (event.cancelable) event.preventDefault();
+        }, { passive: false });
+        const end = () => {
+          const d = drag;
+          drag = null;
+          if (!d || !d.active) return;
+          sheet.classList.remove('is-dragging');
+          const speed = d.dy / Math.max(1, Date.now() - d.t);
+          if (d.dy > 130 || (d.dy > 70 && speed > 0.6)) {
+            sheet.style.transform = 'translateY(105%)';
+            setTimeout(() => { close(); sheet.style.transform = ''; }, prefersReducedMotion() ? 0 : 180);
+          } else {
+            sheet.style.transform = '';
+          }
+        };
+        sheet.addEventListener('touchend', end);
+        sheet.addEventListener('touchcancel', end);
+      }
+    }
+
+    /* ---------- Wiring ---------- */
+    document.addEventListener('click', event => {
+      const toggle = event.target.closest('[data-toggle-matchup]');
+      if (!toggle) return;
+      event.preventDefault();
+      const card = toggle.closest('.matchup-card');
+      if (!card) return;
+      const open = !card.classList.contains('is-open');
+      setMatchupOpen(card, open);
+      if (!open && card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: 'start' });
+    });
+    document.getElementById('phoneHeaderBtn').addEventListener('click', () => {
+      setHeaderCollapsed(!app.headerCollapsed);
+      if (!app.headerCollapsed) window.scrollTo(0, 0);
+    });
+    document.getElementById('phoneRefreshBtn').addEventListener('click', async event => {
+      const btn = event.currentTarget;
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add('is-spinning');
+      try { await refreshEverything(); } finally { btn.disabled = false; btn.classList.remove('is-spinning'); }
+    });
+    setupSheetSwipe();
+    updateNavBadges();
 
     restoreLastSnapshot();
     startLeaderRefresh();
