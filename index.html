@@ -3502,6 +3502,59 @@
     .team-prompt .info-card { width: min(560px, 100%); }
     .team-prompt-list { margin: 12px 0 4px; grid-template-columns: 1fr; }
     @media (max-width: 640px) { .team-prompt .info-card { max-height: 88dvh; } }
+
+    /* ===== V4.0 5-item menu, section chips, settings sheet ===== */
+    #overviewEmpty, #overviewContent { display: none !important; }   /* Overview folded into League → Standings */
+    .mobile-nav-help[hidden] { display: none !important; }
+    #league[data-subview="awards"] > .panel:not(#awardsPanel),
+    #league[data-subview="power"] > .panel:not(#powerPanel),
+    #league[data-subview="h2h"] > .panel:not(#h2hPanel) { display: none; }
+
+    .subnav {
+      position: sticky; top: 0; z-index: 840; display: flex; gap: 6px; margin: 0 0 14px; padding: 6px;
+      overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      background: var(--surface); border: 1.5px solid var(--ink-border); border-radius: var(--radius); box-shadow: var(--sh-sm);
+    }
+    .subnav::-webkit-scrollbar { display: none; }
+    .subnav[hidden] { display: none; }
+    .subnav-chip {
+      flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; white-space: nowrap;
+      background: var(--surface-2); color: var(--muted); border: 1.5px solid var(--line-strong); border-radius: 6px;
+      font-family: var(--font-cond); font-weight: 700; font-size: 15px; letter-spacing: .07em; text-transform: uppercase;
+    }
+    .subnav-chip:hover { color: var(--text); border-color: var(--ink-border); }
+    .subnav-chip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--ink-border); box-shadow: 2px 2px 0 var(--btn-shadow); }
+    .subnav-chip.active .tab-badge.new { background: var(--accent-ink); color: var(--accent); }
+
+    .nav-gear {
+      margin-left: auto; min-height: 44px; padding: 9px 14px; border-radius: 6px;
+      background: transparent; color: var(--text-2); border: 1.5px dashed var(--line-strong);
+      font-family: var(--font-cond); font-weight: 700; font-size: 15px; letter-spacing: .07em; text-transform: uppercase;
+    }
+    .nav-gear:hover { color: var(--text); border-color: var(--ink-border); }
+    .phone-gear { font-size: 22px; }
+
+    .settings-sheet .info-card { width: min(560px, 100%); }
+    .settings-row { display: grid; gap: 8px; padding: 12px 0; border-top: 1px dashed var(--line); }
+    .settings-row:first-of-type { border-top: 0; }
+    .settings-row select { width: 100%; }
+    .settings-label { font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .settings-row .theme-switch { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .settings-buttons { display: grid; gap: 8px; }
+    .settings-buttons button, .settings-row > button { width: 100%; min-height: 44px; }
+    .settings-details > summary { min-height: 44px; display: flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; font-family: var(--font-cond); font-weight: 700; font-size: 15px; letter-spacing: .07em; text-transform: uppercase; }
+    .settings-details > summary::-webkit-details-marker { display: none; }
+    .settings-details > summary::before { content: "▸"; transition: transform .15s ease; }
+    .settings-details[open] > summary::before { transform: rotate(90deg); }
+    .settings-details .patch-notes { margin-top: 6px; box-shadow: none; }
+
+    @media (max-width: 760px) {
+      .subnav { top: calc(max(6px, env(safe-area-inset-top, 0px)) + 68px); margin-bottom: 12px; }
+      .dashboard-nav .nav-gear { width: 100%; margin: 4px 0 0; justify-content: flex-start; display: flex; align-items: center; gap: 8px; }
+      .settings-sheet .info-card { max-height: 90dvh; }
+    }
+
+    .phone-topbar-btn[hidden] { display: none !important; }
   </style>
 </head>
 <body>
@@ -3514,7 +3567,8 @@
         <span class="phone-topbar-meta"><span class="status-dot" id="phoneTopbarDot"></span><span id="phoneTopbarWeek"></span><span data-updated-ago>Not updated yet</span></span>
       </div>
       <button class="phone-topbar-btn" id="phoneRefreshBtn" type="button" aria-label="Refresh league"><span class="phone-refresh-icon" aria-hidden="true">↻</span></button>
-      <button class="phone-topbar-btn" id="phoneHeaderBtn" type="button" aria-expanded="false" aria-controls="dashboardSetup" aria-label="Show header and controls"><span class="phone-header-icon" aria-hidden="true">▾</span></button>
+      <button class="phone-topbar-btn" id="phoneHeaderBtn" type="button" aria-expanded="false" aria-controls="dashboardSetup" aria-label="Show header and controls" hidden><span class="phone-header-icon" aria-hidden="true">▾</span></button>
+      <button class="phone-topbar-btn phone-gear" type="button" data-open-settings aria-label="Settings"><span aria-hidden="true">⚙</span></button>
     </div>
     <section class="game-day-bar" id="gameDayBar" aria-label="Game Day matchup" hidden>
       <div class="game-day-panel" id="gameDayPanel" role="region" aria-label="Game Day roster details and controls" tabindex="0" hidden>
@@ -3598,20 +3652,16 @@
         <span class="mobile-nav-action" aria-hidden="true"><span id="mobileNavAction">Menu</span><span class="hamburger-icon"><span></span><span></span><span></span></span></span>
       </button>
     <nav class="tabs" id="dashboardTabs" aria-label="Dashboard sections">
-      <button class="tab-btn active" data-tab="home">My Week</button>
-      <button class="tab-btn" data-tab="overview">Overview</button>
-      <button class="tab-btn" data-tab="matchups">Matchups</button>
-      <button class="tab-btn" data-tab="league">League</button>
-      <button class="tab-btn" data-tab="transactions">Transactions</button>
-      <button class="tab-btn" data-tab="leaders">Stats Leaders</button>
-      <button class="tab-btn" data-tab="waivers">Waivers</button>
-      <button class="tab-btn" data-tab="projections">Projections</button>
-      <button class="tab-btn" data-tab="rosters">Rosters</button>
-      <button class="tab-btn" data-tab="settings">Settings</button>
-      <button class="tab-btn" data-tab="raw">Raw Export</button>
-      <div class="mobile-nav-help"><button id="mobileGameDayToggle" type="button" aria-pressed="false">Show Game Day bar</button><span>Drag the Menu button to move it.</span><button id="mobileNavReset" type="button">Reset position</button></div>
+      <button class="tab-btn active" data-tab="home" data-group="home">My Week</button>
+      <button class="tab-btn" data-tab="matchups" data-group="matchups">Matchups</button>
+      <button class="tab-btn" data-tab="overview" data-group="league">League</button>
+      <button class="tab-btn" data-tab="leaders" data-group="players">Players</button>
+      <button class="tab-btn" data-tab="rosters" data-group="more">More</button>
+      <button class="nav-gear" type="button" data-open-settings><span aria-hidden="true">⚙</span> Settings</button>
+      <div class="mobile-nav-help" hidden><button id="mobileGameDayToggle" type="button" aria-pressed="false">Show Game Day bar</button><button id="mobileNavReset" type="button">Reset position</button></div>
     </nav>
     </div>
+    <div class="subnav" id="subnav" role="tablist" aria-label="Sections" hidden></div>
 
     <section id="home" class="tab active" aria-label="My Week">
       <div class="home-topline">
@@ -3998,9 +4048,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '3.9.3';
+    const APP_VERSION = '4.0';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '4.0', note: 'A simpler menu with 5 sections: My Week, Matchups, League, Players and More. League holds Standings, Awards, Power rankings, Head-to-head and Moves; Players holds Stats leaders, Projections and Free agents; More holds Rosters, League rules and Export. Chips at the top of each section switch between them, and each section reopens where you left it. Overview is folded into League → Standings. App settings (your team, theme, auto refresh, Game Day bar, install, welcome tour, commissioner tools and What\'s new) now live behind the ⚙ Settings button.' },
       { version: '3.9.3', note: 'If you haven\'t picked your team yet, a "Which team is yours?" popup now asks you to choose one when the league loads. Tap your team and you\'re set, or tap Not now to decide later.' },
       { version: '3.9.2', note: 'The welcome tour now appears each time you open the app until you tick "Don\'t show this again".' },
       { version: '3.9.1', note: 'Welcome tour wording: the first step now reads This is "My Week".' },
@@ -8549,16 +8600,26 @@
     layoutMobileNav();
     if (window.ResizeObserver) new ResizeObserver(() => layoutMobileNav()).observe(els.gameDayBar);
 
-    function activateTab(tabId, { updateHash = true, restoreFocus = false, scrollTop = true } = {}) {
-      const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.tab === tabId);
-      if (!btn) return;
-      mobileNavCurrent.textContent = tabLabel(btn);
+    // V4.0: the menu shows 5 groups; each group holds one or more of the original pages
+    // (and League's Awards / Power / H2H are views inside the #league page).
+    function activateTab(tabId, { updateHash = true, restoreFocus = false, scrollTop = true, view = null } = {}) {
+      const page = document.getElementById(tabId);
+      if (!page || !page.classList.contains('tab')) return;
+      const group = navGroupFor(tabId);
+      const sections = group.sections;
+      if (tabId === 'league') view = sections.some(s => s.tab === 'league' && s.view === view) ? view : (page.dataset.subview || 'awards');
+      const section = sections.find(s => s.tab === tabId && (!s.view || s.view === view)) || sections[0];
+      const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.group === group.id);
+      mobileNavCurrent.textContent = sections.length > 1 ? `${group.label} · ${section.label}` : group.label;
       if (scrollTop) window.scrollTo(0, 0);
       if (tabId === 'transactions') markTransactionsSeen();
       setMobileNavOpen(false, restoreFocus);
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.id === tabId));
-      if (updateHash) setTabHash(tabId);
+      if (view) page.dataset.subview = view;
+      navMemory()[group.id] = { tab: tabId, view };
+      renderSubnav(group, tabId, view);
+      if (updateHash) setTabHash(view ? `${tabId}/${view}` : tabId);
 
       startLeaderRefresh();
       if (['leaders', 'overview', 'home'].includes(tabId)) loadStatsLeaders({ force: false });
@@ -8579,8 +8640,12 @@
       }
     }
 
+    // A menu group reopens on whichever section you last used inside it.
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => activateTab(btn.dataset.tab, { restoreFocus: true }));
+      btn.addEventListener('click', () => {
+        const last = navMemory()[btn.dataset.group];
+        activateTab(last?.tab || btn.dataset.tab, { restoreFocus: true, view: last?.view || null });
+      });
     });
 
     els.gameDayToggle.addEventListener('click', () => setGameDayManually(!app.gameDayMode));
@@ -8837,7 +8902,7 @@
           <span class="picker-team-text"><strong>${escapeHtml(name)}</strong><span class="small">${escapeHtml(owner?.display_name || owner?.username || '')} · ${escapeHtml(teamModalRecordText(r.settings || {}))}</span></span>
         </button>`;
       }).join('');
-      return homeSection('Which team is yours?', `<p class="small home-picker-copy">Pick once and this device remembers it. You can switch any time from the header or a team's popup.</p><div class="picker-grid">${buttons}</div>`);
+      return homeSection('Which team is yours?', `<p class="small home-picker-copy">Pick once and this device remembers it. You can switch any time from ⚙ Settings or a team's popup.</p><div class="picker-grid">${buttons}</div>`);
     }
 
     function homeSideHtml(matchup, ctx, mine) {
@@ -9389,7 +9454,7 @@
       if (parts[0] === 'team' && parts[1]) return { kind: 'team', id: parts[1] };
       if (parts[0] === 'matchup' && parts[1]) return parts[2] ? { kind: 'matchup', week: Number(parts[1]) || null, id: parts[2] } : { kind: 'matchup', week: null, id: parts[1] };
       const tab = document.getElementById(parts[0]);
-      if (tab && tab.classList.contains('tab')) return { kind: 'tab', tab: parts[0] };
+      if (tab && tab.classList.contains('tab')) return { kind: 'tab', tab: parts[0], view: parts[1] || null };
       return { kind: 'tab', tab: 'home' };
     }
 
@@ -9457,7 +9522,7 @@
       const closeAll = () => withRouteApplying(() => { closeTeamModal(); closePlayerModal(); });
       if (route.kind === 'tab') {
         if (fromPop) { closeAll(); r.depth = 0; }
-        activateTab(route.tab, { updateHash: false });
+        activateTab(route.tab, { updateHash: false, view: route.view });
         return;
       }
       if (route.kind === 'matchup') {
@@ -9497,7 +9562,7 @@
 
     function navigateTo(path) {
       const route = parseRoute(`#${path}`);
-      if (route.kind === 'tab') { activateTab(route.tab); window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' }); return; }
+      if (route.kind === 'tab') { activateTab(route.tab, { view: route.view }); window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' }); return; }
       if (route.kind === 'matchup') history.replaceState(null, '', `#${path}`);
       applyRoute(route);
     }
@@ -9751,12 +9816,23 @@
         if (!btn.dataset.label) btn.dataset.label = btn.textContent.trim();
         let badge = btn.querySelector('.tab-badge');
         if (!badge) { badge = document.createElement('span'); badge.className = 'tab-badge'; btn.appendChild(badge); }
-        const info = badges[btn.dataset.tab];
+        const info = btn.dataset.group
+          ? navGroups().find(g => g.id === btn.dataset.group)?.sections.map(s => badges[s.tab]).find(Boolean)
+          : badges[btn.dataset.tab];
         badge.hidden = !info;
         badge.textContent = info ? info.text : '';
         badge.className = `tab-badge${info ? ` ${info.tone}` : ''}`;
         if (info && !btn.classList.contains('active')) attention = true;
       }
+      app.navBadges = badges;
+      document.querySelectorAll('#subnav [data-sub-tab]').forEach(chip => {
+        const badge = chip.querySelector('.tab-badge');
+        const info = chip.dataset.subView ? null : badges[chip.dataset.subTab];
+        if (!badge) return;
+        badge.hidden = !info;
+        badge.textContent = info ? info.text : '';
+        badge.className = `tab-badge${info ? ` ${info.tone}` : ''}`;
+      });
       const toggle = document.getElementById('mobileNavToggle');
       if (toggle) {
         let dot = toggle.querySelector('.mobile-nav-dot');
@@ -10038,6 +10114,11 @@
 
     /* ---------- V3.9.3 "Which team is yours?" popup when no team is selected ---------- */
     function maybeShowTeamPrompt() {
+      const open = document.getElementById('teamPrompt');
+      if (open && els.myTeam.value) {   // a team got picked elsewhere (Settings, team popup)
+        open.remove();
+        if (!teamModalIsOpen() && !els.playerModalBackdrop.classList.contains('open')) document.body.classList.remove('modal-open');
+      }
       if (!app.data || els.myTeam.value || app.teamPromptDismissed || document.getElementById('teamPrompt')) return;
       if (teamModalIsOpen() || els.playerModalBackdrop.classList.contains('open') || document.getElementById('welcomeTour')) return;
       const base = app.data;
@@ -10057,7 +10138,7 @@
         <div class="tag-strip is-selected"><span class="tag-label">Pick your team</span><span class="tag-code">${escapeHtml(String((base.rosters || []).length))} teams</span></div>
         <div class="info-body">
           <h2 id="teamPromptTitle">Which team is yours?</h2>
-          <p class="info-text">My Week, lineup warnings, Start/Sit and your badges all follow the team you pick. This device remembers it, and you can change it any time in the header.</p>
+          <p class="info-text">My Week, lineup warnings, Start/Sit and your badges all follow the team you pick. This device remembers it, and you can change it any time in ⚙ Settings.</p>
           <div class="picker-grid team-prompt-list">${buttons}</div>
         </div>
         <div class="info-actions"><button type="button" class="btn-ghost" data-pick-team="">Not now</button></div>
@@ -10095,6 +10176,155 @@
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && closeInfoSheet()) event.stopPropagation();
     }, true);
+
+
+    /* ===== V4.0 5-item menu, section chips, settings sheet ===== */
+    function navGroups() {
+      return [
+        { id: 'home', label: 'My Week', sections: [{ tab: 'home', label: 'My Week' }] },
+        { id: 'matchups', label: 'Matchups', sections: [{ tab: 'matchups', label: 'Matchups' }] },
+        { id: 'league', label: 'League', sections: [
+          { tab: 'overview', label: 'Standings' },
+          { tab: 'league', view: 'awards', label: 'Awards' },
+          { tab: 'league', view: 'power', label: 'Power' },
+          { tab: 'league', view: 'h2h', label: 'H2H' },
+          { tab: 'transactions', label: 'Moves' }] },
+        { id: 'players', label: 'Players', sections: [
+          { tab: 'leaders', label: 'Leaders' },
+          { tab: 'projections', label: 'Projections' },
+          { tab: 'waivers', label: 'Free agents' }] },
+        { id: 'more', label: 'More', sections: [
+          { tab: 'rosters', label: 'Rosters' },
+          { tab: 'settings', label: 'League rules' },
+          { tab: 'raw', label: 'Export' }] }
+      ];
+    }
+
+    function navGroupFor(tabId) {
+      return navGroups().find(g => g.sections.some(s => s.tab === tabId)) || navGroups()[0];
+    }
+
+    function navMemory() {
+      if (!app.navLast) app.navLast = {};
+      return app.navLast;
+    }
+
+    function renderSubnav(group, tabId, view) {
+      const bar = document.getElementById('subnav');
+      if (!bar) return;
+      if (group.sections.length < 2) { bar.hidden = true; bar.innerHTML = ''; return; }
+      bar.hidden = false;
+      bar.innerHTML = group.sections.map(s => {
+        const active = s.tab === tabId && (!s.view || s.view === view);
+        return `<button type="button" class="subnav-chip ${active ? 'active' : ''}" role="tab" aria-selected="${active}" data-sub-tab="${escapeHtml(s.tab)}" data-sub-view="${escapeHtml(s.view || '')}">${escapeHtml(s.label)}<span class="tab-badge" hidden></span></button>`;
+      }).join('');
+      bar.querySelector('.subnav-chip.active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      if (typeof updateNavBadges === 'function' && app.navBadges) updateNavBadges();
+    }
+
+    /* ---------- Settings sheet (gear) ---------- */
+    function openSettingsSheet() {
+      closeSettingsSheet();
+      const st = league31();
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const teamOptions = [...els.myTeam.options].map(o => `<option value="${escapeHtml(o.value)}" ${o.selected ? 'selected' : ''}>${escapeHtml(o.value ? o.text : 'Choose your team')}</option>`).join('');
+      const refreshOptions = [...els.autoRefresh.options].map(o => `<option value="${escapeHtml(o.value)}" ${o.selected ? 'selected' : ''}>${escapeHtml(o.text)}</option>`).join('');
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const install = standalone ? '<p class="small">Installed as an app on this device.</p>'
+        : st.deferredInstall ? '<button type="button" class="btn-primary" data-setting="install">Install app</button>'
+        : ios ? '<p class="small">iPhone: tap <strong>Share</strong> in Safari, then <strong>Add to Home Screen</strong>.</p>'
+        : '<p class="small">Use your browser menu\'s <strong>Install app</strong> or <strong>Add to Home Screen</strong>.</p>';
+      const sheet = document.createElement('div');
+      sheet.id = 'settingsSheet';
+      sheet.className = 'info-backdrop settings-sheet open';
+      sheet.innerHTML = `<section class="info-card" role="dialog" aria-modal="true" aria-labelledby="settingsSheetTitle">
+        <div class="tag-strip"><span class="tag-label">Settings</span><span class="tag-code">V${escapeHtml(APP_VERSION)}</span></div>
+        <div class="info-body">
+          <h2 id="settingsSheetTitle">Settings</h2>
+          <div class="settings-row field"><label for="settingTeam">Your team</label><select id="settingTeam" data-setting="team">${teamOptions}</select></div>
+          <div class="settings-row"><span class="settings-label">Theme</span>
+            <div class="theme-switch" role="group" aria-label="Color theme">${['light', 'dark', 'auto'].map(t => `<button type="button" data-setting="theme" data-value="${t}" aria-pressed="${theme === t}">${t === 'light' ? 'Paper' : t === 'dark' ? 'Dark' : 'Auto'}</button>`).join('')}</div></div>
+          <div class="settings-row field"><label for="settingRefresh">Auto refresh</label><select id="settingRefresh" data-setting="refresh">${refreshOptions}</select></div>
+          <div class="settings-row"><span class="settings-label">Game Day bar</span>
+            <button type="button" class="btn-secondary" data-setting="gameday">${app.gameDayMode ? 'Hide Game Day bar' : 'Show Game Day bar'}</button>
+            <span class="small">It also turns on by itself while your matchup is playing.</span></div>
+          <div class="settings-row"><span class="settings-label">Install</span>${install}</div>
+          <div class="settings-row settings-buttons">
+            <button type="button" class="btn-secondary" data-setting="reset-menu">Reset Menu button position</button>
+            <button type="button" class="btn-secondary" data-setting="welcome">Show the welcome tour</button>
+          </div>
+          <details class="settings-row settings-details"><summary>Commissioner tools</summary>
+            <div class="settings-buttons">
+              <button type="button" class="btn-secondary" data-setting="header">Show full header &amp; league controls</button>
+              <button type="button" class="btn-secondary" data-setting="export" ${els.exportBtn.disabled ? 'disabled' : ''}>Export JSON</button>
+            </div>
+          </details>
+          <details class="settings-row settings-details"><summary>What's new</summary>${patchNotesHtml()}</details>
+        </div>
+        <div class="info-actions"><button type="button" class="btn-primary" data-setting="close">Done</button></div>
+      </section>`;
+      document.body.appendChild(sheet);
+      document.body.classList.add('modal-open');
+      sheet.addEventListener('click', event => {
+        if (event.target === sheet) { closeSettingsSheet(); return; }
+        const btn = event.target.closest('button[data-setting]');
+        if (!btn) return;
+        const action = btn.dataset.setting;
+        if (action === 'close') closeSettingsSheet();
+        else if (action === 'theme') {
+          applyTheme(btn.dataset.value);
+          sheet.querySelectorAll('[data-setting="theme"]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+        } else if (action === 'gameday') {
+          setGameDayManually(!app.gameDayMode);
+          btn.textContent = app.gameDayMode ? 'Hide Game Day bar' : 'Show Game Day bar';
+        } else if (action === 'install') {
+          closeSettingsSheet();
+          document.getElementById('installAppBtn')?.click();
+        } else if (action === 'reset-menu') {
+          document.getElementById('mobileNavReset')?.click();
+          showToast('Menu button moved back to the corner.');
+        } else if (action === 'welcome') {
+          closeSettingsSheet();
+          try { localStorage.removeItem('brojees_welcome_v2'); } catch (_) {}
+          app.welcomeShownThisVisit = false;
+          activateTab('home');
+          maybeShowWelcome();
+        } else if (action === 'header') {
+          closeSettingsSheet();
+          setHeaderCollapsed(false);
+          window.scrollTo(0, 0);
+        } else if (action === 'export') {
+          els.exportBtn.click();
+        }
+      });
+      sheet.addEventListener('change', event => {
+        const target = event.target;
+        if (target.dataset.setting === 'team' && target.value) {
+          els.myTeam.value = target.value;
+          els.myTeam.dispatchEvent(new Event('change'));
+        } else if (target.dataset.setting === 'refresh') {
+          els.autoRefresh.value = target.value;
+          els.autoRefresh.dispatchEvent(new Event('change'));
+        }
+      });
+      sheet.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); closeSettingsSheet(); } });
+      requestAnimationFrame(() => sheet.querySelector('[data-setting="close"]')?.focus({ preventScroll: true }));
+    }
+
+    function closeSettingsSheet() {
+      const sheet = document.getElementById('settingsSheet');
+      if (!sheet) return;
+      sheet.remove();
+      if (!teamModalIsOpen() && !els.playerModalBackdrop.classList.contains('open')) document.body.classList.remove('modal-open');
+    }
+
+    document.addEventListener('click', event => {
+      const chip = event.target.closest('[data-sub-tab]');
+      if (chip) { activateTab(chip.dataset.subTab, { view: chip.dataset.subView || null }); return; }
+      const gear = event.target.closest('[data-open-settings]');
+      if (gear) { setMobileNavOpen(false); openSettingsSheet(); }
+    });
 
     restoreLastSnapshot();
     startLeaderRefresh();
