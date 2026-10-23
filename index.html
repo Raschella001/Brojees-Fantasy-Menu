@@ -3709,6 +3709,14 @@
     .home-tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     @media (max-width: 900px) { .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } .home-tiles > .tile-link { grid-column: span 3; } }
     @media (max-width: 640px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-tiles > .tile-link { grid-column: span 2; } }
+
+    /* ===== V4.6 league controls live in ⚙ Settings only ===== */
+    .toolbar { display: none !important; }
+    .settings-inline { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .settings-inline input { min-height: 44px; padding: 9px 11px; background: var(--field); color: var(--text); border: 1.5px solid var(--line-strong); border-radius: 6px; font-family: var(--font-mono); font-size: 16px; }
+    .settings-league { margin: 8px 0 10px; }
+    .settings-league label { display: block; margin-bottom: 6px; }
+    .install-glyph { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--line-strong); border-radius: 4px; font-size: 13px; vertical-align: -4px; }
   </style>
 </head>
 <body>
@@ -4215,9 +4223,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.5';
+    const APP_VERSION = '4.6';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.6', note: 'The league ID, team picker and auto-refresh controls now live only in ⚙ Settings on every screen size, so they no longer sit above every page. The welcome tour ends with an Install step: one tap on Android and desktop, or step-by-step Add to Home Screen instructions on iPhone (skipped if the app is already installed).' },
       { version: '4.5', note: 'New League → Playoffs: playoff odds for every team from thousands of simulated seasons. Each remaining week uses that team\'s best projected lineup for that week (players on bye score 0 and the next best player steps in), this week uses the live estimate, and you get your remaining schedule with a win chance for each game. My Week shows your playoff chance, plus a "What changed" feed during games: points scored (TD, FG, INT), kickoffs, lead changes and win-chance swings.' },
       { version: '4.4', note: 'Live games now show the quarter and clock everywhere (for example LIVE · Q3 4:12), and players still playing on My Week show their points so far. Kickoff times read naturally: Today 8:15 PM, Tomorrow 1 PM, Sun 4:25 PM. Each My Week section has a fold button so you can tuck away what you don\'t need; it stays that way on your device.' },
       { version: '4.3', note: 'Opens instantly: the app shows your league as it was last time, marked with when it was updated, and swaps in fresh numbers a moment later. Coming back to the app after a minute or more refreshes it automatically, and an offline banner (with Retry) shows when there is no connection. My Week now lists who is still to play for you and your opponent, with live players first and kickoff times for the rest.' },
@@ -10335,8 +10344,24 @@
         { title: 'Tap anything for details', text: `Tap any player or team to open its card${phone ? '; swipe down or tap ✕ to close it' : ''}. Tap the <span class="info-btn info-inline">i</span> next to a title for a plain-English explanation.` },
         phone
           ? { title: 'The Menu lives down here', text: 'Tap the Menu button to switch pages. Badges show live games, new transactions and lineup warnings. Drag the button anywhere that suits your thumb.', spotlight: true }
-          : { title: 'Switch pages up top', text: 'Use the tabs at the top to switch pages. Small badges show live games, new transactions and lineup warnings.' }
+          : { title: 'Switch pages up top', text: 'Use the tabs at the top to switch pages. Small badges show live games, new transactions and lineup warnings.' },
+        ...(installStep() ? [installStep()] : [])
       ];
+    }
+
+    // V4.6: last welcome step offers to install the app (skipped when it's already installed).
+    function installStep() {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      if (standalone) return null;
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const share = '<span class="install-glyph" aria-hidden="true">⬆︎</span>';
+      if (league31().deferredInstall) {
+        return { install: 'prompt', title: 'Install Brojees as an app', text: 'Get a Brojees icon on your home screen. It opens full-screen like a normal app and loads faster. Tap <strong>Install app</strong> below.' };
+      }
+      if (ios) {
+        return { install: 'ios', title: 'Add Brojees to your Home Screen', text: `In Safari: tap the <strong>Share</strong> button ${share} at the bottom, scroll down, tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>. Brojees then opens full-screen like a normal app.` };
+      }
+      return { install: 'manual', title: 'Install Brojees as an app', text: 'Open your browser menu (⋮ or ⋯) and choose <strong>Install app</strong> or <strong>Add to Home Screen</strong>. Brojees then opens full-screen like a normal app.' };
     }
 
     // Shows once each time the app is opened until "Don't show this again" is ticked.
@@ -10354,7 +10379,7 @@
       tour.innerHTML = `<section class="info-card welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
         <div class="tag-strip is-selected"><span class="tag-label" id="welcomeStepLabel">Welcome · 1/3</span><span class="tag-code">Brojees</span></div>
         <div class="info-body"><h2 id="welcomeTitle"></h2><p class="info-text" id="welcomeText"></p></div>
-        <div class="welcome-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="welcome-dots" aria-hidden="true">${welcomeSteps().map(() => '<i></i>').join('')}</div>
         <label class="welcome-optout"><input type="checkbox" id="welcomeOptOut" /> <span>Don't show this again</span></label>
         <div class="info-actions"><button type="button" class="btn-ghost" data-welcome="skip">Skip</button><button type="button" class="btn-primary" data-welcome="next">Next</button></div>
       </section>`;
@@ -10369,7 +10394,8 @@
         tour.querySelector('#welcomeTitle').textContent = s.title;
         tour.querySelector('#welcomeText').innerHTML = s.text;
         tour.querySelectorAll('.welcome-dots i').forEach((dot, i) => dot.classList.toggle('on', i <= step));
-        tour.querySelector('[data-welcome="next"]').textContent = step === steps.length - 1 ? 'Let\'s go' : 'Next';
+        tour.querySelector('[data-welcome="next"]').textContent = s.install === 'prompt' ? 'Install app' : step === steps.length - 1 ? (s.install ? 'Done' : 'Let\'s go') : 'Next';
+        tour.querySelector('[data-welcome="skip"]').textContent = s.install ? 'Not now' : 'Skip';
         document.getElementById('dashboardNav')?.classList.toggle('welcome-spotlight', Boolean(s.spotlight));
         tour.querySelector('[data-welcome="next"]').focus({ preventScroll: true });
       };
@@ -10384,6 +10410,17 @@
       tour.addEventListener('click', event => {
         const btn = event.target.closest('[data-welcome]');
         if (!btn) return;
+        if (btn.dataset.welcome === 'next' && steps[step].install === 'prompt') {
+          finish();
+          const prompt = league31().deferredInstall;
+          if (prompt) {
+            league31().deferredInstall = null;
+            document.getElementById('installAppBtn').hidden = true;
+            prompt.prompt();
+            Promise.resolve(prompt.userChoice).catch(() => {});
+          }
+          return;
+        }
         if (btn.dataset.welcome === 'skip' || step === steps.length - 1) finish();
         else { step++; show(); }
       });
@@ -10525,7 +10562,7 @@
           <div class="settings-row field"><label for="settingTeam">Your team</label><select id="settingTeam" data-setting="team">${teamOptions}</select></div>
           <div class="settings-row"><span class="settings-label">Theme</span>
             <div class="theme-switch" role="group" aria-label="Color theme">${['light', 'dark', 'auto'].map(t => `<button type="button" data-setting="theme" data-value="${t}" aria-pressed="${theme === t}">${t === 'light' ? 'Paper' : t === 'dark' ? 'Dark' : 'Auto'}</button>`).join('')}</div></div>
-          <div class="settings-row field"><label for="settingRefresh">Auto refresh</label><select id="settingRefresh" data-setting="refresh">${refreshOptions}</select></div>
+          <div class="settings-row field"><label for="settingRefresh">Auto refresh</label><select id="settingRefresh" data-setting="refresh">${refreshOptions}</select><span class="small">${escapeHtml(els.lastUpdated.textContent || '')}</span></div>
           <div class="settings-row"><span class="settings-label">Game Day bar</span>
             <button type="button" class="btn-secondary" data-setting="gameday">${app.gameDayMode ? 'Hide Game Day bar' : 'Show Game Day bar'}</button>
             <span class="small">It also turns on by itself while your matchup is playing.</span></div>
@@ -10535,6 +10572,8 @@
             <button type="button" class="btn-secondary" data-setting="welcome">Show the welcome tour</button>
           </div>
           <details class="settings-row settings-details"><summary>Commissioner tools</summary>
+            <div class="field settings-league"><label for="settingLeague">Sleeper league ID</label>
+              <div class="settings-inline"><input id="settingLeague" inputmode="numeric" autocomplete="off" value="${escapeHtml(els.leagueId.value)}" /><button type="button" class="btn-secondary" data-setting="league">Load</button></div></div>
             <div class="settings-buttons">
               <button type="button" class="btn-secondary" data-setting="header">Show full header &amp; league controls</button>
               <button type="button" class="btn-secondary" data-setting="export" ${els.exportBtn.disabled ? 'disabled' : ''}>Export JSON</button>
@@ -10576,6 +10615,12 @@
           window.scrollTo(0, 0);
         } else if (action === 'export') {
           els.exportBtn.click();
+        } else if (action === 'league') {
+          const value = String(sheet.querySelector('#settingLeague')?.value || '').trim();
+          if (!/^\d{6,}$/.test(value)) { showToast('Enter a valid Sleeper league ID (numbers only).'); return; }
+          els.leagueId.value = value;
+          closeSettingsSheet();
+          updateAndSave();
         }
       });
       sheet.addEventListener('change', event => {
