@@ -3717,6 +3717,10 @@
     .settings-league { margin: 8px 0 10px; }
     .settings-league label { display: block; margin-bottom: 6px; }
     .install-glyph { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--line-strong); border-radius: 4px; font-size: 13px; vertical-align: -4px; }
+
+    /* ===== V4.6.1 install steps in the welcome tour ===== */
+    .install-steps { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; line-height: 1.5; }
+    .install-steps li::marker { color: var(--accent); font-family: var(--font-mono); font-weight: 800; }
   </style>
 </head>
 <body>
@@ -4223,9 +4227,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.6';
+    const APP_VERSION = '4.6.1';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.6.1', note: 'The install step at the end of the welcome tour now always has an Install app button. It opens the install prompt where the browser supports it, and otherwise shows the exact steps for your phone (Share → Add to Home Screen on iPhone).' },
       { version: '4.6', note: 'The league ID, team picker and auto-refresh controls now live only in ⚙ Settings on every screen size, so they no longer sit above every page. The welcome tour ends with an Install step: one tap on Android and desktop, or step-by-step Add to Home Screen instructions on iPhone (skipped if the app is already installed).' },
       { version: '4.5', note: 'New League → Playoffs: playoff odds for every team from thousands of simulated seasons. Each remaining week uses that team\'s best projected lineup for that week (players on bye score 0 and the next best player steps in), this week uses the live estimate, and you get your remaining schedule with a win chance for each game. My Week shows your playoff chance, plus a "What changed" feed during games: points scored (TD, FG, INT), kickoffs, lead changes and win-chance swings.' },
       { version: '4.4', note: 'Live games now show the quarter and clock everywhere (for example LIVE · Q3 4:12), and players still playing on My Week show their points so far. Kickoff times read naturally: Today 8:15 PM, Tomorrow 1 PM, Sun 4:25 PM. Each My Week section has a fold button so you can tuck away what you don\'t need; it stays that way on your device.' },
@@ -10354,14 +10359,16 @@
       const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
       if (standalone) return null;
       const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const android = /android/i.test(navigator.userAgent);
       const share = '<span class="install-glyph" aria-hidden="true">⬆︎</span>';
-      if (league31().deferredInstall) {
-        return { install: 'prompt', title: 'Install Brojees as an app', text: 'Get a Brojees icon on your home screen. It opens full-screen like a normal app and loads faster. Tap <strong>Install app</strong> below.' };
-      }
-      if (ios) {
-        return { install: 'ios', title: 'Add Brojees to your Home Screen', text: `In Safari: tap the <strong>Share</strong> button ${share} at the bottom, scroll down, tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>. Brojees then opens full-screen like a normal app.` };
-      }
-      return { install: 'manual', title: 'Install Brojees as an app', text: 'Open your browser menu (⋮ or ⋯) and choose <strong>Install app</strong> or <strong>Add to Home Screen</strong>. Brojees then opens full-screen like a normal app.' };
+      const intro = 'Get a Brojees icon on your home screen. It opens full-screen like a normal app and loads faster. Tap <strong>Install app</strong> below.';
+      // Shown when the browser can't install in one tap (always the case on iPhone).
+      const guide = ios
+        ? `<ol class="install-steps"><li>Tap <strong>Share</strong> ${share} at the bottom of Safari (top right on iPad).</li><li>Scroll down and tap <strong>Add to Home Screen</strong>.</li><li>Tap <strong>Add</strong>. Brojees appears on your home screen.</li></ol><p class="small">Using Chrome on iPhone? Tap ${share} in the address bar, then <strong>Add to Home Screen</strong>.</p>`
+        : android
+          ? '<ol class="install-steps"><li>Tap the browser menu: <strong>⋮</strong> at the top right in Chrome, <strong>≡</strong> at the bottom in Samsung Internet.</li><li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li><li>Tap <strong>Install</strong>.</li></ol>'
+          : '<ol class="install-steps"><li>Click the install icon in the address bar, or open the browser menu <strong>⋮</strong>.</li><li>Choose <strong>Install Brojees</strong> (or <strong>Apps → Install this site as an app</strong> in Edge).</li></ol>';
+      return { install: league31().deferredInstall ? 'prompt' : ios ? 'ios' : 'manual', title: ios ? 'Add Brojees to your Home Screen' : 'Install Brojees as an app', text: intro, guide };
     }
 
     // Shows once each time the app is opened until "Don't show this again" is ticked.
@@ -10394,7 +10401,8 @@
         tour.querySelector('#welcomeTitle').textContent = s.title;
         tour.querySelector('#welcomeText').innerHTML = s.text;
         tour.querySelectorAll('.welcome-dots i').forEach((dot, i) => dot.classList.toggle('on', i <= step));
-        tour.querySelector('[data-welcome="next"]').textContent = s.install === 'prompt' ? 'Install app' : step === steps.length - 1 ? (s.install ? 'Done' : 'Let\'s go') : 'Next';
+        if (s.install && s.guideShown) tour.querySelector('#welcomeText').innerHTML = s.guide;
+        tour.querySelector('[data-welcome="next"]').textContent = s.install ? (s.guideShown ? 'Done' : 'Install app') : step === steps.length - 1 ? 'Let\'s go' : 'Next';
         tour.querySelector('[data-welcome="skip"]').textContent = s.install ? 'Not now' : 'Skip';
         document.getElementById('dashboardNav')?.classList.toggle('welcome-spotlight', Boolean(s.spotlight));
         tour.querySelector('[data-welcome="next"]').focus({ preventScroll: true });
@@ -10410,14 +10418,19 @@
       tour.addEventListener('click', event => {
         const btn = event.target.closest('[data-welcome]');
         if (!btn) return;
-        if (btn.dataset.welcome === 'next' && steps[step].install === 'prompt') {
-          finish();
+        if (btn.dataset.welcome === 'next' && steps[step].install && !steps[step].guideShown) {
           const prompt = league31().deferredInstall;
           if (prompt) {
+            // The browser can install in one tap: open its real install prompt.
+            finish();
             league31().deferredInstall = null;
             document.getElementById('installAppBtn').hidden = true;
             prompt.prompt();
             Promise.resolve(prompt.userChoice).catch(() => {});
+          } else {
+            // iPhone and browsers without one-tap install: show the steps for this device.
+            steps[step].guideShown = true;
+            show();
           }
           return;
         }
