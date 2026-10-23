@@ -3660,6 +3660,55 @@
     .stp-chip:not(:last-child)::before { content: "·"; position: absolute; right: -5px; color: var(--muted); }
     .stp-chip .game-dot { width: 7px; height: 7px; }
     @media (max-width: 640px) { .still-to-play { grid-template-columns: 1fr; } }
+
+    /* ===== V4.4 live clock + fold-away sections ===== */
+    .stp-live { margin-left: 5px; font-size: 12px; font-weight: 700; color: var(--warn-ink); }
+    .home-section .panel-head { align-items: center; }
+    .fold-btn {
+      flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; min-height: 44px; margin-left: auto; padding: 0;
+      background: transparent; color: var(--muted); border: 1.5px solid var(--line-strong); border-radius: 6px; font-size: 16px;
+    }
+    .fold-btn span { display: inline-block; transition: transform .18s ease; }
+    .fold-btn:hover { color: var(--text); border-color: var(--ink-border); }
+    .home-section.is-folded .fold-btn span { transform: rotate(-90deg); }
+    .home-section.is-folded .home-section-body { display: none; }
+    .home-section.is-folded { padding-bottom: 10px; }
+    .home-section.is-folded .panel-head { margin-bottom: 0; cursor: pointer; }
+    .home-section.is-folded h2 { opacity: .75; }
+
+    /* ===== V4.5 What changed + playoff odds ===== */
+    .feed { margin-top: 12px; padding: 10px 12px; border: 1.5px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); }
+    .feed-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .feed-label { font-family: var(--font-cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+    .feed-list { display: grid; gap: 2px; }
+    .feed-item {
+      display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: baseline; gap: 8px; width: 100%; min-height: 36px;
+      padding: 6px 8px; text-align: left; color: var(--text); background: transparent; border: 0; border-left: 3px solid var(--line-strong); border-radius: 0; font-size: 14px;
+    }
+    button.feed-item:hover { background: var(--surface); }
+    .feed-item.good { border-left-color: var(--good); }
+    .feed-item.bad { border-left-color: var(--danger); }
+    .feed-item.info { border-left-color: var(--data); }
+    .feed-time { font-size: 12px; color: var(--muted); }
+    .feed-text { overflow-wrap: anywhere; }
+    .feed-more { margin-top: 6px; min-height: 40px; width: 100%; }
+
+    #league[data-subview="playoffs"] > .panel:not(#playoffPanel) { display: none; }
+    .playoff-path { margin-bottom: 14px; padding: 10px 12px; border: 1.5px solid var(--accent); border-radius: 6px; background: var(--surface-2); }
+    .path-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px dashed var(--line); }
+    .path-row:first-of-type { border-top: 0; }
+    .path-week { font-size: 12px; color: var(--muted); }
+    .path-main { display: grid; gap: 2px; min-width: 0; }
+    .path-main .team-link { text-align: left; }
+    .path-pct { font-size: 18px; font-weight: 800; }
+    .path-row.fav .path-pct { color: var(--good-ink); }
+    .path-row.dog .path-pct { color: var(--danger-ink); }
+    .tile-link { display: block; width: 100%; padding: 0; text-align: left; background: none; border: 0; color: inherit; }
+    .tile-link .team-stat-tile { height: 100%; border-color: var(--accent); }
+    .tile-link:hover .team-stat-tile { box-shadow: var(--sh-sm); }
+    .home-tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    @media (max-width: 900px) { .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } .home-tiles > .tile-link { grid-column: span 3; } }
+    @media (max-width: 640px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-tiles > .tile-link { grid-column: span 2; } }
   </style>
 </head>
 <body>
@@ -3791,6 +3840,12 @@
     </section>
 
     <section id="league" class="tab" aria-label="League">
+      <div class="panel" id="playoffPanel">
+        <div class="panel-head">
+          <div><h2>Playoff Odds<button type="button" class="info-btn" data-info="playoffs" aria-label="What does this mean?">i</button></h2><div class="small">Every remaining matchup played out with each team's best projected lineup for that week.</div></div>
+        </div>
+        <div id="playoffContent"><div class="empty">Open this section to calculate playoff odds.</div></div>
+      </div>
       <div class="panel" id="awardsPanel">
         <div class="panel-head">
           <div><h2>Weekly Awards<button type="button" class="info-btn" data-info="awards" aria-label="What does this mean?">i</button></h2><div class="small" id="awardsStatus">Completed weeks only, scored with this league's settings.</div></div>
@@ -4160,9 +4215,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.3';
-    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip';
+    const APP_VERSION = '4.5';
+    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.5', note: 'New League → Playoffs: playoff odds for every team from thousands of simulated seasons. Each remaining week uses that team\'s best projected lineup for that week (players on bye score 0 and the next best player steps in), this week uses the live estimate, and you get your remaining schedule with a win chance for each game. My Week shows your playoff chance, plus a "What changed" feed during games: points scored (TD, FG, INT), kickoffs, lead changes and win-chance swings.' },
+      { version: '4.4', note: 'Live games now show the quarter and clock everywhere (for example LIVE · Q3 4:12), and players still playing on My Week show their points so far. Kickoff times read naturally: Today 8:15 PM, Tomorrow 1 PM, Sun 4:25 PM. Each My Week section has a fold button so you can tuck away what you don\'t need; it stays that way on your device.' },
       { version: '4.3', note: 'Opens instantly: the app shows your league as it was last time, marked with when it was updated, and swaps in fresh numbers a moment later. Coming back to the app after a minute or more refreshes it automatically, and an offline banner (with Retry) shows when there is no connection. My Week now lists who is still to play for you and your opponent, with live players first and kickoff times for the rest.' },
       { version: '4.2', note: 'Every matchup now shows each team\'s estimated win chance (or the final margin), including the compact scoreboards. While you scroll through your own matchup\'s lineups, a slim score bar stays pinned at the top. Start/Sit can now compare your players with top free agents, and every player card has a Compare in Start/Sit button that fills the comparison in for you.' },
       { version: '4.1', note: 'Search any player or team from the top of the Menu (or the search box next to Settings on desktop) and jump straight to their card. Switching chips inside League, Players or More now keeps your place in each section. Before kickoff, Stats Leaders ranks players by projected points with their kickoff time instead of showing everyone tied at zero.' },
@@ -5788,6 +5845,18 @@
       return new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(d);
     }
 
+    // "Today 8:15 PM", "Tomorrow 1 PM", "Sun 4:25 PM", or "Oct 30 1 PM" further out / in the past.
+    function friendlyKickoff(dt) {
+      const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(dt).replace(/:00(?=\s?[AaPp]\.?[Mm])/, '');
+      const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const days = Math.round((startOfDay(dt) - startOfDay(new Date())) / 86400000);
+      if (days === 0) return `Today ${time}`;
+      if (days === 1) return `Tomorrow ${time}`;
+      if (days === -1) return `Yesterday ${time}`;
+      if (days > 1 && days < 7) return `${new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(dt)} ${time}`;
+      return `${new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(dt)} ${time}`;
+    }
+
     function playerKickoffInfo(playerId, data = app.data) {
       const p = playerFromId(playerId);
       if (!p?.team) return { iso: null, display: '', source: null };
@@ -5796,10 +5865,7 @@
       if (espnGame?.date) {
         const dt = new Date(espnGame.date);
         if (!Number.isNaN(dt.getTime())) {
-          const display = new Intl.DateTimeFormat(undefined, {
-            weekday: 'short', hour: 'numeric', minute: '2-digit'
-          }).format(dt);
-          return { iso: dt.toISOString(), display, source: 'ESPN' };
+          return { iso: dt.toISOString(), display: friendlyKickoff(dt), source: 'ESPN' };
         }
       }
 
@@ -5808,9 +5874,22 @@
       return { iso: null, display: weekday ? `${weekday} · time unavailable` : '', source: weekday ? 'Sleeper date' : null };
     }
 
+    // "Q3 4:12", "Half", "OT 2:30" from ESPN's live game status.
+    function liveClockText(espnGame) {
+      if (!espnGame) return '';
+      const detail = String(espnGame.status_detail || '');
+      if (/half/i.test(detail)) return 'Half';
+      if (/end of/i.test(detail)) return detail.replace(/end of\s*/i, 'End ').replace(/(\d)(st|nd|rd|th)/, 'Q$1').replace(/\s*quarter/i, '');
+      const period = Number(espnGame.period);
+      const clock = String(espnGame.display_clock || '').trim();
+      if (!period) return '';
+      const label = period > 4 ? (period === 5 ? 'OT' : `${period - 4}OT`) : `Q${period}`;
+      return clock && clock !== '0:00' ? `${label} ${clock}` : label;
+    }
+
     function gameStatusBadge(gameInfo) {
       if (!gameInfo) return '';
-      if (gameInfo.key === 'live') return '<span class="game-status-badge live">LIVE</span>';
+      if (gameInfo.key === 'live') return `<span class="game-status-badge live">LIVE${gameInfo.clock ? ` · ${escapeHtml(gameInfo.clock)}` : ''}</span>`;
       if (gameInfo.key === 'final') return '<span class="game-status-badge final">FINAL</span>';
       if (gameInfo.key === 'bye') return '<span class="game-status-badge bye">BYE</span>';
       if (gameInfo.key === 'canceled') return '<span class="game-status-badge canceled">CANCELED</span>';
@@ -5839,7 +5918,7 @@
       }
       if (espnState === 'in') {
         const meta = gameStatusMeta('in_game');
-        return { status: meta.raw, label: meta.label, key: meta.key, game: sleeperGame || espnGame };
+        return { status: meta.raw, label: meta.label, key: meta.key, game: sleeperGame || espnGame, clock: liveClockText(espnGame) };
       }
       if (espnState === 'pre') {
         const meta = gameStatusMeta('pre_game');
@@ -8787,6 +8866,7 @@
       if (['leaders', 'overview', 'home'].includes(tabId)) loadStatsLeaders({ force: false });
       if (tabId === 'home') renderHome();
       if (tabId === 'league') { renderLeague(); ensureLeagueHistory(); }
+      if (tabId === 'league' && view === 'playoffs') { renderPlayoffPanel(); ensurePlayoffOdds(); }
       updateNavBadges();
 
       if (tabId === 'transactions') {
@@ -9050,7 +9130,13 @@
 
     function homeSection(title, body, extraHead = '') {
       const info = /matchup$/i.test(title) ? 'matchup' : title === 'Start / sit' ? 'startsit' : title === 'Lineup check' ? 'lineup' : title === 'Season' ? 'season' : '';
-      return `<section class="panel home-section"><div class="panel-head"><h2>${escapeHtml(title)}${info ? infoButtonHtml(info) : ''}</h2>${extraHead}</div>${body}</section>`;
+      if (!info) return `<section class="panel home-section"><div class="panel-head"><h2>${escapeHtml(title)}</h2>${extraHead}</div>${body}</section>`;
+      // V4.4: each My Week section can be folded; the choice is remembered on this device.
+      const folded = homeFolded().includes(info);
+      return `<section class="panel home-section ${folded ? 'is-folded' : ''}" data-home-section="${info}">
+        <div class="panel-head"><h2>${escapeHtml(title)}${infoButtonHtml(info)}</h2>${extraHead}
+          <button type="button" class="fold-btn" data-fold="${info}" aria-expanded="${!folded}" aria-label="${folded ? 'Show' : 'Hide'} ${escapeHtml(title)}"><span aria-hidden="true">▾</span></button></div>
+        <div class="home-section-body">${body}</div></section>`;
     }
 
     function homeTeamPickerHtml(base) {
@@ -9126,7 +9212,7 @@
         ${mine.matchup_id != null ? `<button type="button" class="btn-secondary" data-route="${escapeHtml(route)}">Full matchup</button>` : ''}
         ${mine.matchup_id != null ? `<button type="button" class="btn-ghost" data-share="${escapeHtml(route)}" data-share-title="${escapeHtml(`${rosterName(rosterId, ctx)} vs ${opp ? rosterName(opp.roster_id, ctx) : 'Bye'}`)}">Share</button>` : ''}
       </div>`;
-      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${h2hLine}${actions}`);
+      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${feedHtml()}${h2hLine}${actions}`);
     }
 
     function homePlayerChip(id, value, ctx) {
@@ -9181,6 +9267,7 @@
       const power = powerRankings();
       const mine = power?.rows.find(row => String(row.rid) === String(roster.roster_id));
       const tiles = [
+        playoffTileHtml(roster),
         teamModalTile('Points for', numberOrDash(pf, 1), games ? `${numberOrDash(pf / games, 1)} / game` : ''),
         teamModalTile('Points against', numberOrDash(pa, 1), games ? `${numberOrDash(pa / games, 1)} / game` : ''),
         mine ? teamModalTile('Power rank', `#${mine.rank}`, `All-play ${mine.apW}-${mine.apL}`) : teamModalTile('Power rank', '—', 'After Week 1'),
@@ -9307,6 +9394,7 @@
       updateNavBadges();
       maybeAutoGameDay();
       maybeShowTeamPrompt();
+      updateFeed();
       const st = league31();
       if (root.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') { st.homeDirty = true; return; }
       st.homeDirty = false;
@@ -10183,6 +10271,16 @@
           '<strong>Pts</strong> = points scored. <strong>Proj</strong> = projected points. <strong>Live est.</strong> = points so far plus what\'s still expected.',
           'Score colour shows the game: <strong>yellow</strong> live, <strong>green</strong> final, <strong>grey</strong> not started, <strong>purple</strong> bye, <strong>red</strong> canceled.',
           '<strong>SFLEX</strong> = Superflex (QB, RB, WR or TE). <strong>FLEX</strong> = RB, WR or TE.'] },
+        feed: { title: 'What changed', body: [
+          'A running list of what happened in your matchup since the last update: points scored (with TD, FG or INT when the stats show it), players kicking off and finishing, lead changes and win-chance swings of 5% or more.',
+          '<strong>Green</strong> is good for you, <strong>red</strong> is good for your opponent. Tap a player line to open their card.',
+          'The list is kept on this device for the current week.'] },
+        playoffs: { title: 'Playoff odds', body: [
+          'Every remaining regular-season matchup is played out using the real schedule.',
+          '<strong>Future weeks:</strong> each team gets its best possible lineup for that week: the highest projected players for each slot, using that week\'s projections and this league\'s scoring. A player whose NFL team is on bye scores 0 that week, so the next best player steps in. Players listed Out miss next week, Doubtful players count 25%, and players on IR or suspended count 0 for about 4 weeks.',
+          '<strong>This week:</strong> lineups are already set, so each team uses its live estimate (points so far plus what\'s still expected).',
+          'Each week\'s score gets realistic randomness (about ±20%), and the whole rest of the season is simulated thousands of times. Standings are ordered by record, then points for, the same as Sleeper.',
+          '<strong>Playoff chance</strong> = how often you finished in a playoff spot. Trades, pickups and lineup mistakes aren\'t predicted.'] },
         standings: { title: 'Standings', body: [
           '<strong>Current Standings</strong>: records so far, ordered by wins then points for. Tap a team for its details.',
           '<strong>Live Projected Standings</strong>: where everyone would land if this week\'s live estimates hold, including projected record, projected points for, and rank movement (↑ / ↓).',
@@ -10366,6 +10464,7 @@
         { id: 'matchups', label: 'Matchups', sections: [{ tab: 'matchups', label: 'Matchups' }] },
         { id: 'league', label: 'League', sections: [
           { tab: 'overview', label: 'Standings' },
+          { tab: 'league', view: 'playoffs', label: 'Playoffs' },
           { tab: 'league', view: 'awards', label: 'Awards' },
           { tab: 'league', view: 'power', label: 'Power' },
           { tab: 'league', view: 'h2h', label: 'H2H' },
@@ -10823,7 +10922,8 @@
       return (matchup.starters || []).filter(id => id && String(id) !== '0').map(id => {
         const info = playerGameInfo(id, ctx);
         const kick = playerKickoffInfo(id, ctx);
-        return { id: String(id), key: info.key, t: Date.parse(kick.iso || '') || Infinity, kickoff: kick.display || '' };
+        return { id: String(id), key: info.key, t: Date.parse(kick.iso || '') || Infinity, kickoff: kick.display || '',
+          clock: info.clock || '', pts: actualPlayerPoints(matchup, id) };
       }).filter(row => row.key === 'live' || row.key === 'pre' || row.key === 'unknown')
         .sort((a, b) => (a.key === 'live' ? 0 : 1) - (b.key === 'live' ? 0 : 1) || a.t - b.t);
     }
@@ -10841,7 +10941,8 @@
       const sides = [{ label: 'You', rows: stillToPlayList(mine, ctx) }];
       if (opp) sides.push({ label: 'Opponent', rows: stillToPlayList(opp, ctx) });
       if (sides.every(side => !side.rows.length)) return '';
-      const chip = row => `<button type="button" class="stp-chip ${row.key === 'live' ? 'is-live' : ''}" data-player-id="${escapeHtml(row.id)}">${row.key === 'live' ? '<span class="game-dot live"></span>' : ''}${escapeHtml(shortPlayerName(row.id))}</button>`;
+      const chip = row => `<button type="button" class="stp-chip ${row.key === 'live' ? 'is-live' : ''}" data-player-id="${escapeHtml(row.id)}">${row.key === 'live' ? '<span class="game-dot live"></span>' : ''}${escapeHtml(shortPlayerName(row.id))}${row.key === 'live'
+        ? `<span class="stp-live mono">${escapeHtml([Number.isFinite(Number(row.pts)) ? numberOrDash(row.pts, 1) : '', row.clock].filter(Boolean).join(' · '))}</span>` : ''}</button>`;
       // Group by kickoff slot so each time is written once: "Sun 1 PM  J. Burrow · B. Robinson …"
       const slots = rows => {
         const groups = [];
@@ -10864,6 +10965,425 @@
     document.getElementById('offlineRetry').addEventListener('click', () => refreshEverything().catch(() => {}));
     bootFromCache();
 
+
+    /* ===== V4.4 fold-away My Week sections ===== */
+    function homeFolded() {
+      if (!app.homeFolded) {
+        try { app.homeFolded = JSON.parse(localStorage.getItem('brojees_home_folded') || '[]'); } catch (_) { app.homeFolded = []; }
+        if (!Array.isArray(app.homeFolded)) app.homeFolded = [];
+      }
+      return app.homeFolded;
+    }
+
+    function toggleHomeSection(key) {
+      const list = homeFolded();
+      const folded = !list.includes(key);
+      app.homeFolded = folded ? [...list, key] : list.filter(k => k !== key);
+      try { localStorage.setItem('brojees_home_folded', JSON.stringify(app.homeFolded)); } catch (_) {}
+      const section = document.querySelector(`#homeContent [data-home-section="${key}"]`);
+      if (!section) return;
+      section.classList.toggle('is-folded', folded);
+      const btn = section.querySelector('.fold-btn');
+      btn?.setAttribute('aria-expanded', String(!folded));
+      btn?.setAttribute('aria-label', `${folded ? 'Show' : 'Hide'} ${section.querySelector('h2')?.firstChild?.textContent?.trim() || 'section'}`);
+    }
+
+    document.addEventListener('click', event => {
+      const fold = event.target.closest('[data-fold]');
+      if (fold) { event.preventDefault(); toggleHomeSection(fold.dataset.fold); return; }
+      // Tapping the title of a folded section opens it too.
+      const head = event.target.closest('#homeContent .home-section.is-folded .panel-head');
+      if (head && !event.target.closest('button')) toggleHomeSection(head.closest('[data-home-section]').dataset.homeSection);
+    });
+
+
+    /* ===== V4.5 "What changed" feed + playoff odds ===== */
+
+    /* ---------- What changed (My Week, during games) ---------- */
+    function feedState() {
+      if (!app.feed) app.feed = { key: null, items: [], snap: null, stamp: 0, expanded: false };
+      return app.feed;
+    }
+
+    function feedStatCounts(id) {
+      const s = app.statsLeaders?.stats?.[String(id)];
+      if (!s) return null;
+      const n = k => Number(s[k]) || 0;
+      return { td: n('rec_td') + n('rush_td') + n('fum_rec_td') + n('int_ret_td') + n('kr_td') + n('pr_td'), passTd: n('pass_td'), int: n('pass_int'), fg: n('fgm'), fumble: n('fum_lost') };
+    }
+
+    function feedSnapshot(mine, opp, ctx) {
+      const players = {};
+      for (const [side, m] of [['you', mine], ['opp', opp]]) {
+        if (!m) continue;
+        for (const id of (m.starters || []).filter(x => x && String(x) !== '0')) {
+          const pts = Number(actualPlayerPoints(m, id));
+          players[String(id)] = { side, pts: Number.isFinite(pts) ? pts : 0, key: playerGameInfo(id, ctx).key, stats: feedStatCounts(id) };
+        }
+      }
+      const chance = opp ? winChance(mine, opp, ctx) : null;
+      return {
+        players,
+        you: Number(mine.custom_points ?? mine.points ?? 0),
+        opp: opp ? Number(opp.custom_points ?? opp.points ?? 0) : null,
+        chance: chance === null ? null : Math.round(chance * 100),
+        final: Boolean(opp && matchupAllFinal(mine, ctx) && matchupAllFinal(opp, ctx))
+      };
+    }
+
+    function feedDiff(prev, next, oppName) {
+      const items = [];
+      const t = Date.now();
+      const who = row => (row.side === 'you' ? '' : `${oppName}'s `);
+      for (const [id, now] of Object.entries(next.players)) {
+        const before = prev.players[id];
+        if (!before) continue;
+        const name = shortPlayerName(id);
+        if (before.key === 'pre' && now.key === 'live') items.push({ t, pid: id, tone: 'info', text: `${who(now)}${name} kicked off` });
+        const delta = Math.round((now.pts - before.pts) * 100) / 100;
+        if (Math.abs(delta) >= 0.5) {
+          const a = before.stats, b = now.stats;
+          const why = a && b ? [b.td > a.td ? 'TD' : '', b.passTd > a.passTd ? 'TD pass' : '', b.fg > a.fg ? 'FG' : '', b.int > a.int ? 'INT' : '', b.fumble > a.fumble ? 'fumble' : ''].filter(Boolean).join(', ') : '';
+          const good = (now.side === 'you') === (delta > 0);
+          items.push({ t, pid: id, tone: good ? 'good' : 'bad', text: `${who(now)}${name} ${delta > 0 ? '+' : ''}${delta.toFixed(1)}${why ? ` · ${why}` : ''} (${now.pts.toFixed(1)})` });
+        }
+        if (before.key === 'live' && now.key === 'final') items.push({ t, pid: id, tone: 'info', text: `${who(now)}${name} finished with ${now.pts.toFixed(1)}` });
+      }
+      if (next.opp !== null && prev.opp !== null) {
+        const ledBefore = Math.sign(prev.you - prev.opp), ledNow = Math.sign(next.you - next.opp);
+        if (ledNow !== 0 && ledNow !== ledBefore && (next.you > 0 || next.opp > 0)) {
+          items.push({ t, tone: ledNow > 0 ? 'good' : 'bad', text: `${ledNow > 0 ? 'You took the lead' : `${oppName} took the lead`} · ${next.you.toFixed(1)}–${next.opp.toFixed(1)}` });
+        }
+      }
+      if (!next.final && Number.isFinite(prev.chance) && Number.isFinite(next.chance) && Math.abs(next.chance - prev.chance) >= 5) {
+        items.push({ t, tone: next.chance > prev.chance ? 'good' : 'bad', text: `Your win chance ${prev.chance}% → ${next.chance}%` });
+      }
+      if (next.final && !prev.final && next.opp !== null) {
+        const margin = Math.abs(next.you - next.opp).toFixed(2);
+        items.push({ t, tone: next.you >= next.opp ? 'good' : 'bad', text: next.you === next.opp ? 'Final · tie' : `Final · you ${next.you > next.opp ? 'won' : 'lost'} by ${margin}` });
+      }
+      return items;
+    }
+
+    function updateFeed() {
+      if (!app.data) return;
+      const ctx = gameDayData();
+      const rosterId = String(els.myTeam.value || '');
+      const mine = (ctx?.matchups || []).find(m => String(m.roster_id) === rosterId);
+      if (!ctx || !mine) return;
+      const opp = mine.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== rosterId);
+      const st = feedState();
+      const key = `brojees_feed_${ctx.league.league_id}_${ctx.state?.season || ctx.league.season}_${ctx.selectedWeek}_${rosterId}`;
+      if (st.key !== key) {
+        st.key = key;
+        st.stamp = 0;
+        try { const saved = JSON.parse(localStorage.getItem(key) || 'null'); st.items = saved?.items || []; st.snap = saved?.snap || null; }
+        catch (_) { st.items = []; st.snap = null; }
+      }
+      const stamp = latestUpdateAt();
+      if (!stamp || stamp === st.stamp) return;
+      st.stamp = stamp;
+      const next = feedSnapshot(mine, opp, ctx);
+      if (st.snap) {
+        const fresh = feedDiff(st.snap, next, opp ? rosterName(opp.roster_id, ctx) : 'Opponent');
+        if (fresh.length) st.items = [...fresh.reverse(), ...st.items].slice(0, 40);
+      }
+      st.snap = next;
+      try { localStorage.setItem(key, JSON.stringify({ items: st.items, snap: st.snap })); } catch (_) {}
+    }
+
+    function feedHtml() {
+      const st = feedState();
+      if (!st.items.length) {
+        const ctx = gameDayData();
+        const live = (ctx?.matchups || []).some(m => String(m.roster_id) === String(els.myTeam.value) && (m.starters || []).some(id => playerGameInfo(id, ctx).key === 'live'));
+        return live ? '<div class="feed"><div class="feed-head"><span class="feed-label">What changed</span></div><div class="small">Watching your matchup. Scores, lead changes and win-chance swings will show up here.</div></div>' : '';
+      }
+      const shown = st.expanded ? st.items : st.items.slice(0, 4);
+      const time = t => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const item = it => `<${it.pid ? `button type="button" data-player-id="${escapeHtml(it.pid)}"` : 'div'} class="feed-item ${it.tone}"><span class="feed-time mono">${escapeHtml(time(it.t))}</span><span class="feed-text">${escapeHtml(it.text)}</span></${it.pid ? 'button' : 'div'}>`;
+      return `<div class="feed">
+        <div class="feed-head"><span class="feed-label">What changed</span>${infoButtonHtml('feed')}</div>
+        <div class="feed-list">${shown.map(item).join('')}</div>
+        ${st.items.length > 4 ? `<button type="button" class="btn-ghost feed-more" data-feed-toggle>${st.expanded ? 'Show less' : `Show all (${st.items.length})`}</button>` : ''}
+      </div>`;
+    }
+
+    /* ---------- Playoff odds ---------- */
+    function gaussian() {
+      let u = 0, v = 0;
+      while (!u) u = Math.random();
+      while (!v) v = Math.random();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function teamPlaysWeek(team, week, schedule) {
+      if (!schedule?.length) return true;   // no schedule: don't assume a bye
+      const t = normalizeNflTeam(team);
+      return schedule.some(g => Number(g.week) === Number(week) && (normalizeNflTeam(g.home) === t || normalizeNflTeam(g.away) === t));
+    }
+
+    async function cachedWeekProjections(season, week) {
+      const key = `proj_week_${season}_${week}`;
+      try {
+        const cached = await dbGet(key);
+        if (cached?.data && Date.now() - cached.savedAt < 12 * 60 * 60 * 1000) return cached.data;
+      } catch (_) {}
+      const data = await fetchWeekProjections(season, week);
+      if (Object.keys(data || {}).length) { try { await dbSet(key, { savedAt: Date.now(), data }); } catch (_) {} }
+      return data || {};
+    }
+
+    async function waitForHistory(ms = 20000) {
+      ensureLeagueHistory();
+      const start = Date.now();
+      while (!league31().history && Date.now() - start < ms) {
+        if (league31().historyError) break;
+        await new Promise(r => setTimeout(r, 250));
+      }
+      return league31().history;
+    }
+
+    // A team's best possible lineup for a future week: highest projected eligible players in each
+    // slot; a player whose NFL team is on bye that week counts 0, so a bench player steps in.
+    function projectedBestLineup(roster, week, weekProj, ctx, currentWeek) {
+      const scoring = ctx.league.scoring_settings || {};
+      const reserve = new Set((roster.reserve || []).map(String));
+      const taxi = new Set((roster.taxi || []).map(String));
+      const ahead = week - currentWeek;
+      const pool = (roster.players || []).map(String).filter(id => id && id !== '0' && !taxi.has(id) && (!reserve.has(id) || ahead > 4));
+      const valueOf = id => {
+        const p = playerFromId(id);
+        if (!p.team || !teamPlaysWeek(p.team, week, ctx.schedule)) return 0;
+        let v = Number(projectedPointsFromMap(id, weekProj, scoring));
+        if (!Number.isFinite(v) || v < 0) return 0;
+        const injury = String(p.injury_status || '').toLowerCase();
+        if (/^(ir|pup|sus|nfi|na)/.test(injury) && ahead <= 4) return 0;      // long-term absences: out ~4 weeks
+        if (ahead === 1) {
+          if (/^out/.test(injury)) return 0;
+          if (/^doubt/.test(injury)) v *= 0.25;
+          else if (/^quest/.test(injury)) v *= 0.9;
+        }
+        return v;
+      };
+      const best = optimalLineup(starterSlots(ctx.league), [], pool, valueOf);
+      const byes = pool.filter(id => { const p = playerFromId(id); return p.team && !teamPlaysWeek(p.team, week, ctx.schedule); });
+      return { mean: best.total, lineup: best.assigned.filter(Boolean), byes };
+    }
+
+    function weekSd(mean) {
+      return Math.max(15, Math.min(35, mean * 0.2));   // typical spread of a fantasy team's weekly score
+    }
+
+    async function computePlayoffOdds({ force = false } = {}) {
+      const base = app.data;
+      if (!base?.league) return null;
+      const st = league31();
+      const league = base.league;
+      const settings = league.settings || {};
+      const currentWeek = Number(base.state?.week || base.state?.leg || 1);
+      const playoffStart = Number(settings.playoff_week_start || 15);
+      const lastRegular = playoffStart - 1;
+      const key = `${league.league_id}:${currentWeek}:${els.myTeam.value || ''}`;
+      if (!force && app.playoff?.key === key && app.playoff.result && Date.now() - app.playoff.at < 5 * 60 * 1000) return app.playoff.result;
+      if (app.playoff?.loading) return app.playoff.result || null;
+      if (!force && app.playoff?.key === key && app.playoff.error && Date.now() - app.playoff.at < 5 * 60 * 1000) return null;
+      app.playoff = { ...(app.playoff || {}), key, loading: true };
+      renderPlayoffViews();
+      try {
+        if (currentWeek > lastRegular || base.state?.season_type !== 'regular') {
+          app.playoff = { key, at: Date.now(), loading: false, result: { done: true } };
+          return app.playoff.result;
+        }
+        const history = await waitForHistory();
+        const season = Number(base.state?.season || league.season);
+        const rosters = base.rosters || [];
+        const ids = rosters.map(r => String(r.roster_id));
+        const median = Number(settings.league_average_match) === 1;
+
+        // 1. Entering record from completed weeks (avoids double-counting the current week).
+        const rec = Object.fromEntries(ids.map(id => [id, { w: 0, l: 0, t: 0, pf: 0 }]));
+        for (const wk of history?.current?.weeks || []) {
+          if (wk.week >= currentWeek || wk.week > lastRegular) continue;
+          const rows = wk.rows.filter(r => rec[r.rid]);
+          const med = median ? [...rows.map(r => r.pts)].sort((a, b) => a - b)[Math.floor(rows.length / 2)] : null;
+          const groups = {};
+          for (const r of rows) { rec[r.rid].pf += r.pts; if (r.mid != null) (groups[r.mid] = groups[r.mid] || []).push(r); if (median) addResult(rec[r.rid], r.pts, med); }
+          for (const g of Object.values(groups)) if (g.length === 2) { addResult(rec[g[0].rid], g[0].pts, g[1].pts); addResult(rec[g[1].rid], g[1].pts, g[0].pts); }
+        }
+
+        // 2. Remaining weeks: current week (live estimate) + future weeks (best projected lineups).
+        const liveCtx = gameDayData();
+        const futureWeeks = [];
+        for (let w = liveCtx ? currentWeek + 1 : currentWeek; w <= lastRegular; w++) futureWeeks.push(w);
+        const [projs, pairings] = await Promise.all([
+          Promise.all(futureWeeks.map(w => cachedWeekProjections(season, w))),
+          Promise.all(futureWeeks.map(w => fetchJson(`${API}/league/${league.league_id}/matchups/${w}`).catch(() => [])))
+        ]);
+        const weeks = [];
+        if (liveCtx) {
+          // This week: lineups are set, so use each team's live estimate (actual + still to come).
+          const cur = { week: currentWeek, teams: {}, pairs: pairsFrom(liveCtx.matchups || []) };
+          for (const m of liveCtx.matchups || []) {
+            const proj = gameDayProjection(m, liveCtx);
+            const actual = Number(m.custom_points ?? m.points ?? 0);
+            const mean = Number.isFinite(proj.live) ? proj.live : Number.isFinite(proj.original) ? proj.original : actual;
+            const remaining = Math.max(0, mean - actual);
+            cur.teams[String(m.roster_id)] = { mean, sd: Number.isFinite(proj.live) ? Math.sqrt(6.5 * remaining) : weekSd(mean) };
+          }
+          weeks.push(cur);
+        }
+        futureWeeks.forEach((w, i) => {
+          const wk = { week: w, teams: {}, pairs: pairsFrom(pairings[i] || []) };
+          for (const roster of rosters) {
+            const best = projectedBestLineup(roster, w, projs[i] || {}, base, currentWeek);
+            wk.teams[String(roster.roster_id)] = { mean: best.mean, sd: weekSd(best.mean), byes: best.byes };
+          }
+          weeks.push(wk);
+        });
+
+        // 3. Simulate the rest of the season many times.
+        const N = 4000;
+        const playoffTeams = Math.min(ids.length, Number(settings.playoff_teams || 6));
+        const pow2 = 2 ** Math.ceil(Math.log2(Math.max(1, playoffTeams)));
+        const byes = playoffTeams === pow2 ? 0 : pow2 - playoffTeams;
+        const divisions = Number(settings.divisions || 0);
+        const divisionOf = Object.fromEntries(rosters.map(r => [String(r.roster_id), Number(r.settings?.division || 0)]));
+        const tally = Object.fromEntries(ids.map(id => [id, { playoff: 0, bye: 0, one: 0, seed: 0, w: 0, l: 0, t: 0, pf: 0 }]));
+        for (let n = 0; n < N; n++) {
+          const sim = Object.fromEntries(ids.map(id => [id, { ...rec[id] }]));
+          for (const wk of weeks) {
+            const scores = {};
+            for (const id of ids) { const t = wk.teams[id]; scores[id] = t ? Math.max(0, t.mean + (t.sd ? t.sd * gaussian() : 0)) : 0; sim[id].pf += scores[id]; }
+            for (const [a, b] of wk.pairs) { if (sim[a] && sim[b]) { addResult(sim[a], scores[a], scores[b]); addResult(sim[b], scores[b], scores[a]); } }
+            if (median) {
+              const med = ids.map(id => scores[id]).sort((x, y) => x - y)[Math.floor(ids.length / 2)];
+              for (const id of ids) addResult(sim[id], scores[id], med);
+            }
+          }
+          const order = seedOrder(ids, sim, divisions, divisionOf);
+          order.forEach((id, i) => {
+            const t = tally[id];
+            if (i < playoffTeams) t.playoff++;
+            if (i < byes) t.bye++;
+            if (i === 0) t.one++;
+            t.seed += i + 1;
+            t.w += sim[id].w; t.l += sim[id].l; t.t += sim[id].t; t.pf += sim[id].pf;
+          });
+        }
+        const rows = ids.map(id => ({
+          rid: id, playoff: tally[id].playoff / N, bye: tally[id].bye / N, one: tally[id].one / N, seed: tally[id].seed / N,
+          w: tally[id].w / N, l: tally[id].l / N, t: tally[id].t / N, pf: tally[id].pf / N, now: rec[id]
+        })).sort((a, b) => b.playoff - a.playoff || a.seed - b.seed);
+
+        // Your path: each remaining week's matchup with an estimated win chance.
+        const me = String(els.myTeam.value || '');
+        const path = me ? weeks.map(wk => {
+          const pair = wk.pairs.find(p => p.includes(me));
+          const oppId = pair ? pair.find(x => x !== me) : null;
+          const a = wk.teams[me], b = oppId ? wk.teams[oppId] : null;
+          const sd = a && b ? Math.sqrt((a.sd || 0) ** 2 + (b.sd || 0) ** 2) : 0;
+          const p = a && b ? (sd < 0.5 ? (a.mean > b.mean ? 1 : a.mean < b.mean ? 0 : 0.5) : normalCdf((a.mean - b.mean) / sd)) : null;
+          return { week: wk.week, oppId, mine: a?.mean ?? null, theirs: b?.mean ?? null, p, byes: a?.byes || [], live: Boolean(liveCtx) && wk.week === currentWeek };
+        }) : [];
+
+        const result = { rows, path, N, playoffTeams, byes, median, divisions, lastRegular, weeksLeft: weeks.length, computedAt: Date.now() };
+        app.playoff = { key, at: Date.now(), loading: false, result };
+        return result;
+      } catch (err) {
+        app.playoff = { key, at: Date.now(), loading: false, result: null, error: err.message || 'Could not calculate playoff odds' };
+        return null;
+      } finally {
+        if (app.playoff) app.playoff.loading = false;
+        renderPlayoffViews();
+      }
+
+      function addResult(row, pts, oppPts) {
+        if (pts > oppPts) row.w++; else if (pts < oppPts) row.l++; else row.t++;
+      }
+      function pairsFrom(matchups) {
+        const groups = {};
+        for (const m of matchups) if (m && m.matchup_id != null) (groups[m.matchup_id] = groups[m.matchup_id] || []).push(String(m.roster_id));
+        return Object.values(groups).filter(g => g.length === 2);
+      }
+      function seedOrder(teamIds, sim, divs, divOf) {
+        const pct = r => { const g = r.w + r.l + r.t; return g ? (r.w + r.t / 2) / g : 0; };
+        const byRecord = (a, b) => pct(sim[b]) - pct(sim[a]) || sim[b].pf - sim[a].pf;
+        const sorted = [...teamIds].sort(byRecord);
+        if (divs <= 1) return sorted;
+        const winners = [];
+        for (let d = 1; d <= divs; d++) { const top = sorted.find(id => divOf[id] === d); if (top) winners.push(top); }
+        winners.sort(byRecord);
+        return [...winners, ...sorted.filter(id => !winners.includes(id))];
+      }
+    }
+
+    function pctText(p) {
+      if (p >= 0.995 && p < 1) return '>99%';
+      if (p > 0 && p < 0.005) return '<1%';
+      return `${Math.round(p * 100)}%`;
+    }
+
+    function renderPlayoffViews() {
+      renderPlayoffPanel();
+      const tile = document.querySelector('#homeContent [data-playoff-tile]');
+      if (tile) renderHome();
+    }
+
+    function renderPlayoffPanel() {
+      const el = document.getElementById('playoffContent');
+      if (!el) return;
+      const state = app.playoff;
+      if (!app.data) { el.innerHTML = '<div class="empty">Waiting for league data.</div>'; return; }
+      if (state?.loading && !state.result) { el.innerHTML = '<div class="player-modal-loading">Projecting every remaining matchup and simulating the season…</div>'; return; }
+      if (state?.error && !state.result) { el.innerHTML = `<div class="empty">Couldn't calculate playoff odds: ${escapeHtml(state.error)}. Pull down to retry.</div>`; return; }
+      const r = state?.result;
+      if (!r) { el.innerHTML = '<div class="empty">Open this section to calculate playoff odds.</div>'; return; }
+      if (r.done) { el.innerHTML = '<div class="empty">The regular season is over, so the playoff field is set.</div>'; return; }
+      const me = String(els.myTeam.value || '');
+      const rows = r.rows.map((row, i) => `
+        <button type="button" class="power-row playoff-row ${row.rid === me ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
+          <span class="power-rank mono">${String(i + 1).padStart(2, '0')}</span>
+          <span class="power-main"><strong>${escapeHtml(rosterName(row.rid))}${row.rid === me ? ' <span class="pill me">YOU</span>' : ''}</strong>
+            <span class="small">Now <span class="mono">${row.now.w}-${row.now.l}${row.now.t ? `-${row.now.t}` : ''}</span> · Projected <span class="mono">${Math.round(row.w)}-${Math.round(row.l)}${Math.round(row.t) ? `-${Math.round(row.t)}` : ''}</span> · Avg seed <span class="mono">${row.seed.toFixed(1)}</span>${r.byes ? ` · Bye <span class="mono">${pctText(row.bye)}</span>` : ''}</span></span>
+          <span class="power-side"><span class="power-score mono">${pctText(row.playoff)}</span><span class="power-luck">make playoffs</span></span>
+          <span class="meter power-meter" aria-hidden="true">${Array.from({ length: 10 }, (_, k) => `<i class="${k < Math.round(row.playoff * 10) ? 'on' : ''}"></i>`).join('')}</span>
+        </button>`).join('');
+      const path = r.path.length ? `<div class="playoff-path">
+          <div class="feed-head"><span class="feed-label">Your remaining schedule</span></div>
+          ${r.path.map(w => `<div class="path-row ${w.p === null ? '' : w.p >= 0.5 ? 'fav' : 'dog'}">
+            <span class="path-week mono">WK${String(w.week).padStart(2, '0')}${w.live ? ' · now' : ''}</span>
+            <span class="path-main"><button type="button" class="team-link" ${w.oppId ? `data-open-team="${escapeHtml(w.oppId)}"` : 'disabled'}>${w.oppId ? `vs ${escapeHtml(rosterName(w.oppId))}` : 'No opponent'}</button>
+              <span class="small mono">${w.mine === null ? '' : `You ${w.mine.toFixed(1)} – ${w.theirs === null ? '—' : w.theirs.toFixed(1)}`}${w.byes.length ? ` · Bye: ${escapeHtml(w.byes.slice(0, 4).map(shortPlayerName).join(', '))}${w.byes.length > 4 ? ` +${w.byes.length - 4}` : ''}` : ''}</span></span>
+            <span class="path-pct mono">${w.p === null ? '—' : pctText(w.p)}</span>
+          </div>`).join('')}
+        </div>` : '';
+      el.innerHTML = `${path}<div class="power-list playoff-list">${rows}</div>
+        <div class="small league-note">${r.N.toLocaleString()} simulated seasons · top ${r.playoffTeams} make the playoffs${r.byes ? ` · top ${r.byes} get a bye` : ''}${r.median ? ' · includes median games' : ''} · ${r.weeksLeft} week${r.weeksLeft === 1 ? '' : 's'} left through Week ${r.lastRegular} · updated ${new Date(r.computedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Tap ⓘ for how it works.</div>`;
+    }
+
+    // Recalculate when League → Playoffs is open or My Week needs the tile (at most every 5 minutes).
+    function ensurePlayoffOdds() {
+      if (!app.data || app.playoff?.loading) return;
+      computePlayoffOdds();
+    }
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('[data-feed-toggle]')) return;
+      event.preventDefault();
+      feedState().expanded = !feedState().expanded;
+      renderHome();
+    });
+
+    function playoffTileHtml(roster) {
+      const r = app.playoff?.result;
+      const row = r?.rows?.find(x => x.rid === String(roster.roster_id));
+      if (!row && !app.playoff?.loading && !(app.playoff?.error)) setTimeout(ensurePlayoffOdds, 1200);
+      const inner = r?.done ? teamModalTile('Playoffs', 'Set', 'Regular season over')
+        : row ? teamModalTile('Playoff chance', pctText(row.playoff), `Projected ${Math.round(row.w)}-${Math.round(row.l)}${Math.round(row.t) ? `-${Math.round(row.t)}` : ''} · tap for details`)
+        : teamModalTile('Playoff chance', '…', app.playoff?.error ? 'Unavailable right now' : 'Calculating');
+      return `<button type="button" class="tile-link" data-route="league/playoffs" data-playoff-tile aria-label="Open playoff odds">${inner}</button>`;
+    }
     restoreLastSnapshot();
     startLeaderRefresh();
     startAutoRefresh({ runNow: Number(els.autoRefresh.value || 0) > 0 });
