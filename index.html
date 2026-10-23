@@ -3555,6 +3555,78 @@
     }
 
     .phone-topbar-btn[hidden] { display: none !important; }
+
+    /* ===== V4.1 search + pre-game leaders ===== */
+    .subnav-anchor { height: 0; }
+    .nav-search { position: relative; order: 10; margin-left: auto; display: flex; align-items: center; min-width: 0; }
+    .nav-gear { order: 11; margin-left: 0; }
+    .nav-search-icon { position: absolute; left: 11px; color: var(--muted); font-size: 18px; pointer-events: none; }
+    .nav-search input {
+      width: 240px; min-height: 44px; padding: 9px 12px 9px 34px;
+      background: var(--field); color: var(--text); border: 1.5px solid var(--line-strong); border-radius: 6px;
+      font-family: var(--font-body); font-size: 14px; outline: none;
+    }
+    .nav-search input:focus { border-color: var(--accent); box-shadow: 2px 2px 0 var(--accent); }
+    .nav-search-results {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 950; width: min(380px, 92vw); max-height: 60vh; overflow: auto;
+      display: grid; gap: 4px; padding: 6px;
+      background: var(--surface); border: 2px solid var(--ink-border); border-radius: 8px; box-shadow: var(--sh);
+    }
+    .nav-search-results[hidden] { display: none; }
+    .search-result {
+      display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; min-height: 52px;
+      padding: 6px 10px; text-align: left; color: var(--text); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px;
+    }
+    .search-result:hover, .search-result:focus-visible { border-color: var(--accent); outline: none; background: var(--surface); }
+    .search-kind { font-family: var(--font-cond); font-weight: 800; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-align: center; }
+    .search-kind.slot { color: var(--data); font-size: 14px; }
+    .search-main { display: grid; gap: 2px; min-width: 0; }
+    .search-main strong { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .search-empty { padding: 12px; font-size: 14px; color: var(--muted); }
+    .leader-row.is-pregame .leader-score strong { color: var(--data); }
+    @media (max-width: 760px) {
+      .dashboard-nav .nav-search { order: -1; width: 100%; margin: 0 0 4px; }
+      .dashboard-nav .nav-search input { width: 100%; font-size: 16px; }
+      .dashboard-nav .nav-search { flex-wrap: wrap; }
+      .dashboard-nav .nav-search-icon { top: 13px; }
+      .dashboard-nav .nav-search-results { position: static; flex: 1 0 100%; width: 100%; max-height: none; margin-top: 6px; box-shadow: none; }
+    }
+
+    @media (min-width: 761px) { .dashboard-nav { position: relative; z-index: 860; } }   /* keeps the search dropdown above page content */
+
+    /* ===== V4.2 win chance on matchups + pinned score ===== */
+    .mc-winline {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+      padding: 8px 14px 10px; background: var(--surface-2); border-bottom: 1px solid var(--line-strong);
+    }
+    .mc-winline .mc-win-label { grid-column: 1 / -1; font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; }
+    .mc-winline.is-final { grid-template-columns: 1fr; }
+    .mc-winline.is-final .mc-win-label { color: var(--text-2); font-size: 13px; }
+    .mc-win-pct { font-size: 15px; font-weight: 700; color: var(--muted); }
+    .mc-win-pct.lead { color: var(--text); font-weight: 800; }
+    .mc-win-track { position: relative; height: 8px; border: 1px solid var(--line-strong); border-radius: 2px; background: var(--surface); overflow: hidden; }
+    .mc-win-track i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+    .mc-win-track::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--ink-border); }
+
+    #matchups > .panel { overflow: clip; }
+    .matchup-card.me { overflow: clip; }
+    .mc-pin { position: sticky; top: 8px; z-index: 30; height: 0; }
+    .mc-pin-bar {
+      position: absolute; left: 8px; right: 8px; top: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 4px 10px;
+      padding: 8px 12px; background: var(--surface); border: 2px solid var(--accent); border-radius: 8px; box-shadow: 3px 3px 0 var(--accent);
+      opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .15s ease, transform .15s ease;
+    }
+    .matchup-card.pin-on .mc-pin-bar { opacity: 1; transform: none; }
+    .mc-pin-team { min-width: 0; font-family: var(--font-cond); font-weight: 800; font-size: 14px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mc-pin-team.right { text-align: right; }
+    .mc-pin-score { font-size: 18px; font-weight: 800; white-space: nowrap; }
+    .mc-pin-sub { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--muted); }
+    @media (max-width: 760px) {
+      .mc-pin { top: calc(max(6px, env(safe-area-inset-top, 0px)) + 70px); }
+      .mc-winline { padding: 8px 10px 10px; }
+    }
+
+    .mc-pin-team.is-you { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -3652,6 +3724,11 @@
         <span class="mobile-nav-action" aria-hidden="true"><span id="mobileNavAction">Menu</span><span class="hamburger-icon"><span></span><span></span><span></span></span></span>
       </button>
     <nav class="tabs" id="dashboardTabs" aria-label="Dashboard sections">
+      <div class="nav-search" role="search">
+        <span class="nav-search-icon" aria-hidden="true">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search players or teams" autocomplete="off" spellcheck="false" aria-label="Search players or teams" aria-controls="navSearchResults" />
+        <div class="nav-search-results" id="navSearchResults" role="listbox" aria-label="Search results" hidden></div>
+      </div>
       <button class="tab-btn active" data-tab="home" data-group="home">My Week</button>
       <button class="tab-btn" data-tab="matchups" data-group="matchups">Matchups</button>
       <button class="tab-btn" data-tab="overview" data-group="league">League</button>
@@ -3661,6 +3738,7 @@
       <div class="mobile-nav-help" hidden><button id="mobileGameDayToggle" type="button" aria-pressed="false">Show Game Day bar</button><button id="mobileNavReset" type="button">Reset position</button></div>
     </nav>
     </div>
+    <div class="subnav-anchor" id="subnavAnchor" aria-hidden="true"></div>
     <div class="subnav" id="subnav" role="tablist" aria-label="Sections" hidden></div>
 
     <section id="home" class="tab active" aria-label="My Week">
@@ -4048,9 +4126,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.0';
+    const APP_VERSION = '4.2';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
     const PATCH_NOTES = [
+      { version: '4.2', note: 'Every matchup now shows each team\'s estimated win chance (or the final margin), including the compact scoreboards. While you scroll through your own matchup\'s lineups, a slim score bar stays pinned at the top. Start/Sit can now compare your players with top free agents, and every player card has a Compare in Start/Sit button that fills the comparison in for you.' },
+      { version: '4.1', note: 'Search any player or team from the top of the Menu (or the search box next to Settings on desktop) and jump straight to their card. Switching chips inside League, Players or More now keeps your place in each section. Before kickoff, Stats Leaders ranks players by projected points with their kickoff time instead of showing everyone tied at zero.' },
       { version: '4.0', note: 'A simpler menu with 5 sections: My Week, Matchups, League, Players and More. League holds Standings, Awards, Power rankings, Head-to-head and Moves; Players holds Stats leaders, Projections and Free agents; More holds Rosters, League rules and Export. Chips at the top of each section switch between them, and each section reopens where you left it. Overview is folded into League → Standings. App settings (your team, theme, auto refresh, Game Day bar, install, welcome tour, commissioner tools and What\'s new) now live behind the ⚙ Settings button.' },
       { version: '3.9.3', note: 'If you haven\'t picked your team yet, a "Which team is yours?" popup now asks you to choose one when the league loads. Tap your team and you\'re set, or tap Not now to decide later.' },
       { version: '3.9.2', note: 'The welcome tour now appears each time you open the app until you tick "Don\'t show this again".' },
@@ -4872,7 +4952,7 @@
           <div id="playerLiveGameScore">${livePlayerGameScoreHtml(playerId, data)}</div>
         </section>
         <section class="player-modal-section"><div class="player-modal-section-title">Player Bio</div><div class="player-bio-grid">${playerBioItems(p, data)}</div></section>
-        <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions"><button class="btn-ghost" type="button" data-share="player/${escapeHtml(playerId)}" data-share-title="${escapeHtml(p.full_name || 'Player')}">Share link</button><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
+        <section class="player-modal-section"><div class="player-modal-section-title">Week ${week} Stats & Projection</div><div id="playerModalStats">${statTable}</div><div class="player-modal-actions">${els.myTeam.value && ['QB','RB','WR','TE','K','DEF'].includes(String(p.position || '').toUpperCase()) ? `<button class="btn-secondary" type="button" data-compare-player="${escapeHtml(playerId)}">Compare in Start/Sit</button>` : ''}<button class="btn-ghost" type="button" data-share="player/${escapeHtml(playerId)}" data-share-title="${escapeHtml(p.full_name || 'Player')}">Share link</button><button class="btn-ghost" id="refreshPlayerStatsBtn" type="button" data-player-id="${escapeHtml(playerId)}">Refresh stats</button></div></section>`;
     }
 
     async function openPlayerModal(playerId, leaderData = null) {
@@ -7208,13 +7288,34 @@
         const open = aMe || bMe || matchupOpenSet().has(mid);
         const aPts = a ? Number(a.points ?? 0) : null, bPts = b ? Number(b.points ?? 0) : null;
         const liveCount = [a, b].filter(Boolean).reduce((n, m) => n + (m.starters || []).filter(id => playerGameInfo(id, data).key === 'live').length, 0);
+        // V4.2: win chance on every matchup (or the result once both sides are final).
+        const bothFinal = a && b && matchupAllFinal(a, data) && matchupAllFinal(b, data);
+        const chance = a && b && !bothFinal ? winChance(a, b, data) : null;
+        const aPct = chance === null ? null : Math.round(chance * 100);
+        const winText = bothFinal
+          ? (aPts === bPts ? 'Final · tie' : `Final · ${escapeHtml(aPts > bPts ? (ar ? teamName(ao, ar) : 'Team') : (br ? teamName(bo, br) : 'Team'))} by ${numberOrDash(Math.abs(aPts - bPts), 2)}`)
+          : aPct === null ? '' : `${aPct}% – ${100 - aPct}%`;
+        const winLine = !a || !b ? '' : bothFinal
+          ? `<div class="mc-winline is-final"><span class="mc-win-label">${winText}</span></div>`
+          : aPct === null ? '' : `<div class="mc-winline" role="img" aria-label="${escapeHtml(`Estimated win chance ${aPct} to ${100 - aPct}`)}">
+              <span class="mc-win-pct mono ${aPct >= 50 ? 'lead' : ''}">${aPct}%</span>
+              <span class="mc-win-track"><i style="width:${aPct}%"></i></span>
+              <span class="mc-win-pct mono ${aPct < 50 ? 'lead' : ''}">${100 - aPct}%</span>
+              <span class="mc-win-label">Win chance · estimate</span>
+            </div>`;
+        const pinned = aMe || bMe ? `<div class="mc-pin" aria-hidden="true"><div class="mc-pin-bar">
+              <span class="mc-pin-team ${aMe ? 'is-you' : ''}">${escapeHtml(aMe ? 'You' : ar ? teamName(ao, ar) : 'Bye')}</span>
+              <span class="mc-pin-score mono">${a ? numberOrDash(aPts, 2) : '—'} – ${b ? numberOrDash(bPts, 2) : '—'}</span>
+              <span class="mc-pin-team right ${bMe ? 'is-you' : ''}">${escapeHtml(bMe ? 'You' : br ? teamName(bo, br) : 'Bye')}</span>
+              <span class="mc-pin-sub mono">Live estimate ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${winText ? ` · ${winText}` : ''}</span>
+            </div></div>` : '';
         const compact = `<button type="button" class="matchup-compact" data-toggle-matchup="${escapeHtml(mid)}" aria-expanded="${open}" aria-label="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}, show lineups`)}">
               <span class="mc-team">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</span>
               <span class="mc-score ${aPts !== null && bPts !== null && aPts > bPts ? 'lead' : ''}">${a ? numberOrDash(aPts, 1) : '—'}</span>
               <span class="mc-dash">–</span>
               <span class="mc-score ${aPts !== null && bPts !== null && bPts > aPts ? 'lead' : ''}">${b ? numberOrDash(bPts, 1) : '—'}</span>
               <span class="mc-team right">${escapeHtml(br ? teamName(bo, br) : 'Bye')}</span>
-              <span class="mc-live">Live estimate ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${liveCount ? ` · <span class="game-dot live"></span>${liveCount} playing` : ''}</span>
+              <span class="mc-live">Live estimate ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${liveCount ? ` · <span class="game-dot live"></span>${liveCount} playing` : ''}${winText ? ` · ${winText}` : ''}</span>
               <span class="mc-chev" aria-hidden="true">▾</span>
             </button>`;
         return `
@@ -7246,6 +7347,8 @@
                 <div class="matchup-state-summary">${escapeHtml(b ? matchupStatusSummary(b, data) : '')}</div>
               </div>
             </div>
+            ${winLine}
+            ${pinned}
             <div class="matchup-lineups">
               ${renderLineupSide(a, data)}
               ${renderLineupSide(b, data)}
@@ -7254,6 +7357,7 @@
       }).join('');
 
       replaceLiveContent(els.matchupGrid, cards);
+      watchPinnedScore();
       els.matchupsEmpty.style.display = cards ? 'none' : 'block';
       if (!cards) els.matchupsEmpty.textContent = `No matchup data found for Week ${data.selectedWeek || '—'}.`;
     }
@@ -7883,7 +7987,9 @@
         const active = btn.dataset.leaderPosition === hub.position;
         btn.classList.toggle('active', active); btn.setAttribute('aria-pressed', String(active));
       });
-      let rows = ready ? hub.rows : [];
+      // Before anyone has scored, everyone is tied at 0: rank by projection instead.
+      const pregame = Boolean(ready) && !hub.rows.some(row => Number(row.points) !== 0);
+      let rows = ready ? (pregame ? pregameLeaderRows() : hub.rows) : [];
       const position = hub.position;
       if (position !== 'ALL') rows = rows.filter(row => position === 'IDP'
         ? ['DL','DE','DT','LB','DB','CB','S','SS','FS','NT','EDGE'].includes(row.position)
@@ -7900,7 +8006,9 @@
       const count = rows.length;
       const limit = Number(els.leaderLimit.value) || rows.length;
       rows = rows.slice(0, limit);
-      els.leaderSummary.textContent = ready
+      els.leaderSummary.textContent = ready && pregame
+        ? `No games have kicked off yet, so players are ranked by projected points (this league's scoring). Live scores replace this at kickoff. Showing ${rows.length} of ${count}.`
+        : ready
         ? `Showing ${rows.length} of ${count} matching players · ${positionCount} ${position === 'ALL' ? 'NFL' : position} players with reported scores · Actual fantasy points under your league settings; ties share rank.`
         : 'Actual scoring leaders will appear here, including free agents.';
       const leaderHtml = rows.map(row => {
@@ -7909,8 +8017,17 @@
         const change = delta ? `<span class="leader-change ${delta < 0 ? 'down' : ''}">${delta > 0 ? '+' : ''}${delta.toFixed(2)} since last check</span>` : '';
         const details = statRowsForPlayer(row.position, row.stats, {}).filter(stat => stat.actual !== null).slice(0, 5)
           .map(stat => `${formatStatValue(stat.actual)} ${stat.label}`).join(' · ');
-        const gameBadge = gameStatusBadge(row.game) || `<span class="small">${escapeHtml(row.game.label)}</span>`;
         const rank = position === 'ALL' || position === 'IDP' ? row.rank : row.position_rank;
+        if (row.pregame) {
+          const kickoff = row.kickoff || row.game.label;
+          return `<button class="leader-row is-pregame" type="button" data-player-id="${escapeHtml(row.player_id)}" aria-label="Open ${escapeHtml(row.full_name)}, projected ${row.proj.toFixed(2)} points">
+            <span class="leader-rank">#${rank}</span>
+            <span class="leader-player"><strong>${escapeHtml(row.full_name)}</strong><span class="small">${escapeHtml(row.team || 'FA')} · ${escapeHtml(row.position)} #${row.position_rank} by projection · ${escapeHtml(row.owner?.team_name || 'Free agent')}</span><span class="leader-stats">${escapeHtml([row.opponent, kickoff].filter(Boolean).join(' · '))}</span></span>
+            <span class="leader-game"><span class="small">${escapeHtml(kickoff)}</span></span>
+            <span class="leader-score"><strong>${row.proj.toFixed(2)}</strong><span class="small">Projected</span></span>
+          </button>`;
+        }
+        const gameBadge = gameStatusBadge(row.game) || `<span class="small">${escapeHtml(row.game.label)}</span>`;
         return `<button class="leader-row" type="button" data-player-id="${escapeHtml(row.player_id)}" aria-label="Open ${escapeHtml(row.full_name)}, ${row.points.toFixed(2)} fantasy points">
           <span class="leader-rank">#${rank}</span>
           <span class="leader-player"><strong>${escapeHtml(row.full_name)}</strong><span class="small">${escapeHtml(row.team || 'FA')} · ${escapeHtml(row.position)} #${row.position_rank} this week · ${escapeHtml(row.owner?.team_name || 'Free agent')}</span><span class="leader-stats">${escapeHtml(details || 'Detailed stat line pending')}</span></span>
@@ -7922,7 +8039,7 @@
       els.leaderEmpty.hidden = Boolean(rows.length);
       els.leaderEmpty.textContent = !ready ? 'Refresh the league, then open Stats Leaders.'
         : scope === 'mine' && !els.myTeam.value ? 'Select your team at the top of the page to see its players.'
-        : !hub.rows.length ? 'No current-week scores reported yet. The list will update when scoring arrives.'
+        : !hub.rows.length && !pregame ? 'No current-week scores reported yet. The list will update when scoring arrives.'
         : 'No players match these filters. Try All players or All games.';
     }
 
@@ -8602,16 +8719,17 @@
 
     // V4.0: the menu shows 5 groups; each group holds one or more of the original pages
     // (and League's Awards / Power / H2H are views inside the #league page).
-    function activateTab(tabId, { updateHash = true, restoreFocus = false, scrollTop = true, view = null } = {}) {
+    function activateTab(tabId, { updateHash = true, restoreFocus = false, scrollTop = true, view = null, restoreScroll = false } = {}) {
       const page = document.getElementById(tabId);
       if (!page || !page.classList.contains('tab')) return;
+      rememberSectionScroll();
       const group = navGroupFor(tabId);
       const sections = group.sections;
       if (tabId === 'league') view = sections.some(s => s.tab === 'league' && s.view === view) ? view : (page.dataset.subview || 'awards');
       const section = sections.find(s => s.tab === tabId && (!s.view || s.view === view)) || sections[0];
       const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.group === group.id);
       mobileNavCurrent.textContent = sections.length > 1 ? `${group.label} · ${section.label}` : group.label;
-      if (scrollTop) window.scrollTo(0, 0);
+      if (scrollTop && !restoreScroll) window.scrollTo(0, 0);
       if (tabId === 'transactions') markTransactionsSeen();
       setMobileNavOpen(false, restoreFocus);
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
@@ -8619,6 +8737,7 @@
       if (view) page.dataset.subview = view;
       navMemory()[group.id] = { tab: tabId, view };
       renderSubnav(group, tabId, view);
+      if (restoreScroll) restoreSectionScroll(`${tabId}/${view || ''}`);
       if (updateHash) setTabHash(view ? `${tabId}/${view}` : tabId);
 
       startLeaderRefresh();
@@ -9060,19 +9179,38 @@
       const ids = startSitCandidates(roster);
       if (ids.length < 2) return '';
       const orig = id => { const v = Number(originalProjectedPoints(id, data)); return Number.isFinite(v) ? v : null; };
-      const live = id => { const v = Number(mine ? adjustedPlayerProjection(mine, id, data) : originalProjectedPoints(id, data)); return Number.isFinite(v) ? v : null; };
-      if (!st.startSit || st.startSit.rosterId !== rosterId || !ids.includes(st.startSit.a) || !ids.includes(st.startSit.b)) {
+      // Live estimate for anyone: your matchup / their fantasy team's matchup, or (free agents)
+      // their actual points from the live scoreboard.
+      const live = id => {
+        let m = matchupForPlayer(id, data);
+        if (!m) {
+          const row = (app.statsLeaders.rows || []).find(r => String(r.player_id) === String(id));
+          m = { players_points: row ? { [id]: row.points } : {}, starters: [] };
+        }
+        const v = Number(adjustedPlayerProjection(m, id, data));
+        return Number.isFinite(v) ? v : null;
+      };
+      const faIds = startSitFreeAgents(data);
+      const extra = st.startSit?.rosterId === rosterId && st.startSit.extra ? String(st.startSit.extra) : '';
+      const allowedB = new Set([...ids, ...faIds, ...(extra ? [extra] : [])]);
+      if (!st.startSit || st.startSit.rosterId !== rosterId || !ids.includes(st.startSit.a) || !allowedB.has(String(st.startSit.b))) {
         const [a, b] = defaultStartSitPair(ids, mine?.starters || roster.starters || [], id => orig(id) ?? 0,
           id => ['live', 'final', 'canceled'].includes(playerGameInfo(id, data).key));
-        st.startSit = { rosterId, a, b };
+        st.startSit = { rosterId, a, b, extra };
       }
       const starterSet = new Set((mine?.starters || roster.starters || []).map(String));
+      const mineSet = new Set(ids);
       const hubReady = app.projectionHub.loaded && app.projectionHub.week === Number(data?.selectedWeek || data?.state?.week);
       const groups = {};
       for (const id of ids) { const pos = playerPositions(id)[0] || 'Other'; (groups[pos] = groups[pos] || []).push(id); }
       const order = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
-      const optionHtml = selected => Object.keys(groups).sort((x, y) => { const ix = order.indexOf(x), iy = order.indexOf(y); return (ix === -1 ? 99 : ix) - (iy === -1 ? 99 : iy); }).map(pos =>
-        `<optgroup label="${escapeHtml(pos)}">${groups[pos].map(id => { const p = playerFromId(id); return `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(p.full_name)}${starterSet.has(id) ? ' · starter' : ''}</option>`; }).join('')}</optgroup>`).join('');
+      const optionFor = (id, selected, suffix = '') => { const p = playerFromId(id); return `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(p.full_name)}${suffix}</option>`; };
+      const mineOptions = selected => Object.keys(groups).sort((x, y) => { const ix = order.indexOf(x), iy = order.indexOf(y); return (ix === -1 ? 99 : ix) - (iy === -1 ? 99 : iy); }).map(pos =>
+        `<optgroup label="${escapeHtml(pos)}">${groups[pos].map(id => optionFor(id, selected, starterSet.has(id) ? ' · starter' : '')).join('')}</optgroup>`).join('');
+      const optionHtml = selected => mineOptions(selected);
+      const optionHtmlB = selected => `${extra && !mineSet.has(extra) && !faIds.includes(extra) ? `<optgroup label="From a player card">${optionFor(extra, selected, ` · ${playerFromId(extra).position || ''}`)}</optgroup>` : ''}
+        ${mineOptions(selected)}
+        ${faIds.length ? `<optgroup label="Top free agents">${faIds.map(id => optionFor(id, selected, ` · ${playerFromId(id).position || ''} · FA`)).join('')}</optgroup>` : ''}`;
 
       const col = id => {
         const p = playerFromId(id);
@@ -9093,7 +9231,7 @@
         <button type="button" class="home-player ss-name" data-player-id="${escapeHtml(c.id)}"><span class="home-player-name">${escapeHtml(c.p.full_name)}</span></button>
         <div class="small">${escapeHtml([c.p.position, c.p.team || 'FA', c.opp].filter(Boolean).join(' · '))}</div>
         <div class="small">${gameStatusBadge(c.info) || escapeHtml(c.kickoff || c.info.label)}${c.p.injury_status ? ` <span class="injury">${escapeHtml(c.p.injury_status)}</span>` : ''}</div>
-        <div class="small">${c.starter ? 'Starting' : 'On bench'}${c.rank?.rank ? ` · ${escapeHtml(c.rank.position || c.p.position)} #${escapeHtml(c.rank.rank)} season` : ''}</div>
+        <div class="small">${escapeHtml(mineSet.has(c.id) ? (c.starter ? 'Starting' : 'On bench') : (playerRosterContext(c.id, data)?.team_name ? `On ${playerRosterContext(c.id, data).team_name}` : 'Free agent'))}${c.rank?.rank ? ` · ${escapeHtml(c.rank.position || c.p.position)} #${escapeHtml(c.rank.rank)} season` : ''}</div>
       </div>`;
       const basis = Number.isFinite(A.consensus) && Number.isFinite(B.consensus) ? ['consensus', 'consensus'] : ['live', 'live estimate'];
       const diff = Number.isFinite(A[basis[0]]) && Number.isFinite(B[basis[0]]) ? Math.round((A[basis[0]] - B[basis[0]]) * 100) / 100 : null;
@@ -9109,7 +9247,7 @@
       return homeSection('Start / sit', `
         <div class="ss-pickers">
           <div class="field"><label for="ssPlayerA">Player A</label><select id="ssPlayerA" data-startsit="a">${optionHtml(A.id)}</select></div>
-          <div class="field"><label for="ssPlayerB">Player B</label><select id="ssPlayerB" data-startsit="b">${optionHtml(B.id)}</select></div>
+          <div class="field"><label for="ssPlayerB">Player B</label><select id="ssPlayerB" data-startsit="b">${optionHtmlB(B.id)}</select></div>
         </div>
         <div class="ss-compare">
           <div class="ss-heads">${head(A)}${head(B)}</div>
@@ -10321,10 +10459,264 @@
 
     document.addEventListener('click', event => {
       const chip = event.target.closest('[data-sub-tab]');
-      if (chip) { activateTab(chip.dataset.subTab, { view: chip.dataset.subView || null }); return; }
+      if (chip) { activateTab(chip.dataset.subTab, { view: chip.dataset.subView || null, restoreScroll: true }); return; }
       const gear = event.target.closest('[data-open-settings]');
       if (gear) { setMobileNavOpen(false); openSettingsSheet(); }
     });
+
+
+    /* ===== V4.1 search, scroll memory, pre-game leaders ===== */
+
+    // Stats Leaders before kickoff: ranked by this week's projection (league scoring).
+    function pregameLeaderRows() {
+      const hub = app.statsLeaders;
+      const base = hub.data || app.data;
+      const projData = Object.keys(base?.projections || {}).length ? base : app.data;
+      if (!base || !projData) return [];
+      const ownership = new Map();
+      for (const roster of base.rosters || []) {
+        const owner = ownerForRoster(roster, base.users || []);
+        for (const id of [...(roster.players || []), ...(roster.reserve || []), ...(roster.taxi || [])]) {
+          ownership.set(String(id), { roster_id: roster.roster_id, team_name: teamName(owner, roster) });
+        }
+      }
+      const rows = [];
+      for (const id of Object.keys(projData.projections || {})) {
+        const p = playerFromId(id);
+        if (!p.position || !p.team) continue;
+        const proj = Number(originalProjectedPoints(id, projData));
+        if (!Number.isFinite(proj) || proj <= 0) continue;
+        rows.push({ ...p, player_id: String(id), points: 0, proj: Math.round(proj * 100) / 100, stats: {},
+          game: playerGameInfo(id, base), kickoff: playerKickoffInfo(id, base).display || '', opponent: waiverOpponent(id, base),
+          owner: ownership.get(String(id)) || null, pregame: true });
+      }
+      rows.sort((a, b) => b.proj - a.proj || a.full_name.localeCompare(b.full_name));
+      const byPosition = new Map();
+      rows.forEach((row, i) => {
+        row.rank = i + 1;
+        const n = (byPosition.get(row.position) || 0) + 1;
+        byPosition.set(row.position, n);
+        row.position_rank = n;
+      });
+      return rows;
+    }
+
+    /* ---------- Keep your place when switching chips ---------- */
+    function sectionScrolls() {
+      if (!app.sectionScroll) app.sectionScroll = {};
+      return app.sectionScroll;
+    }
+
+    function rememberSectionScroll() {
+      const current = document.querySelector('.tab.active');
+      if (!current) return;
+      sectionScrolls()[`${current.id}/${current.dataset.subview || ''}`] = window.scrollY;
+    }
+
+    // Back to where you left that section; a section you haven't visited starts just under
+    // the chip row (instead of jumping all the way to the top of the page).
+    function restoreSectionScroll(key) {
+      const saved = sectionScrolls()[key];
+      const anchorEl = document.getElementById('subnavAnchor');
+      const bar = document.getElementById('subnav');
+      const stickTop = bar ? parseFloat(getComputedStyle(bar).top) || 0 : 0;
+      const anchor = anchorEl ? Math.max(0, anchorEl.getBoundingClientRect().top + window.scrollY - stickTop - 4) : 0;
+      const target = Number.isFinite(saved) ? saved : Math.min(window.scrollY, anchor);
+      window.scrollTo(0, target);
+      requestAnimationFrame(() => { if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target); });
+    }
+
+    /* ---------- Search players or teams from the Menu ---------- */
+    function searchIndex() {
+      const map = app.playerMap || {};
+      const rosterKey = (app.data?.rosters || []).map(r => `${r.roster_id}:${(r.players || []).length}`).join(',');
+      if (app.searchIdx && app.searchIdx.map === map && app.searchIdx.rosterKey === rosterKey) return app.searchIdx.list;
+      const ownership = new Map();
+      for (const roster of app.data?.rosters || []) {
+        const name = rosterName(roster.roster_id);
+        for (const id of [...(roster.players || []), ...(roster.reserve || []), ...(roster.taxi || [])]) ownership.set(String(id), name);
+      }
+      const fantasy = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+      const list = [];
+      for (const [id, p] of Object.entries(map)) {
+        if (!p) continue;
+        const positions = Array.isArray(p.fantasy_positions) && p.fantasy_positions.length ? p.fantasy_positions : [p.position];
+        if (!positions.some(pos => fantasy.includes(pos))) continue;
+        const name = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ');
+        if (!name) continue;
+        list.push({ id: String(id), name, lower: name.toLowerCase(), last: String(p.last_name || '').toLowerCase(),
+          pos: p.position || positions[0], team: p.team || '', owner: ownership.get(String(id)) || '', rank: Number(p.search_rank) || 1e9 });
+      }
+      app.searchIdx = { map, rosterKey, list };
+      return list;
+    }
+
+    function runSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (q.length < 2) return { teams: [], players: [] };
+      const teams = (app.data?.rosters || []).map(r => {
+        const owner = ownerForRoster(r, app.data.users || []);
+        return { id: String(r.roster_id), name: teamName(owner, r), manager: owner?.display_name || owner?.username || '' };
+      }).filter(t => t.name.toLowerCase().includes(q) || t.manager.toLowerCase().includes(q)).slice(0, 4);
+      const score = row => (row.lower.startsWith(q) || row.last.startsWith(q) ? 0 : 1) * 4 + (row.owner ? 0 : 1) * 2 + (row.team ? 0 : 1);
+      const players = searchIndex().filter(row => row.lower.includes(q))
+        .sort((a, b) => score(a) - score(b) || a.rank - b.rank || a.name.localeCompare(b.name)).slice(0, 8);
+      return { teams, players };
+    }
+
+    function renderSearchResults() {
+      const input = document.getElementById('navSearch');
+      const box = document.getElementById('navSearchResults');
+      if (!input || !box) return;
+      const q = input.value.trim();
+      if (q.length < 2) { box.hidden = true; box.innerHTML = ''; return; }
+      if (!app.data) { box.hidden = false; box.innerHTML = '<div class="search-empty">Loading the league…</div>'; return; }
+      const { teams, players } = runSearch(q);
+      const teamHtml = teams.map(t => `<button type="button" class="search-result" role="option" data-search-team="${escapeHtml(t.id)}"><span class="search-kind">Team</span><span class="search-main"><strong>${escapeHtml(t.name)}</strong><span class="small">${escapeHtml(t.manager)}</span></span></button>`).join('');
+      const playerHtml = players.map(p => `<button type="button" class="search-result" role="option" data-search-player="${escapeHtml(p.id)}"><span class="search-kind slot">${escapeHtml(p.pos)}</span><span class="search-main"><strong>${escapeHtml(p.name)}</strong><span class="small">${escapeHtml(p.team || 'FA')} · ${escapeHtml(p.owner || 'Free agent')}</span></span></button>`).join('');
+      box.hidden = false;
+      box.innerHTML = teamHtml || playerHtml ? `${teamHtml}${playerHtml}` : `<div class="search-empty">No players or teams match "${escapeHtml(q)}".</div>`;
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('navSearch');
+      if (input) input.value = '';
+      renderSearchResults();
+    }
+
+    {
+      const input = document.getElementById('navSearch');
+      const box = document.getElementById('navSearchResults');
+      input.addEventListener('input', renderSearchResults);
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') { event.preventDefault(); box.querySelector('.search-result')?.click(); }
+        else if (event.key === 'ArrowDown') { event.preventDefault(); box.querySelector('.search-result')?.focus(); }
+        else if (event.key === 'Escape' && input.value) { event.stopPropagation(); clearSearch(); }
+      });
+      box.addEventListener('keydown', event => {
+        const items = [...box.querySelectorAll('.search-result')];
+        const i = items.indexOf(document.activeElement);
+        if (event.key === 'ArrowDown' && i >= 0) { event.preventDefault(); items[Math.min(items.length - 1, i + 1)].focus(); }
+        if (event.key === 'ArrowUp' && i >= 0) { event.preventDefault(); (i === 0 ? input : items[i - 1]).focus(); }
+      });
+      box.addEventListener('click', event => {
+        const player = event.target.closest('[data-search-player]');
+        const team = event.target.closest('[data-search-team]');
+        if (!player && !team) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setMobileNavOpen(false);
+        clearSearch();
+        input.blur();
+        if (player) openPlayerModal(player.dataset.searchPlayer);
+        else openTeamModal(team.dataset.searchTeam);
+      });
+      // Close the desktop results when clicking elsewhere.
+      document.addEventListener('click', event => {
+        if (!box.hidden && !event.target.closest('.nav-search')) { box.hidden = true; }
+      });
+      input.addEventListener('focus', renderSearchResults);
+    }
+
+
+    /* ===== V4.2 win chance everywhere, pinned score, Start/Sit vs free agents ===== */
+
+    // Your matchup card: when its score header scrolls away, a slim score bar pins under the top bar.
+    function updatePinnedScore() {
+      const card = document.querySelector('#matchupGrid .matchup-card.me');
+      if (!card || !isTabActive('matchups')) return;
+      const head = card.querySelector('.matchup-head');
+      const pin = card.querySelector('.mc-pin');
+      if (!head || !pin) return;
+      const top = parseFloat(getComputedStyle(pin).top) || 0;
+      const headBottom = head.getBoundingClientRect().bottom;
+      const cardBottom = card.getBoundingClientRect().bottom;
+      card.classList.toggle('pin-on', headBottom < top + 4 && cardBottom > top + 90);
+    }
+
+    function watchPinnedScore() {
+      if (!app.pinScrollBound) {
+        app.pinScrollBound = true;
+        let queued = false;
+        window.addEventListener('scroll', () => {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(() => { queued = false; updatePinnedScore(); });
+        }, { passive: true });
+      }
+      updatePinnedScore();
+    }
+
+    // Top unrostered players this week by projection (positions this league can start).
+    function startSitFreeAgents(data, limit = 30) {
+      if (!data?.rosters) return [];
+      const rostered = new Set();
+      for (const r of data.rosters) for (const id of [...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])]) rostered.add(String(id));
+      const allowed = new Set(starterSlots(data.league).flatMap(slotEligibility));
+      const source = Object.keys(data.projections || {}).length ? data : app.data;
+      return Object.keys(source?.projections || {})
+        .filter(id => !rostered.has(String(id)) && playerFromId(id).team && playerPositions(id).some(pos => allowed.has(pos)))
+        .map(id => ({ id: String(id), proj: Number(originalProjectedPoints(id, source)) }))
+        .filter(row => Number.isFinite(row.proj) && row.proj > 0)
+        .sort((a, b) => b.proj - a.proj)
+        .slice(0, limit)
+        .map(row => row.id);
+    }
+
+    // "Compare in Start/Sit" from a player card: your player becomes A; anyone else becomes B
+    // against your weakest starter at that position.
+    function compareInStartSit(playerId) {
+      const rosterId = String(els.myTeam.value || '');
+      const data = gameDayData() || app.data;
+      const roster = (data?.rosters || []).find(r => String(r.roster_id) === rosterId);
+      if (!roster) return;
+      const ids = startSitCandidates(roster);
+      const id = String(playerId);
+      const mine = (data.matchups || []).find(m => String(m.roster_id) === rosterId);
+      const starters = new Set((mine?.starters || roster.starters || []).map(String));
+      const pos = playerPositions(id)[0];
+      const projOf = x => Number(originalProjectedPoints(x, data)) || 0;
+      const samePos = ids.filter(x => x !== id && playerPositions(x).includes(pos));
+      let a, b, extra = '';
+      if (ids.includes(id)) {
+        a = id;
+        b = samePos.sort((x, y) => Math.abs(projOf(x) - projOf(id)) - Math.abs(projOf(y) - projOf(id)))[0] || ids.find(x => x !== id);
+      } else {
+        a = samePos.filter(x => starters.has(x)).sort((x, y) => projOf(x) - projOf(y))[0] || samePos[0] || ids[0];
+        b = id;
+        extra = id;
+      }
+      league31().startSit = { rosterId, a, b, extra };
+      // Closing popups steps browser history back; switch to My Week once that has landed.
+      const hadPopup = routeState().depth > 0;
+      let done = false;
+      const go = () => {
+        if (done) return;
+        done = true;
+        activateTab('home');
+        renderHome();
+        requestAnimationFrame(() => {
+          const section = document.getElementById('ssPlayerA')?.closest('.home-section');
+          if (section) section.scrollIntoView({ block: 'start' });
+          window.scrollBy(0, -80);
+        });
+      };
+      if (hadPopup) {
+        window.addEventListener('popstate', () => setTimeout(go, 0), { once: true });
+        setTimeout(go, 500);
+      }
+      closePlayerModal();
+      closeTeamModal();
+      if (!hadPopup) go();
+    }
+
+    document.addEventListener('click', event => {
+      const btn = event.target.closest('[data-compare-player]');
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      compareInStartSit(btn.dataset.comparePlayer);
+    }, true);
 
     restoreLastSnapshot();
     startLeaderRefresh();
