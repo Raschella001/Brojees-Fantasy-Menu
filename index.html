@@ -3627,6 +3627,39 @@
     }
 
     .mc-pin-team.is-you { color: var(--accent); }
+
+    /* ===== V4.3 offline banner + still to play ===== */
+    .offline-banner {
+      display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 8px 8px 8px 12px;
+      background: var(--surface); border: 1.5px solid var(--danger); border-radius: var(--radius); box-shadow: inset 4px 0 0 var(--danger);
+      font-size: 14px; color: var(--text-2);
+    }
+    .offline-banner[hidden] { display: none; }
+    .offline-banner .status-dot { flex: 0 0 auto; margin: 0; }
+    .offline-banner span:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+    .offline-banner button { min-height: 40px; padding: 6px 12px; font-size: 14px; }
+
+    .still-to-play { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .stp-side { min-width: 0; padding: 10px; border: 1px dashed var(--line-strong); border-radius: 6px; background: var(--surface-2); }
+    .stp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+    .stp-label { font-family: var(--font-cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .stp-side:first-child .stp-label { color: var(--accent); }
+    .stp-count { font-size: 14px; font-weight: 800; }
+    .stp-list { display: grid; gap: 4px; }
+    .stp-slot { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: baseline; gap: 8px; padding: 4px 0; border-top: 1px dashed var(--line); }
+    .stp-slot:first-child { border-top: 0; }
+    .stp-when { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .stp-slot.is-live .stp-when { color: var(--warn-ink); font-weight: 700; }
+    .stp-names { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+    .stp-chip {
+      position: relative; display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 2px 6px;
+      background: transparent; color: var(--text); border: 0; border-radius: 4px; font-size: 14px; font-weight: 600;
+    }
+    .stp-chip::after { content: ""; position: absolute; inset: -6px -2px; }
+    .stp-chip:hover { background: var(--surface); color: var(--accent-text); }
+    .stp-chip:not(:last-child)::before { content: "·"; position: absolute; right: -5px; color: var(--muted); }
+    .stp-chip .game-dot { width: 7px; height: 7px; }
+    @media (max-width: 640px) { .still-to-play { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -3642,6 +3675,7 @@
       <button class="phone-topbar-btn" id="phoneHeaderBtn" type="button" aria-expanded="false" aria-controls="dashboardSetup" aria-label="Show header and controls" hidden><span class="phone-header-icon" aria-hidden="true">▾</span></button>
       <button class="phone-topbar-btn phone-gear" type="button" data-open-settings aria-label="Settings"><span aria-hidden="true">⚙</span></button>
     </div>
+    <div class="offline-banner" id="offlineBanner" role="status" hidden><span class="status-dot bad"></span><span id="offlineText">Offline</span><button type="button" class="btn-ghost" id="offlineRetry">Retry</button></div>
     <section class="game-day-bar" id="gameDayBar" aria-label="Game Day matchup" hidden>
       <div class="game-day-panel" id="gameDayPanel" role="region" aria-label="Game Day roster details and controls" tabindex="0" hidden>
         <div class="game-day-controls"><div class="field"><label for="gameDayTeam">Follow team</label><select id="gameDayTeam"><option value="">Select your team</option></select></div><div class="field"><label for="gameDayLive">Game Day refresh</label><select id="gameDayLive"><option value="15">Every 15 seconds</option><option value="30" selected>Every 30 seconds</option><option value="60">Every minute</option><option value="0">Paused</option></select></div><button id="gameDayRefresh" class="btn-primary" type="button">Refresh</button><button id="gameDayCollapse" class="btn-secondary" type="button">Collapse rosters</button><div class="game-day-status small" id="gameDayStatus" role="status">Refresh your league, then select a team.</div><div class="game-day-status small" id="gameDayProjectionNote">Pts = points scored · Projected = weekly projection · Live estimate = points so far + what's still expected</div></div>
@@ -4126,9 +4160,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.2';
-    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player';
+    const APP_VERSION = '4.3';
+    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip';
     const PATCH_NOTES = [
+      { version: '4.3', note: 'Opens instantly: the app shows your league as it was last time, marked with when it was updated, and swaps in fresh numbers a moment later. Coming back to the app after a minute or more refreshes it automatically, and an offline banner (with Retry) shows when there is no connection. My Week now lists who is still to play for you and your opponent, with live players first and kickoff times for the rest.' },
       { version: '4.2', note: 'Every matchup now shows each team\'s estimated win chance (or the final margin), including the compact scoreboards. While you scroll through your own matchup\'s lineups, a slim score bar stays pinned at the top. Start/Sit can now compare your players with top free agents, and every player card has a Compare in Start/Sit button that fills the comparison in for you.' },
       { version: '4.1', note: 'Search any player or team from the top of the Menu (or the search box next to Settings on desktop) and jump straight to their card. Switching chips inside League, Players or More now keeps your place in each section. Before kickoff, Stats Leaders ranks players by projected points with their kickoff time instead of showing everyone tied at zero.' },
       { version: '4.0', note: 'A simpler menu with 5 sections: My Week, Matchups, League, Players and More. League holds Standings, Awards, Power rankings, Head-to-head and Moves; Players holds Stats leaders, Projections and Free agents; More holds Rosters, League rules and Export. Chips at the top of each section switch between them, and each section reopens where you left it. Overview is folded into League → Standings. App settings (your team, theme, auto refresh, Game Day bar, install, welcome tour, commissioner tools and What\'s new) now live behind the ⚙ Settings button.' },
@@ -4563,6 +4598,9 @@
         if (dot) dot.className = els.statusDot.className;
       }
       document.getElementById('phoneTopbar')?.classList.toggle('is-busy', state === 'busy');
+      if (state === 'bad') app.lastRefreshFailed = true;
+      if (state === 'good') app.lastRefreshFailed = false;
+      if (typeof updateOfflineBanner === 'function') updateOfflineBanner();
       renderGameDayBar();
     }
 
@@ -8163,6 +8201,7 @@
       renderHome();
       onLeagueDataForHistory(data);
       applyPendingRoute();
+      saveLeagueSnapshotSoon(data);
     }
 
     async function fetchLiveRefreshData(leagueId, baseData) {
@@ -8209,12 +8248,14 @@
       setStatus('Auto-refreshing…', 'busy');
 
       try {
-        const sameLeague = String(app.data?.league?.league_id || '') === String(leagueId);
+        // After opening from saved data, do one full load (the NFL week may have moved on).
+        const sameLeague = String(app.data?.league?.league_id || '') === String(leagueId) && !app.bootedFromCache;
         const data = sameLeague
           ? await fetchLiveRefreshData(leagueId, app.data)
           : await fetchLeagueData(leagueId);
 
         app.data = data;
+        app.bootedFromCache = false;
         renderAll(data);
         if (app.activePlayerId && els.playerModalBackdrop.classList.contains('open')) {
           els.playerModalBody.innerHTML = renderPlayerModalBody(
@@ -8281,12 +8322,14 @@
       els.updateBtn.textContent = 'Refreshing…';
 
       try {
-        const sameLeague = String(app.data?.league?.league_id || '') === String(leagueId);
+        // After opening from saved data, do one full load (the NFL week may have moved on).
+        const sameLeague = String(app.data?.league?.league_id || '') === String(leagueId) && !app.bootedFromCache;
         const data = sameLeague
           ? await fetchLiveRefreshData(leagueId, app.data)
           : await fetchLeagueData(leagueId);
 
         app.data = data;
+        app.bootedFromCache = false;
         renderAll(data);
         if (app.activePlayerId && els.playerModalBackdrop.classList.contains('open')) {
           els.playerModalBody.innerHTML = renderPlayerModalBody(
@@ -8490,7 +8533,7 @@
       if (document.hidden) return;
       const minutes = Math.max(0, Number(els.autoRefresh.value || 0));
       if (!minutes) return;
-      const staleMs = minutes * 60 * 1000;
+      const staleMs = Math.min(minutes * 60 * 1000, 60 * 1000);   // back on screen after ~1 min → refresh
       if (!app.lastFetchAt || Date.now() - app.lastFetchAt >= staleMs) {
         refreshLiveData({ quiet: true });
       }
@@ -8499,7 +8542,7 @@
     window.addEventListener('focus', () => {
       const minutes = Math.max(0, Number(els.autoRefresh.value || 0));
       if (!minutes || document.hidden) return;
-      const staleMs = minutes * 60 * 1000;
+      const staleMs = Math.min(minutes * 60 * 1000, 60 * 1000);   // back on screen after ~1 min → refresh
       if (!app.lastFetchAt || Date.now() - app.lastFetchAt >= staleMs) {
         refreshLiveData({ quiet: true });
       }
@@ -9083,7 +9126,7 @@
         ${mine.matchup_id != null ? `<button type="button" class="btn-secondary" data-route="${escapeHtml(route)}">Full matchup</button>` : ''}
         ${mine.matchup_id != null ? `<button type="button" class="btn-ghost" data-share="${escapeHtml(route)}" data-share-title="${escapeHtml(`${rosterName(rosterId, ctx)} vs ${opp ? rosterName(opp.roster_id, ctx) : 'Bye'}`)}">Share</button>` : ''}
       </div>`;
-      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${winHtml}${h2hLine}${actions}`);
+      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${h2hLine}${actions}`);
     }
 
     function homePlayerChip(id, value, ctx) {
@@ -10717,6 +10760,109 @@
       event.stopPropagation();
       compareInStartSit(btn.dataset.comparePlayer);
     }, true);
+
+
+    /* ===== V4.3 instant open from saved data, offline banner, "still to play" ===== */
+
+    function leagueSnapshotKey(leagueId) {
+      return `league_snapshot_${leagueId}`;
+    }
+
+    // Save the latest league data (at most once a minute) so the next open can show it instantly.
+    function saveLeagueSnapshotSoon(data) {
+      if (!data?.league?.league_id || app.bootedFromCache) return;
+      const now = Date.now();
+      if (app.snapshotSavedAt && now - app.snapshotSavedAt < 60 * 1000) return;
+      app.snapshotSavedAt = now;
+      dbSet(leagueSnapshotKey(data.league.league_id), { savedAt: now, version: APP_VERSION, data }).catch(() => { /* private mode / full storage */ });
+    }
+
+    // Render last saved data straight away, then the normal refresh replaces it with fresh numbers.
+    async function bootFromCache() {
+      const leagueId = String(els.leagueId.value || '').trim();
+      if (!leagueId) return;
+      try {
+        const [snap, players] = await Promise.all([dbGet(leagueSnapshotKey(leagueId)), dbGet('nfl_players')]);
+        if (app.data || !snap?.data?.league || !players?.data) return;
+        if (Date.now() - Number(snap.savedAt || 0) > 7 * 24 * 60 * 60 * 1000) return;   // too old to be useful
+        app.playerMap = players.data;
+        app.projections = snap.data.projections || {};
+        app.originalProjectionSnapshot = snap.data.originalProjectionSnapshot || null;
+        app.bootedFromCache = true;
+        app.data = snap.data;
+        renderAll(snap.data);
+        app.lastFetchAt = Number(snap.savedAt);
+        els.lastUpdated.textContent = `Last update: ${new Date(snap.savedAt).toLocaleString()} (saved on this device)`;
+        if (!app.isRefreshing) setStatus('Showing saved data', '');
+        else setStatus('Showing saved data · refreshing…', 'busy');
+        updateAgoStamps();
+        updateOfflineBanner();
+      } catch (_) {
+        // No saved data yet: the normal first load runs as before.
+      }
+    }
+
+    function updateOfflineBanner() {
+      const banner = document.getElementById('offlineBanner');
+      if (!banner) return;
+      const offline = navigator.onLine === false;
+      const failed = Boolean(app.lastRefreshFailed);
+      const show = Boolean(app.data) && (offline || failed);
+      banner.hidden = !show;
+      if (!show) return;
+      const ts = latestUpdateAt();
+      const when = ts ? new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'earlier';
+      document.getElementById('offlineText').textContent = offline
+        ? `Offline · showing data from ${when}`
+        : `Can't reach Sleeper right now · showing data from ${when}`;
+    }
+
+    /* ---------- "Still to play" under the My Week score ---------- */
+    function stillToPlayList(matchup, ctx) {
+      if (!matchup) return [];
+      return (matchup.starters || []).filter(id => id && String(id) !== '0').map(id => {
+        const info = playerGameInfo(id, ctx);
+        const kick = playerKickoffInfo(id, ctx);
+        return { id: String(id), key: info.key, t: Date.parse(kick.iso || '') || Infinity, kickoff: kick.display || '' };
+      }).filter(row => row.key === 'live' || row.key === 'pre' || row.key === 'unknown')
+        .sort((a, b) => (a.key === 'live' ? 0 : 1) - (b.key === 'live' ? 0 : 1) || a.t - b.t);
+    }
+
+    function shortPlayerName(id) {
+      const p = playerFromId(id);
+      if (p.position === 'DEF') return p.team || p.full_name;
+      const first = String(p.first_name || '').trim();
+      const last = String(p.last_name || '').trim();
+      return first && last ? `${first[0]}. ${last}` : p.full_name;
+    }
+
+    function stillToPlayHtml(mine, opp, ctx) {
+      if (!mine) return '';
+      const sides = [{ label: 'You', rows: stillToPlayList(mine, ctx) }];
+      if (opp) sides.push({ label: 'Opponent', rows: stillToPlayList(opp, ctx) });
+      if (sides.every(side => !side.rows.length)) return '';
+      const chip = row => `<button type="button" class="stp-chip ${row.key === 'live' ? 'is-live' : ''}" data-player-id="${escapeHtml(row.id)}">${row.key === 'live' ? '<span class="game-dot live"></span>' : ''}${escapeHtml(shortPlayerName(row.id))}</button>`;
+      // Group by kickoff slot so each time is written once: "Sun 1 PM  J. Burrow · B. Robinson …"
+      const slots = rows => {
+        const groups = [];
+        for (const row of rows) {
+          const label = row.key === 'live' ? 'Playing now' : (row.kickoff || 'Time TBD').replace(/:00(?= ?[AP]M)/, '');
+          const group = groups.find(g => g.label === label);
+          if (group) group.rows.push(row); else groups.push({ label, live: row.key === 'live', rows: [row] });
+        }
+        return groups.map(g => `<div class="stp-slot ${g.live ? 'is-live' : ''}"><span class="stp-when mono">${escapeHtml(g.label)}</span><span class="stp-names">${g.rows.map(chip).join('')}</span></div>`).join('');
+      };
+      return `<div class="still-to-play">${sides.map(side => `
+        <div class="stp-side">
+          <div class="stp-head"><span class="stp-label">${side.label}</span><span class="stp-count mono">${side.rows.length ? `${side.rows.length} left` : 'All played'}</span></div>
+          ${side.rows.length ? `<div class="stp-list">${slots(side.rows)}</div>` : ''}
+        </div>`).join('')}</div>`;
+    }
+
+    window.addEventListener('online', () => { updateOfflineBanner(); refreshEverything().catch(() => {}); });
+    window.addEventListener('offline', updateOfflineBanner);
+    document.getElementById('offlineRetry').addEventListener('click', () => refreshEverything().catch(() => {}));
+    bootFromCache();
 
     restoreLastSnapshot();
     startLeaderRefresh();

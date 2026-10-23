@@ -2,7 +2,7 @@
 // The page itself is network-first, so a new index.html shows up on the next open;
 // the cached copy is only used when the network is down. League data (Sleeper,
 // ESPN, the Brojees Workers) is never cached here: it always comes live.
-const CACHE = 'brojees-shell-v4.2';
+const CACHE = 'brojees-shell-v4.3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png', './icons/favicon-48.png', './icons/logo-plate.png'];
 
 self.addEventListener('install', event => {
