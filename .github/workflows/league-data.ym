@@ -1,0 +1,63 @@
+# Builds the shared league data the app reads (data/history.json, data/records.json,
+# data/projections/*.json) and commits it only when something changed.
+name: League data
+
+on:
+  schedule:
+    - cron: '7 */2 * * *'   # every 2 hours (GitHub may start scheduled runs a few minutes late)
+  workflow_dispatch:         # "Run workflow" button on the Actions tab
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: league-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Today's date (for the player list cache)
+        id: day
+        run: echo "day=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Reuse today's Sleeper player list
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: sleeper-players-${{ steps.day.outputs.day }}
+
+      - name: Build league data
+        run: python scripts/build_league_data.py
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git config user.name "brojees-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "League data update"
+            git pull --rebase
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Republish the site
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
