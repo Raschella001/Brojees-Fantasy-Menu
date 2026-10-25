@@ -3739,6 +3739,29 @@
     .trophy-year { font-size: 20px; font-weight: 800; color: var(--accent); }
     .trophy-main { display: grid; gap: 3px; justify-items: start; min-width: 0; }
     div.power-row:hover { transform: none; box-shadow: none; border-color: var(--line-strong); }
+
+    /* ===== V4.7.1 Game Day bar stands out from the page ===== */
+    /* Only the outline changes: blue when docked, yellow (the LIVE colour) when open. */
+    .game-day-bar { border: 2.5px solid var(--accent); box-shadow: 4px 4px 0 var(--accent), var(--sh-lg); }
+    .game-day-label { font-size: 13px; padding: 5px 18px 5px 10px; }
+    .game-day-label::before { content: "● "; animation: gdPulse 1.6s ease-in-out infinite; }
+    @keyframes gdPulse { 50% { opacity: .25; } }
+    .game-day-hide { border: 1.5px solid var(--accent); color: var(--accent); font-weight: 800; }
+    .game-day-chevron { font-size: 22px; font-weight: 800; }
+    /* Open: dim the page behind it so it's obvious Game Day is up. */
+    .game-day-bar.is-expanded { border-color: var(--warning); box-shadow: 4px 4px 0 var(--warning), 0 0 0 100vmax rgb(4 6 11 / .6); }
+    .game-day-bar.is-expanded .game-day-panel { border-bottom: 2px solid var(--warning); }
+    .game-day-bar.is-dragging { transition: none; }
+    .game-day-bar.is-settling { transition: transform .18s ease; }
+    @media (max-width: 640px) {
+      /* Grab handle: swipe down from the top of the open bar to close it. */
+      .game-day-bar.is-expanded::before {
+        content: ""; position: absolute; z-index: 2; top: 6px; left: 50%; width: 46px; height: 5px; margin-left: -23px;
+        border-radius: 3px; background: var(--warning); pointer-events: none;
+      }
+      .game-day-bar.is-expanded .game-day-controls { padding-top: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .game-day-label::before { animation: none; } .game-day-bar.is-settling { transition: none; } }
   </style>
 </head>
 <body>
@@ -4251,9 +4274,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.7';
+    const APP_VERSION = '4.7.2';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.7.2', note: 'Game Day bar: back to the normal background, with only the outline standing out. Blue when it\'s docked, yellow when it\'s open. On phones, swipe down from the top of the open bar (the yellow handle) or from its score row to close it.' },
+      { version: '4.7.1', note: 'The Game Day bar now stands out from the page: a coloured border and tint, a striped top edge and a blinking ● GAME DAY label. When you open it, the page behind dims so it\'s obvious Game Day is up.' },
       { version: '4.7', note: 'New League → Records: the all-time record book. Champions, the highest and lowest scores, biggest blowouts, closest games, best player weeks, bench blunders, best seasons, win and losing streaks, and career records for every manager. A league data bot now saves every finished week, so Awards, Power and H2H open faster, and it freezes one copy of each week\'s projections before kickoff so everyone sees the same Projected numbers.' },
       { version: '4.6.1', note: 'The install step at the end of the welcome tour now always has an Install app button. It opens the install prompt where the browser supports it, and otherwise shows the exact steps for your phone (Share → Add to Home Screen on iPhone).' },
       { version: '4.6', note: 'The league ID, team picker and auto-refresh controls now live only in ⚙ Settings on every screen size, so they no longer sit above every page. The welcome tour ends with an Install step: one tap on Android and desktop, or step-by-step Add to Home Screen instructions on iPhone (skipped if the app is already installed).' },
@@ -11519,6 +11544,51 @@
       if (file.locked) { try { await dbSet(key, snapshot); } catch (_) { /* fine in memory */ } }
       return snapshot;
     }
+
+    /* ---------- Game Day: swipe down from the top of the open bar to close it ---------- */
+    (function setupGameDaySwipe() {
+      const bar = els.gameDayBar;
+      if (!bar) return;
+      let drag = null;
+      bar.addEventListener('touchstart', event => {
+        drag = null;
+        if (!app.gameDayExpanded || event.touches.length !== 1 || !window.matchMedia('(max-width: 640px)').matches) return;
+        if (event.target.closest('select, input, textarea, .game-day-controls button, .game-day-hide')) return;
+        const y = event.touches[0].clientY;
+        // The top strip (grab handle) or the score row at the bottom.
+        const fromTop = y - bar.getBoundingClientRect().top < 48;
+        if (!fromTop && !event.target.closest('.game-day-bottom')) return;
+        drag = { y, x: event.touches[0].clientX, t: Date.now(), dy: 0, active: false };
+      }, { passive: true });
+      bar.addEventListener('touchmove', event => {
+        if (!drag) return;
+        const dy = event.touches[0].clientY - drag.y;
+        const dx = Math.abs(event.touches[0].clientX - drag.x);
+        if (!drag.active) {
+          if (dy < -4 || dx > 12) { drag = null; return; }
+          if (dy < 8 || dx > dy) return;
+          drag.active = true;
+          bar.classList.remove('is-settling');
+          bar.classList.add('is-dragging');
+        }
+        drag.dy = Math.max(0, dy - 8);
+        bar.style.transform = `translateY(${drag.dy}px)`;
+        if (event.cancelable) event.preventDefault();
+      }, { passive: false });
+      const end = () => {
+        const d = drag;
+        drag = null;
+        if (!d || !d.active) return;
+        bar.classList.remove('is-dragging');
+        bar.classList.add('is-settling');
+        const speed = d.dy / Math.max(1, Date.now() - d.t);
+        if (d.dy > 90 || (d.dy > 45 && speed > 0.5)) setGameDayExpanded(false);
+        bar.style.transform = '';
+        setTimeout(() => bar.classList.remove('is-settling'), 200);
+      };
+      bar.addEventListener('touchend', end);
+      bar.addEventListener('touchcancel', end);
+    })();
 
     /* ---------- Record book ---------- */
     async function ensureRecordBook({ force = false } = {}) {
