@@ -3721,6 +3721,24 @@
     /* ===== V4.6.1 install steps in the welcome tour ===== */
     .install-steps { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; line-height: 1.5; }
     .install-steps li::marker { color: var(--accent); font-family: var(--font-mono); font-weight: 800; }
+
+    /* ===== V4.7 record book ===== */
+    #league[data-subview="records"] > .panel:not(#recordsPanel) { display: none; }
+    .record-section-title { margin: 22px 0 10px; font-family: var(--font-cond); font-size: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .record-section-title:first-child { margin-top: 0; }
+    .record-more { width: 100%; margin-top: 2px; }
+    .award-card:has(.record-more[open]) { grid-column: 1 / -1; }   /* an opened Top 5 gets the full width */
+    .record-more summary { display: flex; align-items: center; min-height: 40px; cursor: pointer; list-style: none; font-size: 14px; font-weight: 700; color: var(--accent); }
+    .record-more summary::-webkit-details-marker { display: none; }
+    .record-more[open] summary { color: var(--muted); }
+    .record-more ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; font-size: 14px; line-height: 1.4; }
+    .record-more ol .small { display: block; }
+    .trophy-list { display: grid; gap: 8px; }
+    .trophy-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface-2); border: 1.5px solid var(--line-strong); border-radius: 6px; }
+    .trophy-row.is-me { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .trophy-year { font-size: 20px; font-weight: 800; color: var(--accent); }
+    .trophy-main { display: grid; gap: 3px; justify-items: start; min-width: 0; }
+    div.power-row:hover { transform: none; box-shadow: none; border-color: var(--line-strong); }
   </style>
 </head>
 <body>
@@ -3880,6 +3898,12 @@
           <div class="field"><label for="h2hTeamB">Opponent</label><select id="h2hTeamB"></select></div>
         </div>
         <div id="h2hContent"><div class="empty">Pick two teams to compare their history.</div></div>
+      </div>
+      <div class="panel" id="recordsPanel">
+        <div class="panel-head">
+          <div><h2>Record Book<button type="button" class="info-btn" data-info="records" aria-label="What does this mean?">i</button></h2><div class="small" id="recordsStatus">All-time league records across every season.</div></div>
+        </div>
+        <div id="recordsContent"><div class="empty">Open this section to load the record book.</div></div>
       </div>
     </section>
 
@@ -4227,9 +4251,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.6.1';
+    const APP_VERSION = '4.7';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.7', note: 'New League → Records: the all-time record book. Champions, the highest and lowest scores, biggest blowouts, closest games, best player weeks, bench blunders, best seasons, win and losing streaks, and career records for every manager. A league data bot now saves every finished week, so Awards, Power and H2H open faster, and it freezes one copy of each week\'s projections before kickoff so everyone sees the same Projected numbers.' },
       { version: '4.6.1', note: 'The install step at the end of the welcome tour now always has an Install app button. It opens the install prompt where the browser supports it, and otherwise shows the exact steps for your phone (Share → Add to Home Screen on iPhone).' },
       { version: '4.6', note: 'The league ID, team picker and auto-refresh controls now live only in ⚙ Settings on every screen size, so they no longer sit above every page. The welcome tour ends with an Install step: one tap on Android and desktop, or step-by-step Add to Home Screen instructions on iPhone (skipped if the app is already installed).' },
       { version: '4.5', note: 'New League → Playoffs: playoff odds for every team from thousands of simulated seasons. Each remaining week uses that team\'s best projected lineup for that week (players on bye score 0 and the next best player steps in), this week uses the live estimate, and you get your remaining schedule with a win chance for each game. My Week shows your playoff chance, plus a "What changed" feed during games: points scored (TD, FG, INT), kickoffs, lead changes and win-chance swings.' },
@@ -5730,6 +5755,9 @@
     }
 
     async function loadOrCreateOriginalProjectionSnapshot(leagueId, season, week, projections, league, matchups) {
+      // The league data bot freezes one copy for everyone; use it when it exists.
+      const shared = await sharedProjectionSnapshot(leagueId, season, week);
+      if (shared) return shared;
       const key = `original_projection_${leagueId}_${season}_${week}`;
       try {
         const cached = await dbGet(key);
@@ -8881,6 +8909,7 @@
       if (tabId === 'home') renderHome();
       if (tabId === 'league') { renderLeague(); ensureLeagueHistory(); }
       if (tabId === 'league' && view === 'playoffs') { renderPlayoffPanel(); ensurePlayoffOdds(); }
+      if (tabId === 'league' && view === 'records') ensureRecordBook();
       updateNavBadges();
 
       if (tabId === 'transactions') {
@@ -9490,9 +9519,15 @@
       renderLeague();
       try {
         const seasonDone = base.league.status === 'complete';
-        const current = await loadSeasonHistory(base.league, base.rosters, base.users, { throughWeek: seasonDone ? 18 : currentWeek - 1, detailed: true });
-        const past = [];
-        let prev = current.previous_league_id;
+        const through = seasonDone ? 18 : currentWeek - 1;
+        // The league data bot's archive saves loading every past week from Sleeper.
+        const shared = await sharedFile('history.json');
+        const sharedOk = shared && String(shared.league_id) === String(base.league.league_id) && Array.isArray(shared.current?.weeks);
+        const current = sharedOk && Number(shared.through_week) >= through && String(shared.current.season) === String(base.league.season)
+          ? shared.current
+          : await loadSeasonHistory(base.league, base.rosters, base.users, { throughWeek: through, detailed: true });
+        const past = sharedOk && Array.isArray(shared.past) ? [...shared.past] : [];
+        let prev = past.length ? null : current.previous_league_id;
         for (let i = 0; prev && i < 6; i++) {
           const season = await loadPastSeasonCached(prev).catch(() => null);
           if (!season) break;
@@ -9636,6 +9671,7 @@
       const awardsEl = document.getElementById('awardsContent');
       if (!awardsEl) return;
       const st = league31();
+      if (st.recordsAt) renderRecordBook();
       const base = app.data;
       const powerEl = document.getElementById('powerContent');
       const h2hEl = document.getElementById('h2hContent');
@@ -10277,6 +10313,12 @@
           '<strong>All-play</strong>: each week your score is compared with every other team, not just your opponent. Beating 9 of 11 teams that week = 9-2.',
           '<strong>Power score</strong> = 60% season all-play win rate + 40% the last 3 weeks.',
           '<strong>Luck</strong> = actual wins minus the wins your scores would usually earn. Positive means your record is better than your scoring.'] },
+        records: { title: 'Record book', body: [
+          'The best and worst of every season this league has played, built by the league data bot and updated every couple of hours.',
+          'Single-game records use head-to-head games only. <strong>POST</strong> marks a playoff week (may include consolation games).',
+          '<strong>Season records</strong> and <strong>career records</strong> count regular-season games. Playoff trips and titles come from Sleeper\'s playoff bracket.',
+          '<strong>Bench blunder</strong> = points left on the bench compared with the best lineup that could have started.',
+          'Records follow the manager, so a team name change keeps its history. Tap ▸ Top 5 to see the runners-up.'] },
         h2h: { title: 'Head-to-head', body: [
           'Every meeting between two managers, including past seasons of this league.',
           'It follows the manager, so a team name change doesn\'t reset the history.',
@@ -10518,6 +10560,7 @@
           { tab: 'league', view: 'awards', label: 'Awards' },
           { tab: 'league', view: 'power', label: 'Power' },
           { tab: 'league', view: 'h2h', label: 'H2H' },
+          { tab: 'league', view: 'records', label: 'Records' },
           { tab: 'transactions', label: 'Moves' }] },
         { id: 'players', label: 'Players', sections: [
           { tab: 'leaders', label: 'Leaders' },
@@ -11442,6 +11485,158 @@
         : teamModalTile('Playoff chance', '…', app.playoff?.error ? 'Unavailable right now' : 'Calculating');
       return `<button type="button" class="tile-link" data-route="league/playoffs" data-playoff-tile aria-label="Open playoff odds">${inner}</button>`;
     }
+
+    /* ===== V4.7 shared league data (built by the league data bot) ===== */
+    // Small JSON files the GitHub Action commits to /data (scripts/build_league_data.py).
+    // They're optional: when one is missing, or is for another league, the app works
+    // things out itself as before.
+    function sharedFile(path, maxAgeMs = 10 * 60 * 1000) {
+      if (!app.sharedFiles) app.sharedFiles = {};
+      const hit = app.sharedFiles[path];
+      if (hit && Date.now() - hit.at < maxAgeMs) return hit.promise;
+      const promise = fetch(`./data/${path}`, { cache: 'no-cache' })
+        .then(response => response.ok ? response.json() : null)
+        .catch(() => null);
+      app.sharedFiles[path] = { at: Date.now(), promise };
+      return promise;
+    }
+
+    // One frozen copy of the week's projections for everyone, saved before kickoff.
+    async function sharedProjectionSnapshot(leagueId, season, week) {
+      const key = `shared_projection_${leagueId}_${season}_${week}`;
+      try {
+        const saved = await dbGet(key);
+        if (saved?.locked && saved.player_points && saved.team_totals) return saved;
+      } catch (_) { /* fetch it below */ }
+      const file = await sharedFile(`projections/${season}_${week}.json`);
+      if (!file || String(file.league_id) !== String(leagueId) || Number(file.season) !== Number(season) || Number(file.week) !== Number(week)) return null;
+      if (!file.player_points || !file.team_totals) return null;
+      // Saved after kickoff (the bot started mid-week): a copy this phone saved earlier is closer to pre-game.
+      if (file.late) {
+        try { if ((await dbGet(`original_projection_${leagueId}_${season}_${week}`))?.player_points) return null; } catch (_) { /* use the shared copy */ }
+      }
+      const snapshot = { ...file, shared: true };
+      if (file.locked) { try { await dbSet(key, snapshot); } catch (_) { /* fine in memory */ } }
+      return snapshot;
+    }
+
+    /* ---------- Record book ---------- */
+    async function ensureRecordBook({ force = false } = {}) {
+      const st = league31();
+      if (st.recordsLoading) return;
+      if (!force && st.recordsAt && Date.now() - st.recordsAt < 10 * 60 * 1000) { renderRecordBook(); return; }
+      st.recordsLoading = true;
+      renderRecordBook();
+      st.records = await sharedFile('records.json');
+      st.recordsLoading = false;
+      st.recordsAt = Date.now();
+      renderRecordBook();
+    }
+
+    function recordWhen(e) {
+      return `${e.season} · WK${String(e.week).padStart(2, '0')}${e.playoff ? ' · POST' : ''}`;
+    }
+
+    function recordBookHtml(book) {
+      const rosters = app.data?.rosters || [];
+      const ridFor = owner => rosters.find(r => String(r.owner_id || '') === String(owner || ''))?.roster_id ?? null;
+      const myOwner = String(rosters.find(r => String(r.roster_id) === String(els.myTeam.value || ''))?.owner_id || '');
+      const isMe = owner => Boolean(myOwner) && String(owner) === myOwner;
+      const teamBtn = (owner, team) => {
+        const rid = ridFor(owner);
+        const you = isMe(owner) ? ' <span class="pill me">YOU</span>' : '';
+        return rid != null
+          ? `<button type="button" class="team-link award-team" data-open-team="${escapeHtml(rid)}">${escapeHtml(team)}${you}</button>`
+          : `<span class="award-team">${escapeHtml(team)}${you}</span>`;
+      };
+      const pts = v => numberOrDash(v, 2);
+      const game = e => `${recordWhen(e)} · ${pts(e.score)}–${pts(e.opp_score)} vs ${e.opp_team}`;
+      const playerName = id => playerFromId(id)?.full_name || `Player ${id}`;
+      const streakSpan = e => `${e.from.season} WK${String(e.from.week).padStart(2, '0')} → ${e.to.season} WK${String(e.to.week).padStart(2, '0')}${e.active ? ' · still going' : ''}`;
+      const defs = {
+        high_score: ['Highest score', e => pts(e.value), game],
+        low_score: ['Lowest score', e => pts(e.value), game, 'bad'],
+        blowout: ['Biggest blowout', e => `+${pts(e.value)}`, game],
+        closest: ['Closest game', e => `+${pts(e.value)}`, game],
+        high_loss: ['Highest score in a loss', e => pts(e.value), game, 'bad'],
+        low_win: ['Lowest winning score', e => pts(e.value), game],
+        player_week: ['Best player week', e => pts(e.value), e => `${playerName(e.player_id)} · ${recordWhen(e)}`],
+        bench_blunder: ['Bench blunder', e => pts(e.value), e => `${recordWhen(e)} · scored ${pts(e.actual)} of ${pts(e.best)} possible`, 'bad'],
+        season_points: ['Most points in a season', e => pts(e.value), e => `${e.season} · ${e.w}-${e.l}${e.t ? `-${e.t}` : ''}${e.in_progress ? ' · in progress' : ''}`],
+        season_record: ['Best season record', e => `${e.w}-${e.l}${e.t ? `-${e.t}` : ''}`, e => `${e.season} · ${pts(e.pf)} PF${e.in_progress ? ' · in progress' : ''}`],
+        win_streak: ['Longest win streak', e => `${e.value}W`, streakSpan],
+        losing_streak: ['Longest losing streak', e => `${e.value}L`, streakSpan, 'bad']
+      };
+      const card = key => {
+        const list = book.records?.[key] || [];
+        const [label, value, detail, tone] = defs[key];
+        if (!list.length) return '';
+        const top = list[0];
+        const who = key === 'player_week'
+          ? `<button type="button" class="home-player award-team" data-player-id="${escapeHtml(top.player_id)}"><span class="home-player-name">${escapeHtml(playerName(top.player_id))}</span></button><span class="small">${escapeHtml(top.team)}${isMe(top.owner) ? ' · YOU' : ''}</span>`
+          : teamBtn(top.owner, top.team);
+        const more = list.length > 1 ? `<details class="record-more"><summary>▸ Top ${list.length}</summary><ol>${list.map(e => `<li><span class="mono">${escapeHtml(value(e))}</span> · ${escapeHtml(e.team)} <span class="small">${escapeHtml(key === 'player_week' ? `${playerName(e.player_id)} · ${recordWhen(e)}` : detail(e))}</span></li>`).join('')}</ol></details>` : '';
+        return `<article class="award-card ${isMe(top.owner) ? 'is-me' : ''} ${tone === 'bad' ? 'is-bad' : ''}">
+          <div class="tag-strip ${isMe(top.owner) ? 'is-selected' : ''}"><span class="tag-label">${escapeHtml(label)}</span><span class="tag-code">${escapeHtml(top.season || top.to?.season || '')}</span></div>
+          <div class="award-body">
+            <div class="award-value mono">${escapeHtml(value(top))}</div>
+            ${who}
+            <div class="small">${escapeHtml(key === 'player_week' ? recordWhen(top) : detail(top))}</div>
+            ${more}
+          </div>
+        </article>`;
+      };
+      const grid = keys => { const cards = keys.map(card).join(''); return cards ? `<div class="award-grid">${cards}</div>` : '<div class="empty">No games yet.</div>'; };
+
+      const champs = (book.champions || []).length ? `<div class="trophy-list">${book.champions.map(c => `
+        <div class="trophy-row ${isMe(c.owner) ? 'is-me' : ''}">
+          <span class="trophy-year mono">${escapeHtml(c.season)}</span>
+          <span class="trophy-main">${teamBtn(c.owner, c.team)}<span class="small">🏆 Champion${c.runner_team ? ` · Runner-up: ${escapeHtml(c.runner_team)}` : ''}</span></span>
+        </div>`).join('')}</div>`
+        : '<div class="empty">No finished seasons yet. Champions appear once a season\'s final is played.</div>';
+
+      const career = (book.managers || []).map((m, i) => {
+        const rid = ridFor(m.owner);
+        const tag = rid != null ? `button type="button" data-open-team="${escapeHtml(rid)}"` : 'div';
+        const titles = m.titles ? ` · ${'🏆'.repeat(Math.min(m.titles, 5))}` : '';
+        return `<${tag} class="power-row ${isMe(m.owner) ? 'is-me' : ''}">
+          <span class="power-rank mono">${String(i + 1).padStart(2, '0')}</span>
+          <span class="power-main"><strong>${escapeHtml(m.team)}${isMe(m.owner) ? ' <span class="pill me">YOU</span>' : ''}</strong>
+            <span class="small">${escapeHtml(m.name)} · ${m.seasons} season${m.seasons === 1 ? '' : 's'} · <span class="mono">${numberOrDash(m.avg, 1)}</span> avg · ${m.playoffs} playoff trip${m.playoffs === 1 ? '' : 's'}${escapeHtml(titles)}</span></span>
+          <span class="power-side"><span class="power-score mono">${m.w}-${m.l}${m.t ? `-${m.t}` : ''}</span><span class="power-luck mono">${Math.round(m.pct * 1000) / 10}% wins</span></span>
+        </${rid != null ? 'button' : 'div'}>`;
+      }).join('');
+
+      return `
+        <h3 class="record-section-title">Champions</h3>${champs}
+        <h3 class="record-section-title">Single-game records</h3>${grid(['high_score', 'low_score', 'blowout', 'closest', 'high_loss', 'low_win', 'player_week', 'bench_blunder'])}
+        <h3 class="record-section-title">Season records</h3>${grid(['season_points', 'season_record', 'win_streak', 'losing_streak'])}
+        <h3 class="record-section-title">All-time managers</h3>${career ? `<div class="power-list">${career}</div>` : '<div class="empty">No games yet.</div>'}
+        <div class="small league-note">Career records count regular-season games. Ordered by titles, then win rate, then points for.</div>`;
+    }
+
+    function renderRecordBook() {
+      const root = document.getElementById('recordsContent');
+      const status = document.getElementById('recordsStatus');
+      if (!root) return;
+      const st = league31();
+      const book = st.records;
+      const leagueId = String(app.data?.league?.league_id || '');
+      if (st.recordsLoading && !book) { root.innerHTML = '<div class="player-modal-loading">Loading the record book…</div>'; return; }
+      if (!book) {
+        root.innerHTML = '<div class="empty">The record book is built by the league data bot and appears after its first run. Check back soon.</div>';
+        return;
+      }
+      if (leagueId && String(book.league_id) !== leagueId) {
+        root.innerHTML = '<div class="empty">The record book is only built for the Brojees league.</div>';
+        return;
+      }
+      const built = new Date(book.generated_at);
+      const builtText = Number.isFinite(built.getTime()) ? built.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+      if (status) status.textContent = `${(book.seasons || []).length} season${(book.seasons || []).length === 1 ? '' : 's'} · through ${book.through?.season || ''} week ${book.through?.week ?? '—'}${builtText ? ` · updated ${builtText}` : ''}`;
+      root.innerHTML = recordBookHtml(book);
+    }
+
     restoreLastSnapshot();
     startLeaderRefresh();
     startAutoRefresh({ runNow: Number(els.autoRefresh.value || 0) > 0 });
