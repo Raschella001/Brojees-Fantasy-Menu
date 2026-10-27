@@ -3762,6 +3762,14 @@
       .game-day-bar.is-expanded .game-day-controls { padding-top: 20px; }
     }
     @media (prefers-reduced-motion: reduce) { .game-day-label::before { animation: none; } .game-day-bar.is-settling { transition: none; } }
+
+    /* ===== V4.8 trending pickups ===== */
+    .trend-badge {
+      display: inline-flex; align-items: center; margin-left: 6px; padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--warn-ink);
+      border: 1.5px solid var(--warning);
+    }
+    .waiver-mobile-details .trend-badge { margin-left: 0; }
   </style>
 </head>
 <body>
@@ -4075,6 +4083,7 @@
               <option value="projection">Projection: High to Low</option>
               <option value="position_rank">Position Rank</option>
               <option value="kickoff">Kickoff Time</option>
+              <option value="trending">🔥 Trending Adds (24h)</option>
               <option value="name">Player Name</option>
               <option value="team">NFL Team</option>
             </select>
@@ -4098,6 +4107,7 @@
           <button class="waiver-pos-btn" type="button" data-waiver-position="TE">TE</button>
           <button class="waiver-pos-btn" type="button" data-waiver-position="K">K</button>
           <button class="waiver-top-btn active" id="waiverTopBtn" type="button">Top Available</button>
+          <button class="waiver-top-btn" id="waiverTrendBtn" type="button">🔥 Trending</button>
         </div>
 
         <div class="waiver-summary" id="waiverSummary">Refresh the league to load available players.</div>
@@ -4274,9 +4284,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.7.2';
+    const APP_VERSION = '4.8';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
     const PATCH_NOTES = [
+      { version: '4.8', note: 'Trending pickups in Players → Free agents: a 🔥 badge shows how many Sleeper leagues added a player in the last 24 hours, and the new 🔥 Trending button lists the hottest free agents in this league (including breakout backups and rookies outside the usual list). Trending data from Sleeper.' },
       { version: '4.7.2', note: 'Game Day bar: back to the normal background, with only the outline standing out. Blue when it\'s docked, yellow when it\'s open. On phones, swipe down from the top of the open bar (the yellow handle) or from its score row to close it.' },
       { version: '4.7.1', note: 'The Game Day bar now stands out from the page: a coloured border and tint, a striped top edge and a blinking ● GAME DAY label. When you open it, the page behind dims so it\'s obvious Game Day is up.' },
       { version: '4.7', note: 'New League → Records: the all-time record book. Champions, the highest and lowest scores, biggest blowouts, closest games, best player weeks, bench blunders, best seasons, win and losing streaks, and career records for every manager. A league data bot now saves every finished week, so Awards, Power and H2H open faster, and it freezes one copy of each week\'s projections before kickoff so everyone sees the same Projected numbers.' },
@@ -6167,7 +6178,8 @@
     function waiverRows(data = app.data) {
       if (!data) return [];
       const pool = buildRelevantAvailablePlayers(data)?.players || [];
-      return pool.map(base => {
+      const adds = app.trending?.adds || {};
+      return [...pool, ...trendingFreeAgents(data, pool)].map(base => {
         const full = { ...playerFromId(base.player_id), ...base };
         const gameInfo = playerGameInfo(base.player_id, data);
         const kickoff = playerKickoffInfo(base.player_id, data);
@@ -6182,7 +6194,8 @@
           opponent,
           kickoff,
           kickoff_ts: kickoff?.iso ? new Date(kickoff.iso).getTime() : Number.POSITIVE_INFINITY,
-          game_info: gameInfo
+          game_info: gameInfo,
+          trend_adds: Number(adds[String(base.player_id)]) || 0
         };
       });
     }
@@ -6210,6 +6223,7 @@
       if (key === 'projection') return (a.projected_points ?? -999) - (b.projected_points ?? -999);
       if (key === 'position_rank') return (Number(a.position_rank) || 9999) - (Number(b.position_rank) || 9999) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
       if (key === 'kickoff') return (a.kickoff_ts - b.kickoff_ts) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
+      if (key === 'trending') return (a.trend_adds - b.trend_adds) || ((a.projected_points ?? -999) - (b.projected_points ?? -999));
       if (key === 'name') return String(a.full_name || '').localeCompare(String(b.full_name || ''));
       if (key === 'team') return String(a.team || '').localeCompare(String(b.team || '')) || String(a.full_name || '').localeCompare(String(b.full_name || ''));
       if (key === 'position') return String(a.position || '').localeCompare(String(b.position || '')) || ((b.projected_points ?? -999) - (a.projected_points ?? -999));
@@ -6233,15 +6247,17 @@
       const position = app.waiverPosition || 'ALL';
       const rawRows = waiverRows(data);
 
+      const key = app.waiverSortKey || 'top';
+      if (key === 'trending') loadTrending();
       let rows = rawRows.filter(row => {
         if (position !== 'ALL' && String(row.position) !== position) return false;
+        if (key === 'trending' && !row.trend_adds) return false;
         if (!search) return true;
         const haystack = [row.full_name, row.team, row.position, row.opponent, row.injury_status, row.position_rank ? `${row.position}${row.position_rank}` : '']
           .filter(Boolean).join(' ').toLowerCase();
         return haystack.includes(search);
       });
 
-      const key = app.waiverSortKey || 'top';
       rows.sort((a, b) => {
         const result = compareWaiverRows(a, b, key);
         return app.waiverSortDir === 'asc' ? result : -result;
@@ -6251,12 +6267,15 @@
       const projectionCount = rawRows.filter(r => Number.isFinite(Number(r.projected_points))).length;
       els.waiverWeekPill.textContent = `Week ${week}`;
       els.waiverStatus.textContent = `Relevant unrostered QB/RB/WR/TE/K players · ${projectionCount} with Week ${week} projections.`;
-      els.waiverSummary.innerHTML = `<strong>${rows.length}</strong> shown · <strong>${rawRows.length}</strong> relevant free agents · ${position === 'ALL' ? 'All positions' : escapeHtml(position)} · ${search ? `Search: <strong>${escapeHtml(els.waiverSearch.value)}</strong> · ` : ''}Top Available blends projection, season position rank, active status, and injury availability.`;
+      els.waiverSummary.innerHTML = `<strong>${rows.length}</strong> shown · <strong>${rawRows.length}</strong> relevant free agents · ${position === 'ALL' ? 'All positions' : escapeHtml(position)} · ${search ? `Search: <strong>${escapeHtml(els.waiverSearch.value)}</strong> · ` : ''}${key === 'trending'
+        ? (app.trending?.error && !app.trending?.at ? 'Trending players are unavailable right now.' : app.trending?.at ? '🔥 Trending = the most-added free agents across all Sleeper leagues in the last 24 hours. Trending data from Sleeper.' : 'Loading trending players…')
+        : 'Top Available blends projection, season position rank, active status, and injury availability. 🔥 = being added across Sleeper today.'}`;
 
       document.querySelectorAll('[data-waiver-position]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.waiverPosition === position);
       });
       if (els.waiverTopBtn) els.waiverTopBtn.classList.toggle('active', key === 'top');
+      document.getElementById('waiverTrendBtn')?.classList.toggle('active', key === 'trending');
 
       document.querySelectorAll('[data-waiver-sort]').forEach(btn => {
         const base = btn.dataset.waiverSort;
@@ -6270,7 +6289,7 @@
         const positionRank = Number.isFinite(Number(row.position_rank)) ? `#${row.position_rank}` : '—';
         return `<tr class="waiver-player-row" data-player-id="${escapeHtml(row.player_id)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(row.full_name)} player details">
           <td class="waiver-rank">${index + 1}</td>
-          <td class="waiver-player-cell"><div class="waiver-player-name">${escapeHtml(row.full_name)}</div><div class="waiver-player-sub">${escapeHtml([row.team, row.position].filter(Boolean).join(' · '))}</div></td>
+          <td class="waiver-player-cell"><div class="waiver-player-name">${escapeHtml(row.full_name)}</div><div class="waiver-player-sub">${escapeHtml([row.team, row.position].filter(Boolean).join(' · '))}${trendBadgeHtml(row)}</div></td>
           <td><span class="slot">${escapeHtml(row.position || '—')}</span></td>
           <td>${escapeHtml(row.team || '—')}</td>
           <td class="waiver-game">${escapeHtml(row.opponent || '—')}</td>
@@ -6294,6 +6313,7 @@
             <div><div class="waiver-mobile-proj">${row.projected_points === null ? '—' : numberOrDash(row.projected_points, 2)}</div><div class="waiver-mobile-proj-label">Proj</div></div>
           </div>
           <div class="waiver-mobile-details">
+            ${trendBadgeHtml(row)}
             <span>${escapeHtml(rankText)}</span>
             <span class="waiver-injury ${escapeHtml(injuryClass)}">${escapeHtml(injury)}</span>
             <span>${escapeHtml(row.kickoff?.display || 'Kickoff —')}</span>
@@ -8935,6 +8955,7 @@
       if (tabId === 'league') { renderLeague(); ensureLeagueHistory(); }
       if (tabId === 'league' && view === 'playoffs') { renderPlayoffPanel(); ensurePlayoffOdds(); }
       if (tabId === 'league' && view === 'records') ensureRecordBook();
+      if (tabId === 'waivers') loadTrending();
       updateNavBadges();
 
       if (tabId === 'transactions') {
@@ -11544,6 +11565,56 @@
       if (file.locked) { try { await dbSet(key, snapshot); } catch (_) { /* fine in memory */ } }
       return snapshot;
     }
+
+    /* ---------- Trending pickups (Sleeper's most-added players, last 24h) ---------- */
+    async function loadTrending({ force = false } = {}) {
+      if (!app.trending) app.trending = { adds: {}, at: 0, loading: false, error: '' };
+      const t = app.trending;
+      if (t.loading || (!force && t.at && Date.now() - t.at < 30 * 60 * 1000)) return;
+      t.loading = true;
+      try {
+        const list = await fetchJson(`${API}/players/nfl/trending/add?lookback_hours=24&limit=100`);
+        t.adds = Object.fromEntries((Array.isArray(list) ? list : []).filter(r => r?.player_id).map(r => [String(r.player_id), Number(r.count) || 0]));
+        t.at = Date.now();
+        t.error = '';
+      } catch (err) {
+        t.error = err.message || 'Trending unavailable';
+      } finally {
+        t.loading = false;
+        if (app.data && isTabActive('waivers')) renderWaivers(app.data);
+      }
+    }
+
+    // Trending players who are free agents in this league but outside the usual waiver pool
+    // (a rookie or backup who just got the job), so the Trending list isn't missing them.
+    function trendingFreeAgents(data, pool) {
+      const adds = app.trending?.adds || {};
+      if (!Object.keys(adds).length) return [];
+      const have = new Set(pool.map(p => String(p.player_id)));
+      const rostered = new Set();
+      for (const roster of data.rosters || []) for (const id of [...(roster.players || []), ...(roster.reserve || []), ...(roster.taxi || [])]) rostered.add(String(id));
+      return Object.keys(adds)
+        .filter(id => !have.has(id) && !rostered.has(id) && ['QB', 'RB', 'WR', 'TE', 'K'].includes(playerFromId(id)?.position) && playerFromId(id)?.team)
+        .map(id => ({ player_id: id, position: playerFromId(id).position, projected_points: projectedPoints(id, data) }));
+    }
+
+    function trendCountText(n) {
+      if (n >= 1e6) return `${Math.round(n / 1e5) / 10}M`;
+      return n >= 1000 ? `${Math.round(n / 100) / 10}K` : String(n);
+    }
+
+    function trendBadgeHtml(row) {
+      if (!row?.trend_adds) return '';
+      return `<span class="trend-badge" title="Added in ${escapeHtml(row.trend_adds.toLocaleString())} Sleeper leagues in the last 24 hours">🔥 +${escapeHtml(trendCountText(row.trend_adds))} adds</span>`;
+    }
+
+    document.getElementById('waiverTrendBtn')?.addEventListener('click', () => {
+      app.waiverSortKey = 'trending';
+      app.waiverSortDir = 'desc';
+      els.waiverSort.value = 'trending';
+      loadTrending();
+      if (app.data) renderWaivers(app.data);
+    });
 
     /* ---------- Game Day: swipe down from the top of the open bar to close it ---------- */
     (function setupGameDaySwipe() {
