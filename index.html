@@ -3901,6 +3901,23 @@
       .mw-layouts { grid-auto-columns: 140px; }
     }
     @media (prefers-reduced-motion: reduce) { .mw-eb-dot, .mw-tile.is-new { animation: none; } .mw-toast { transition: none; } }
+
+    /* ===== V4.9.1 Pin to My Week ===== */
+    .pin-btn {
+      display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; min-height: 40px; padding: 6px 12px; margin-left: auto;
+      font-family: var(--font-cond); font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+      color: var(--text); background: transparent; border: 1.5px dashed var(--line-strong); border-radius: 6px; cursor: pointer;
+    }
+    .pin-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .pin-btn.is-pinned { color: var(--accent); border: 1.5px solid var(--accent); }
+    .pin-short { display: none; }
+    @media (max-width: 640px) {
+      .pin-btn { padding: 6px 10px; }
+      .pin-long { display: none; }
+      .pin-short { display: inline; }
+    }
+    .mw-cell.mw-flash > * { animation: mwFlash 1.4s ease-out; }
+    @media (prefers-reduced-motion: reduce) { .mw-cell.mw-flash > * { animation: none; } }
   </style>
 </head>
 <body>
@@ -4415,9 +4432,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.9';
+    const APP_VERSION = '4.9.1';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item, [data-player-id].mw-row';
     const PATCH_NOTES = [
+      { version: '4.9.1', note: 'Pin to My Week: tap 📌 Pin on Standings, Playoff odds, Awards, Power rankings, Records, Matchups, League moves, Stats leaders or Free agents (or Trending) to add that card to My Week in one tap. Tap View in the pop-up to jump to it. Tap Pinned again to take it off.' },
       { version: '4.9', note: 'Make My Week yours: tap ✎ Customize My Week (bottom of My Week, or ⚙ Settings) to add, remove and reorder cards. Drag the ⠿ handle or use the arrows, and on tablets and computers pick S / M / L widths. 17 cards to choose from, including the league scoreboard, NFL games, standings, playoff odds, power rankings, last week\'s awards, league moves, the record book, trending pickups and top free agents. Start from a ready-made layout (Classic, Game day, League fan, Waiver hawk, Minimal), and undo any change. Your layout is saved on this device.' },
       { version: '4.8', note: 'Trending pickups in Players → Free agents: a 🔥 badge shows how many Sleeper leagues added a player in the last 24 hours, and the new 🔥 Trending button lists the hottest free agents in this league (including breakout backups and rookies outside the usual list). Trending data from Sleeper.' },
       { version: '4.7.2', note: 'Game Day bar: back to the normal background, with only the outline standing out. Blue when it\'s docked, yellow when it\'s open. On phones, swipe down from the top of the open bar (the yellow handle) or from its score row to close it.' },
@@ -6408,6 +6426,7 @@
       });
       if (els.waiverTopBtn) els.waiverTopBtn.classList.toggle('active', key === 'top');
       document.getElementById('waiverTrendBtn')?.classList.toggle('active', key === 'trending');
+      updatePinButtons();
 
       document.querySelectorAll('[data-waiver-sort]').forEach(btn => {
         const base = btn.dataset.waiverSort;
@@ -11915,6 +11934,7 @@
 
     function saveMyWeek() {
       try { localStorage.setItem('brojees_myweek_v1', JSON.stringify({ v: 1, cards: myWeekState().cards })); } catch (_) { /* still works this visit */ }
+      updatePinButtons();
     }
 
     function myWeekHas(type) {
@@ -11946,7 +11966,8 @@
       const cells = cards.map(card => {
         let html = '';
         try { html = catalog[card.type].render(env) || ''; } catch (err) { console.warn('My Week card failed:', card.type, err); html = homeSection(catalog[card.type].name, '<div class="empty mw-empty">This card hit a problem. Pull down to refresh.</div>'); }
-        return html ? `<div class="mw-cell size-${card.size}" data-mw-card="${escapeHtml(card.type)}">${html}</div>` : '';
+        const flash = app.myWeekFlash?.type === card.type && Date.now() < app.myWeekFlash.until ? ' mw-flash' : '';
+        return html ? `<div class="mw-cell size-${card.size}${flash}" data-mw-card="${escapeHtml(card.type)}">${html}</div>` : '';
       }).join('');
       const emptyState = cards.length ? '' : `<div class="mw-blank"><strong>Your My Week is empty.</strong><span class="small">Add the cards you want to see first.</span><button type="button" class="btn-primary" data-mw="edit">Add cards</button></div>`;
       return `<div class="mw-grid">${cells}</div>${emptyState}
@@ -12000,7 +12021,7 @@
       </div>`;
     }
 
-    function myWeekToast(message, undo) {
+    function myWeekToast(message, undo, label = 'Undo') {
       let toast = document.getElementById('mwToast');
       if (!toast) {
         toast = document.createElement('div');
@@ -12009,7 +12030,7 @@
         toast.setAttribute('role', 'status');
         document.body.appendChild(toast);
       }
-      toast.innerHTML = `<span>${escapeHtml(message)}</span>${undo ? '<button type="button" data-mw-undo>Undo</button>' : ''}`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>${undo ? `<button type="button" data-mw-undo>${escapeHtml(label)}</button>` : ''}`;
       toast.onclick = event => {
         if (!event.target.closest('[data-mw-undo]')) return;
         undo();
@@ -12143,6 +12164,72 @@
       };
       document.addEventListener('pointerup', end);
       document.addEventListener('pointercancel', end);
+    })();
+
+    /* ---------- Pin to My Week: a 📌 on sections that have a matching My Week card ---------- */
+    function pinTargets() {
+      return [
+        ['#overviewStandingsCard > .panel-head', 'standings'],
+        ['#playoffPanel > .panel-head', 'playoffs'],
+        ['#awardsPanel > .panel-head', 'awards'],
+        ['#powerPanel > .panel-head', 'power'],
+        ['#recordsPanel > .panel-head', 'records'],
+        ['#matchups > .panel > .panel-head', 'scoreboard'],
+        ['#transactions > .panel > .panel-head', 'moves'],
+        ['#leaders > .panel > .panel-head', 'leaders'],
+        ['#waivers .waiver-panel > .panel-head', 'waivers']   // Top free agents, or Trending when that list is showing
+      ];
+    }
+
+    function pinTypeFor(btn) {
+      return btn.dataset.pin === 'waivers' ? (app.waiverSortKey === 'trending' ? 'trending' : 'freeAgents') : btn.dataset.pin;
+    }
+
+    function updatePinButtons() {
+      const catalog = myWeekCatalog();
+      document.querySelectorAll('.pin-btn[data-pin]').forEach(btn => {
+        const type = pinTypeFor(btn);
+        const pinned = myWeekHas(type);
+        btn.classList.toggle('is-pinned', pinned);
+        btn.setAttribute('aria-pressed', String(pinned));
+        btn.setAttribute('aria-label', pinned ? `${catalog[type].name} is on My Week. Tap to remove it.` : `Pin ${catalog[type].name} to My Week`);
+        btn.title = pinned ? 'On My Week (tap to remove)' : `Pin ${catalog[type].name} to My Week`;
+        btn.querySelector('.pin-long').textContent = pinned ? 'On My Week' : 'Pin to My Week';
+        btn.querySelector('.pin-short').textContent = pinned ? 'Pinned' : 'Pin';
+      });
+    }
+
+    // Open My Week at that card. The highlight is kept through the refreshes that follow opening the tab.
+    function showMyWeekCard(type) {
+      app.myWeekFlash = { type, until: Date.now() + 1600 };
+      activateTab('home');
+      setTimeout(() => {
+        const cell = document.querySelector(`#homeContent [data-mw-card="${CSS.escape(type)}"]`);
+        if (cell) window.scrollTo(0, Math.max(0, window.scrollY + cell.getBoundingClientRect().top - 96));
+      }, 250);
+    }
+
+    (function setupPinButtons() {
+      for (const [selector, pin] of pinTargets()) {
+        const head = document.querySelector(selector);
+        if (!head || head.querySelector('.pin-btn')) continue;
+        head.insertAdjacentHTML('beforeend', `<button type="button" class="pin-btn" data-pin="${pin}" aria-pressed="false"><span aria-hidden="true">📌</span><span class="pin-long"></span><span class="pin-short"></span></button>`);
+      }
+      updatePinButtons();
+      document.addEventListener('click', event => {
+        const btn = event.target.closest('.pin-btn[data-pin]');
+        if (!btn) return;
+        event.preventDefault();
+        const type = pinTypeFor(btn);
+        const name = myWeekCatalog()[type].name;
+        if (myWeekHas(type)) {
+          changeMyWeek(`Removed ${name} from My Week`, cards => cards.splice(cards.findIndex(c => c.type === type), 1));
+        } else {
+          changeMyWeek('', cards => cards.push({ type, size: myWeekCatalog()[type].size }));
+          navigator.vibrate?.(10);
+          myWeekToast(`Pinned ${name} to My Week`, () => showMyWeekCard(type), 'View');
+        }
+      });
     })();
 
     /* ---------- Trending pickups (Sleeper's most-added players, last 24h) ---------- */
