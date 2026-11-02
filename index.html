@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" />
-  <style>
+  <style id="appStyles">
     * { box-sizing: border-box; }
 
     body {
@@ -3919,6 +3919,95 @@
     .mw-cell.mw-flash > * { animation: mwFlash 1.4s ease-out; }
     @media (prefers-reduced-motion: reduce) { .mw-cell.mw-flash > * { animation: none; } }
   </style>
+  <style>
+    /* V5.0 mobile layout on a wide screen (tablets, open foldables): a centered phone-style column. */
+    html[data-layout-wide] .shell { max-width: 780px; margin-inline: auto; }
+    html[data-layout-wide] .game-day-bar { max-width: 756px; }
+  </style>
+  <script>
+    // V5.0 Layout: Auto / Mobile / Desktop. The stylesheet's screen-width rules decide between the
+    // phone and desktop layouts; this switches them before first paint instead of duplicating them.
+    //   Auto    - touchscreen-first devices (phones, open foldables, tablets) get the mobile layout;
+    //             computers follow the window width as before.
+    //   Mobile  - the phone layout at any width (a centered column on wide screens).
+    //   Desktop - the desktop layout; narrow touch screens zoom out like "Request desktop site".
+    (function () {
+      var root = document.documentElement;
+      var meta = document.querySelector('meta[name="viewport"]');
+      var metaOriginal = meta ? meta.getAttribute('content') : '';
+      var sheet = document.getElementById('appStyles');
+      var rules = [];
+      function collect(list) {
+        for (var i = 0; i < list.length; i++) {
+          var rule = list[i];
+          if (rule.media && rule.cssRules) {
+            var text = rule.media.mediaText;
+            var max = /max-width:\s*(\d+)px/.exec(text), min = /min-width:\s*(\d+)px/.exec(text);
+            if (max && !min && +max[1] >= 600) rules.push({ rule: rule, original: text, kind: 'max', px: +max[1] });
+            else if (min && !max && +min[1] >= 700) rules.push({ rule: rule, original: text, kind: 'min', px: +min[1] });
+            collect(rule.cssRules);
+          }
+        }
+      }
+      try { collect(sheet.sheet.cssRules); } catch (_) { /* layout falls back to plain width rules */ }
+      function mm(q) { return !!(window.matchMedia && window.matchMedia(q).matches); }
+      function readMode() {
+        var m = 'auto';
+        try { m = localStorage.getItem('brojees_layout') || 'auto'; } catch (_) {}
+        return m === 'mobile' || m === 'desktop' ? m : 'auto';
+      }
+      function screenWidthNow() {
+        var landscape = screen.orientation ? /landscape/.test(screen.orientation.type) : window.innerWidth > window.innerHeight;
+        return landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+      }
+      var state = { mode: readMode(), phone: null, forced: null };
+      function apply() {
+        var mode = state.mode;
+        var touchFirst = mm('(pointer: coarse)') && !mm('(hover: hover)');
+        var forceMobile = mode === 'mobile' || (mode === 'auto' && touchFirst && Math.max(screen.width, screen.height) <= 1400);
+        var forceDesktop = mode === 'desktop';
+        for (var i = 0; i < rules.length; i++) {
+          var r = rules[i], text = r.original;
+          if (forceMobile) text = r.kind === 'max' ? 'all' : 'not all';
+          else if (forceDesktop && r.kind === 'max' && r.px <= 760) text = 'not all';   // drop the phone rules, keep tablet tweaks
+          if (r.rule.media.mediaText !== text) r.rule.media.mediaText = text;
+        }
+        var zoomChanged = false;
+        if (meta) {
+          var sw = screenWidthNow();
+          // Zoom out so the 1200px desktop page fits the screen (pinch zoom still works).
+          var content = forceDesktop && sw < 1000 ? 'width=1200, initial-scale=' + (Math.floor(sw / 1200 * 1000) / 1000) + ', viewport-fit=cover' : metaOriginal;
+          if (meta.getAttribute('content') !== content) { meta.setAttribute('content', content); zoomChanged = true; }
+        }
+        var phone = forceMobile || (!forceDesktop && mm('(max-width: 760px)'));
+        root.setAttribute('data-layout', phone ? 'mobile' : 'desktop');
+        if (forceMobile && window.innerWidth > 800) root.setAttribute('data-layout-wide', ''); else root.removeAttribute('data-layout-wide');
+        var changed = state.phone !== null && state.phone !== phone;
+        state.phone = phone;
+        state.forced = forceMobile ? 'mobile' : forceDesktop ? 'desktop' : null;
+        if (changed) { try { window.dispatchEvent(new Event('brojees-layoutchange')); } catch (_) {} }
+        return zoomChanged;
+      }
+      window.brojeesView = {
+        get mode() { return state.mode; },
+        get phone() { return state.phone; },
+        get forced() { return state.forced; },
+        set: function (mode) {
+          state.mode = mode === 'mobile' || mode === 'desktop' ? mode : 'auto';
+          try { localStorage.setItem('brojees_layout', state.mode); } catch (_) {}
+          // Phones only fit a zoomed-out (desktop) page on load, so a zoom change needs a reload.
+          return { reload: apply() };
+        },
+        apply: apply
+      };
+      apply();
+      // Folding, unfolding and rotating change the screen; re-check after it settles.
+      var timer = 0;
+      function later() { clearTimeout(timer); timer = setTimeout(apply, 120); }
+      window.addEventListener('resize', later);
+      window.addEventListener('orientationchange', later);
+    })();
+  </script>
 </head>
 <body>
   <div class="ptr" id="ptrIndicator" aria-hidden="true"><span class="ptr-light"></span><span id="ptrText">Pull to refresh</span></div>
@@ -4432,9 +4521,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.9.1';
+    const APP_VERSION = '5.0';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item, [data-player-id].mw-row';
     const PATCH_NOTES = [
+      { version: '5.0', note: 'Foldables and tablets now get the mobile layout: an opened Galaxy Z Fold, iPad or Android tablet shows the same phone-style app (Menu button, My Week cards, swipe gestures), centered on the wider screen. New ⚙ Settings → Layout: Auto (the default), Mobile (the phone layout everywhere) or Desktop (the full desktop layout, even on a phone, like "Request desktop site").' },
       { version: '4.9.1', note: 'Pin to My Week: tap 📌 Pin on Standings, Playoff odds, Awards, Power rankings, Records, Matchups, League moves, Stats leaders or Free agents (or Trending) to add that card to My Week in one tap. Tap View in the pop-up to jump to it. Tap Pinned again to take it off.' },
       { version: '4.9', note: 'Make My Week yours: tap ✎ Customize My Week (bottom of My Week, or ⚙ Settings) to add, remove and reorder cards. Drag the ⠿ handle or use the arrows, and on tablets and computers pick S / M / L widths. 17 cards to choose from, including the league scoreboard, NFL games, standings, playoff odds, power rankings, last week\'s awards, league moves, the record book, trending pickups and top free agents. Start from a ready-made layout (Classic, Game day, League fan, Waiver hawk, Minimal), and undo any change. Your layout is saved on this device.' },
       { version: '4.8', note: 'Trending pickups in Players → Free agents: a 🔥 badge shows how many Sleeper leagues added a player in the last 24 hours, and the new 🔥 Trending button lists the hottest free agents in this league (including breakout backups and rookies outside the usual list). Trending data from Sleeper.' },
@@ -8909,7 +8999,11 @@
     const mobileNavTabs = document.getElementById('dashboardTabs');
     const mobileNavBounds = document.getElementById('mobileNavBounds');
     const mobileNavReset = document.getElementById('mobileNavReset');
-    const mobileNavMedia = window.matchMedia('(max-width: 760px)');
+    // Behaves like a MediaQueryList for "phone layout", following the Layout setting.
+    const mobileNavMedia = {
+      get matches() { return isPhoneLayout(); },
+      addEventListener: (type, fn) => window.addEventListener('brojees-layoutchange', fn)
+    };
     // V3.1: the Menu button starts bottom-right, in easy thumb reach; the menu opens upward.
     // New storage key so everyone gets the new starting spot once; dragging still saves a position.
     const mobileNavPositionKey = 'sleeper_mobile_nav_position_v2';
@@ -9163,10 +9257,7 @@
       setHeaderCollapsed(isPhoneLayout() ? !phoneOpen : savedHeaderCollapsed, { persist: false });
     }
     applyDefaultHeaderState();
-    {
-      const phoneMedia = window.matchMedia('(max-width: 760px)');
-      if (phoneMedia.addEventListener) phoneMedia.addEventListener('change', applyDefaultHeaderState);
-    }
+    window.addEventListener('brojees-layoutchange', applyDefaultHeaderState);
     setGameDayMode(savedGameDayMode, { persist: false, focus: false, refresh: false });
 
     els.espnProjectionProxyUrl.value = espnProjectionProxyUrl();
@@ -10251,7 +10342,16 @@
 
     /* ===== V3.4 phone quality of life: slim top bar, compact matchups, menu badges, swipe to close ===== */
 
+    function layoutNoteText() {
+      const view = window.brojeesView;
+      const now = isPhoneLayout() ? 'mobile' : 'desktop';
+      if (!view || view.mode === 'auto') return `Auto: mobile layout on phones, foldables and tablets; desktop on computers. Showing the ${now} layout.`;
+      return view.mode === 'mobile' ? 'Always the mobile layout, centered on wide screens.' : 'Always the desktop layout. On a phone it zooms out like "Request desktop site".';
+    }
+
+    // The phone layout is showing (V5.0: decided by the Layout setting in <head>, not just width).
     function isPhoneLayout() {
+      if (window.brojeesView && window.brojeesView.phone !== null) return window.brojeesView.phone;
       return Boolean(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
     }
 
@@ -10365,7 +10465,7 @@
         let drag = null;
         sheet.addEventListener('touchstart', event => {
           drag = null;
-          if (event.touches.length !== 1 || !window.matchMedia('(max-width: 640px)').matches) return;
+          if (event.touches.length !== 1 || !isPhoneLayout()) return;
           if (sheet.scrollTop > 0 || event.target.closest('.table-wrap, select, input, textarea')) return;
           drag = { y: event.touches[0].clientY, x: event.touches[0].clientX, t: Date.now(), dy: 0, active: false };
         }, { passive: true });
@@ -10813,6 +10913,9 @@
           <div class="settings-row field"><label for="settingTeam">Your team</label><select id="settingTeam" data-setting="team">${teamOptions}</select></div>
           <div class="settings-row"><span class="settings-label">Theme</span>
             <div class="theme-switch" role="group" aria-label="Color theme">${['light', 'dark', 'auto'].map(t => `<button type="button" data-setting="theme" data-value="${t}" aria-pressed="${theme === t}">${t === 'light' ? 'Paper' : t === 'dark' ? 'Dark' : 'Auto'}</button>`).join('')}</div></div>
+          <div class="settings-row"><span class="settings-label">Layout</span>
+            <div class="theme-switch" role="group" aria-label="Layout">${['auto', 'mobile', 'desktop'].map(m => `<button type="button" data-setting="layout" data-value="${m}" aria-pressed="${(window.brojeesView?.mode || 'auto') === m}">${m === 'auto' ? 'Auto' : m === 'mobile' ? 'Mobile' : 'Desktop'}</button>`).join('')}</div>
+            <span class="small" id="settingLayoutNote">${escapeHtml(layoutNoteText())}</span></div>
           <div class="settings-row field"><label for="settingRefresh">Auto refresh</label><select id="settingRefresh" data-setting="refresh">${refreshOptions}</select><span class="small">${escapeHtml(els.lastUpdated.textContent || '')}</span></div>
           <div class="settings-row"><span class="settings-label">Game Day bar</span>
             <button type="button" class="btn-secondary" data-setting="gameday">${app.gameDayMode ? 'Hide Game Day bar' : 'Show Game Day bar'}</button>
@@ -10852,6 +10955,15 @@
         } else if (action === 'install') {
           closeSettingsSheet();
           document.getElementById('installAppBtn')?.click();
+        } else if (action === 'layout') {
+          if (window.brojeesView?.set(btn.dataset.value)?.reload) {
+            showToast('Switching layout…');
+            setTimeout(() => location.reload(), 250);
+            return;
+          }
+          sheet.querySelectorAll('[data-setting="layout"]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+          const note = sheet.querySelector('#settingLayoutNote');
+          if (note) note.textContent = layoutNoteText();
         } else if (action === 'myweek') {
           closeSettingsSheet();
           activateTab('home');
@@ -12290,7 +12402,7 @@
       let drag = null;
       bar.addEventListener('touchstart', event => {
         drag = null;
-        if (!app.gameDayExpanded || event.touches.length !== 1 || !window.matchMedia('(max-width: 640px)').matches) return;
+        if (!app.gameDayExpanded || event.touches.length !== 1 || !isPhoneLayout()) return;
         if (event.target.closest('select, input, textarea, .game-day-controls button, .game-day-hide')) return;
         const y = event.touches[0].clientY;
         // The top strip (grab handle) or the score row at the bottom.
