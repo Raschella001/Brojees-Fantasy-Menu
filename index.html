@@ -3770,6 +3770,137 @@
       border: 1.5px solid var(--warning);
     }
     .waiver-mobile-details .trend-badge { margin-left: 0; }
+
+    /* ===== V4.9 customizable My Week ===== */
+    .mw-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; grid-auto-flow: row dense; align-items: start; }
+    .mw-cell { min-width: 0; }
+    .mw-cell > .home-section, .mw-cell > .home-instrument, .mw-cell > .home-okline { margin: 0; }
+    @media (min-width: 760px) {
+      .mw-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mw-cell.size-2, .mw-cell.size-3 { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1180px) {
+      .mw-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .mw-cell.size-2 { grid-column: span 2; }
+    }
+    .mw-cell[data-mw-card="feed"] .feed > .feed-head { display: none; }
+    .mw-cell[data-mw-card="feed"] .feed { margin: 0; padding: 0; border: 0; }
+    .mw-empty { padding: 14px 4px; }
+    .mw-note { margin-top: 8px; }
+    .mw-foot { display: flex; justify-content: center; margin: 18px 0 6px; }
+    .mw-customize { min-height: 44px; padding: 8px 18px; border: 1.5px dashed var(--line-strong); border-radius: 8px; font-weight: 700; }
+    .mw-blank { display: grid; justify-items: center; gap: 8px; padding: 34px 16px; text-align: center; border: 2px dashed var(--line-strong); border-radius: 10px; }
+
+    /* Compact list rows used by the league / player cards */
+    .mw-list-rows { display: grid; gap: 4px; }
+    .mw-row {
+      display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 7px 10px; text-align: left;
+      color: var(--text); background: var(--surface-2); border: 1.5px solid transparent; border-radius: 6px; font: inherit;
+    }
+    button.mw-row { cursor: pointer; }
+    button.mw-row:hover { border-color: var(--line-strong); }
+    .mw-row.is-me { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+    .mw-rank { width: 22px; flex: 0 0 auto; color: var(--muted); font-weight: 800; text-align: right; }
+    .mw-main { display: grid; gap: 1px; flex: 1 1 auto; min-width: 0; }
+    .mw-main strong { font-family: var(--font-cond); font-size: 16px; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mw-main .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mw-val { font-weight: 800; white-space: nowrap; }
+    .mw-rec { white-space: nowrap; }
+    .mw-bar { flex: 0 0 56px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+    .mw-bar i { display: block; height: 100%; background: var(--accent); }
+    .mw-row.is-bad .mw-award-label { color: var(--danger); }
+    .mw-award-label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .mw-score { display: grid; gap: 2px; }
+    .mw-score-line { display: grid; grid-template-columns: minmax(0, 1fr) auto 42px; gap: 8px; align-items: center; opacity: .78; }
+    .mw-score-line.lead { opacity: 1; }
+    .mw-score-line.lead .mw-pts { color: var(--accent); }
+    .mw-name { font-family: var(--font-cond); font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mw-pts { font-weight: 800; }
+    .mw-pct { text-align: right; font-size: 13px; color: var(--muted); }
+    .mw-game { font-size: 14px; }
+    .mw-game.is-live { border-color: var(--warning); }
+    .mw-game.is-live .mw-game-status { color: var(--warn-ink); font-weight: 800; }
+    .mw-game-status { white-space: nowrap; }
+    .mw-mine { font-size: 12px; font-weight: 700; color: var(--accent); }
+    .mw-move { align-items: flex-start; }
+    .mw-move-type { flex: 0 0 auto; margin-top: 2px; padding: 2px 6px; border: 1.5px solid var(--line-strong); border-radius: 4px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .mw-move .mw-main .small { white-space: normal; }
+    .mw-row .trend-badge { margin-left: 0; }
+
+    /* Edit mode */
+    .mw-editor { display: grid; gap: 10px; }
+    .mw-editbar {
+      position: sticky; top: 10px; z-index: 30; display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      background: var(--surface); border: 2.5px solid var(--accent); border-radius: 10px; box-shadow: 4px 4px 0 var(--accent);
+    }
+    @media (max-width: 640px) { .mw-editbar { top: calc(max(6px, env(safe-area-inset-top, 0px)) + 68px); } }
+    .mw-eb-dot { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); animation: gdPulse 1.6s ease-in-out infinite; }
+    .mw-eb-text { display: grid; gap: 1px; flex: 1 1 auto; min-width: 0; }
+    .mw-eb-text strong { font-family: var(--font-cond); font-size: 18px; letter-spacing: .02em; }
+    .mw-editbar .btn-primary, .mw-editor-foot .btn-primary { min-height: 44px; padding: 8px 18px; }
+    .mw-h { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 0; font-family: var(--font-cond); font-size: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .mw-layouts { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+    .mw-layout {
+      display: grid; gap: 2px; justify-items: start; min-height: 88px; padding: 10px 12px; text-align: left; color: var(--text);
+      background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: 8px; font: inherit; cursor: pointer;
+    }
+    .mw-layout strong { font-family: var(--font-cond); font-size: 16px; }
+    .mw-layout.is-on { border-color: var(--accent); box-shadow: 3px 3px 0 var(--accent); }
+    .mw-layout-icon { font-size: 20px; line-height: 1; }
+    .mw-list { position: relative; display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .mw-tile, .mw-add {
+      display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 8px 10px; color: var(--text);
+      background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: 8px; box-shadow: var(--sh-sm);
+    }
+    .mw-tile.is-dragging { position: relative; z-index: 5; border-color: var(--accent); box-shadow: 6px 10px 0 rgb(var(--accent-rgb) / .35); cursor: grabbing; }
+    .mw-list.is-sorting .mw-tile:not(.is-dragging) { opacity: .85; }
+    .mw-tile.is-new { animation: mwFlash 1.2s ease-out; }
+    @keyframes mwFlash { 0% { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / .35); } }
+    .mw-grip {
+      display: grid; place-items: center; flex: 0 0 auto; width: 40px; height: 44px; margin-left: -4px; padding: 0;
+      font-size: 22px; line-height: 1; color: var(--muted); background: transparent; border: 0; border-radius: 6px;
+      cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+    }
+    .mw-grip:hover { color: var(--text); background: var(--surface-2); }
+    .mw-tile-icon { flex: 0 0 auto; width: 26px; font-size: 20px; text-align: center; }
+    .mw-tile-text { display: grid; gap: 2px; flex: 1 1 auto; min-width: 0; }
+    .mw-tile-text strong { font-family: var(--font-cond); font-size: 17px; letter-spacing: .02em; }
+    .mw-tile-text .small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .mw-tile-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+    .mw-icon-btn {
+      display: grid; place-items: center; width: 40px; height: 40px; padding: 0; font-size: 17px; font-weight: 800;
+      color: var(--text); background: var(--surface-2); border: 1.5px solid var(--line-strong); border-radius: 6px; cursor: pointer;
+    }
+    .mw-icon-btn:disabled { opacity: .3; cursor: default; }
+    .mw-icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+    .mw-sizes { display: none; margin-right: 6px; border: 1.5px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+    .mw-sizes button { width: 34px; height: 36px; padding: 0; font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: var(--muted); background: transparent; border: 0; cursor: pointer; }
+    .mw-sizes button + button { border-left: 1.5px solid var(--line-strong); }
+    .mw-sizes button.is-on { color: var(--accent-ink); background: var(--accent); }
+    @media (min-width: 760px) { .mw-sizes { display: inline-flex; } }
+    .mw-group { display: grid; gap: 6px; }
+    .mw-group-label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .mw-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 8px; }
+    .mw-add { width: 100%; text-align: left; font: inherit; border-style: dashed; box-shadow: none; cursor: pointer; }
+    .mw-add:hover { border-color: var(--accent); border-style: solid; }
+    .mw-plus { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; font-size: 22px; font-weight: 800; color: var(--accent-ink); background: var(--accent); border-radius: 50%; }
+    .mw-editor-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+    .mw-toast {
+      position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 1200; display: flex; align-items: center; gap: 14px;
+      width: max-content; max-width: calc(100vw - 32px); padding: 10px 10px 10px 16px; color: var(--surface); background: var(--text); border-radius: 8px; box-shadow: var(--sh-lg);
+      font-size: 14px; font-weight: 600; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    }
+    .mw-toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    .mw-toast button { min-height: 36px; padding: 6px 12px; font-weight: 800; color: var(--accent); background: transparent; border: 1.5px solid currentColor; border-radius: 6px; cursor: pointer; }
+    /* While customizing, give the editor the whole screen. */
+    body.mw-editing #home .home-topline, body.mw-editing #home .install-hint, body.mw-editing .game-day-bar { display: none !important; }
+    @media (max-width: 640px) {
+      .mw-tile { padding: 6px 8px; gap: 8px; }
+      .mw-tile-text .small { -webkit-line-clamp: 1; }
+      .mw-icon-btn { width: 38px; height: 40px; }
+      .mw-layouts { grid-auto-columns: 140px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .mw-eb-dot, .mw-tile.is-new { animation: none; } .mw-toast { transition: none; } }
   </style>
 </head>
 <body>
@@ -4284,9 +4415,10 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '4.8';
-    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item';
+    const APP_VERSION = '4.9';
+    const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item, [data-player-id].mw-row';
     const PATCH_NOTES = [
+      { version: '4.9', note: 'Make My Week yours: tap ✎ Customize My Week (bottom of My Week, or ⚙ Settings) to add, remove and reorder cards. Drag the ⠿ handle or use the arrows, and on tablets and computers pick S / M / L widths. 17 cards to choose from, including the league scoreboard, NFL games, standings, playoff odds, power rankings, last week\'s awards, league moves, the record book, trending pickups and top free agents. Start from a ready-made layout (Classic, Game day, League fan, Waiver hawk, Minimal), and undo any change. Your layout is saved on this device.' },
       { version: '4.8', note: 'Trending pickups in Players → Free agents: a 🔥 badge shows how many Sleeper leagues added a player in the last 24 hours, and the new 🔥 Trending button lists the hottest free agents in this league (including breakout backups and rookies outside the usual list). Trending data from Sleeper.' },
       { version: '4.7.2', note: 'Game Day bar: back to the normal background, with only the outline standing out. Blue when it\'s docked, yellow when it\'s open. On phones, swipe down from the top of the open bar (the yellow handle) or from its score row to close it.' },
       { version: '4.7.1', note: 'The Game Day bar now stands out from the page: a coloured border and tint, a striped top edge and a blinking ● GAME DAY label. When you open it, the page behind dims so it\'s obvious Game Day is up.' },
@@ -8956,6 +9088,7 @@
       if (tabId === 'league' && view === 'playoffs') { renderPlayoffPanel(); ensurePlayoffOdds(); }
       if (tabId === 'league' && view === 'records') ensureRecordBook();
       if (tabId === 'waivers') loadTrending();
+      if (tabId !== 'home' && app.myWeekEditing) { app.myWeekEditing = false; document.body.classList.remove('mw-editing'); }
       updateNavBadges();
 
       if (tabId === 'transactions') {
@@ -9217,14 +9350,16 @@
       return used < 0 ? `+$${-used} from trades · $${budget} budget` : `$${used} of $${budget} spent`;
     }
 
-    function homeSection(title, body, extraHead = '') {
-      const info = /matchup$/i.test(title) ? 'matchup' : title === 'Start / sit' ? 'startsit' : title === 'Lineup check' ? 'lineup' : title === 'Season' ? 'season' : '';
-      if (!info) return `<section class="panel home-section"><div class="panel-head"><h2>${escapeHtml(title)}</h2>${extraHead}</div>${body}</section>`;
+    // key: the fold key for My Week cards (and the ⓘ topic when there is one with that name).
+    function homeSection(title, body, extraHead = '', key = '') {
+      const info = key ? (infoTopics()[key] ? key : '') : /matchup$/i.test(title) ? 'matchup' : title === 'Start / sit' ? 'startsit' : title === 'Lineup check' ? 'lineup' : title === 'Season' ? 'season' : '';
+      const foldKey = key || info;
+      if (!foldKey) return `<section class="panel home-section"><div class="panel-head"><h2>${escapeHtml(title)}</h2>${extraHead}</div>${body}</section>`;
       // V4.4: each My Week section can be folded; the choice is remembered on this device.
-      const folded = homeFolded().includes(info);
-      return `<section class="panel home-section ${folded ? 'is-folded' : ''}" data-home-section="${info}">
-        <div class="panel-head"><h2>${escapeHtml(title)}${infoButtonHtml(info)}</h2>${extraHead}
-          <button type="button" class="fold-btn" data-fold="${info}" aria-expanded="${!folded}" aria-label="${folded ? 'Show' : 'Hide'} ${escapeHtml(title)}"><span aria-hidden="true">▾</span></button></div>
+      const folded = homeFolded().includes(foldKey);
+      return `<section class="panel home-section ${folded ? 'is-folded' : ''}" data-home-section="${foldKey}">
+        <div class="panel-head"><h2>${escapeHtml(title)}${info ? infoButtonHtml(info) : ''}</h2>${extraHead}
+          <button type="button" class="fold-btn" data-fold="${foldKey}" aria-expanded="${!folded}" aria-label="${folded ? 'Show' : 'Hide'} ${escapeHtml(title)}"><span aria-hidden="true">▾</span></button></div>
         <div class="home-section-body">${body}</div></section>`;
     }
 
@@ -9301,7 +9436,9 @@
         ${mine.matchup_id != null ? `<button type="button" class="btn-secondary" data-route="${escapeHtml(route)}">Full matchup</button>` : ''}
         ${mine.matchup_id != null ? `<button type="button" class="btn-ghost" data-share="${escapeHtml(route)}" data-share-title="${escapeHtml(`${rosterName(rosterId, ctx)} vs ${opp ? rosterName(opp.roster_id, ctx) : 'Bye'}`)}">Share</button>` : ''}
       </div>`;
-      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${feedHtml()}${h2hLine}${actions}`);
+      // The feed lives here unless it has its own card on My Week.
+      const feed = myWeekHas('feed') ? '' : feedHtml();
+      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${feed}${h2hLine}${actions}`);
     }
 
     function homePlayerChip(id, value, ctx) {
@@ -9486,7 +9623,9 @@
       updateFeed();
       const st = league31();
       if (root.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') { st.homeDirty = true; return; }
+      if (app.myWeekDrag) { st.homeDirty = true; return; }   // don't rebuild under a finger mid-drag
       st.homeDirty = false;
+      if (myWeekEditing()) { replaceLiveContent(root, myWeekEditorHtml()); return; }
       if (!app.data) {
         root.innerHTML = `<div class="empty">${app.isRefreshing ? 'Loading your league…' : 'Loading your league. If this stays empty, pull down or tap Refresh.'}</div>`;
         return;
@@ -9495,16 +9634,7 @@
       const roster = (app.data.rosters || []).find(r => String(r.roster_id) === rosterId);
       if (!roster) { replaceLiveContent(root, homeTeamPickerHtml(app.data)); return; }
       const ctx = gameDayData();
-      const homeCards = instrumentCardsFor(app.data, { forHome: true });
-      const prevHome = app.homeInstrumentReadings || {};
-      app.homeInstrumentReadings = Object.fromEntries(homeCards.map(c => [c.key, c.num ?? c.text]));
-      replaceLiveContent(root, [
-        `<section class="instrument home-instrument" aria-label="Your week at a glance">${homeCards.map(c => instrumentCellHtml(c, prevHome[c.key])).join('')}</section>`,
-        homeMatchupHtml(rosterId, ctx),
-        homeStartSitHtml(rosterId, roster, ctx),
-        homeLineupHtml(rosterId, roster, ctx),
-        homeSeasonHtml(roster, app.data)
-      ].join(''));
+      replaceLiveContent(root, myWeekGridHtml({ base: app.data, rosterId, roster, ctx }));
       runInstrumentAnimations(root);
       maybeShowWelcome();
     }
@@ -10670,6 +10800,7 @@
             <span class="small">It also turns on by itself while your matchup is playing.</span></div>
           <div class="settings-row"><span class="settings-label">Install</span>${install}</div>
           <div class="settings-row settings-buttons">
+            <button type="button" class="btn-secondary" data-setting="myweek">✎ Customize My Week</button>
             <button type="button" class="btn-secondary" data-setting="reset-menu">Reset Menu button position</button>
             <button type="button" class="btn-secondary" data-setting="welcome">Show the welcome tour</button>
           </div>
@@ -10702,6 +10833,10 @@
         } else if (action === 'install') {
           closeSettingsSheet();
           document.getElementById('installAppBtn')?.click();
+        } else if (action === 'myweek') {
+          closeSettingsSheet();
+          activateTab('home');
+          setMyWeekEditing(true);
         } else if (action === 'reset-menu') {
           document.getElementById('mobileNavReset')?.click();
           showToast('Menu button moved back to the corner.');
@@ -11566,6 +11701,450 @@
       return snapshot;
     }
 
+    /* ===== V4.9 customizable My Week ===== */
+    // My Week is a list of cards ({ type, size }) saved on this device. Size 1/2/3 = how many
+    // grid columns the card spans on wider screens (phones always show one column).
+    function myWeekCatalog() {
+      const section = (title, key, body, extra = '') => homeSection(title, body, extra, key);
+      const more = (route, label) => `<div class="home-actions"><button type="button" class="btn-ghost" data-route="${escapeHtml(route)}">${escapeHtml(label)} ›</button></div>`;
+      const empty = text => `<div class="empty mw-empty">${escapeHtml(text)}</div>`;
+      const me = env => String(env.rosterId || '');
+      return {
+        keyNumbers: { name: 'Key numbers', icon: '📟', group: 'Your team', size: 3, desc: 'Week progress, record, this week\'s score and FAAB at a glance.',
+          render: env => {
+            const cards = instrumentCardsFor(env.base, { forHome: true });
+            const prev = app.homeInstrumentReadings || {};
+            app.homeInstrumentReadings = Object.fromEntries(cards.map(c => [c.key, c.num ?? c.text]));
+            return `<section class="instrument home-instrument" aria-label="Your week at a glance">${cards.map(c => instrumentCellHtml(c, prev[c.key])).join('')}</section>`;
+          } },
+        matchup: { name: 'Week matchup', icon: '🏈', group: 'Your team', size: 2, desc: 'Your score vs your opponent, win chance and who is still to play.',
+          render: env => homeMatchupHtml(env.rosterId, env.ctx) },
+        lineup: { name: 'Lineup check', icon: '✅', group: 'Your team', size: 1, desc: 'Empty slots, byes, injuries and your best possible lineup.',
+          render: env => homeLineupHtml(env.rosterId, env.roster, env.ctx) },
+        startSit: { name: 'Start / sit', icon: '⚖️', group: 'Your team', size: 2, desc: 'Compare two players (or a free agent) side by side.',
+          render: env => homeStartSitHtml(env.rosterId, env.roster, env.ctx) || homeSection('Start / sit', empty('You need at least two players on your roster to compare.')) },
+        season: { name: 'Season', icon: '📈', group: 'Your team', size: 1, desc: 'Playoff chance, points for and against, power rank and moves.',
+          render: env => homeSeasonHtml(env.roster, env.base) },
+
+        feed: { name: 'What changed', icon: '⚡', group: 'Game day', size: 1, desc: 'Scores, lead changes and win-chance swings in your matchup.',
+          render: () => section('What changed', 'feed', feedHtml() || empty('Nothing yet. During games, your scores, lead changes and win-chance swings show up here.')) },
+        scoreboard: { name: 'League scoreboard', icon: '🏟️', group: 'Game day', size: 2, desc: 'Every matchup this week with live scores and win chances.',
+          render: env => {
+            const ctx = env.ctx;
+            if (!ctx) return section('League scoreboard', 'scoreboard', '<div class="player-modal-loading">Loading this week\'s scores…</div>');
+            const week = ctx.selectedWeek || env.base.state?.week || '';
+            const groups = {};
+            for (const m of ctx.matchups || []) if (m.matchup_id != null) (groups[m.matchup_id] = groups[m.matchup_id] || []).push(m);
+            const pairs = Object.entries(groups).filter(([, g]) => g.length === 2)
+              .sort(([, a], [, b]) => Number(b.some(m => String(m.roster_id) === me(env))) - Number(a.some(m => String(m.roster_id) === me(env))));
+            if (!pairs.length) return section('League scoreboard', 'scoreboard', empty('No matchups this week.'));
+            const rows = pairs.map(([mid, [a, b]]) => {
+              const pa = Number(a.custom_points ?? a.points ?? 0), pb = Number(b.custom_points ?? b.points ?? 0);
+              const final = matchupAllFinal(a, ctx) && matchupAllFinal(b, ctx);
+              const chance = final ? null : winChance(a, b, ctx);
+              const side = (m, pts, p, won) => `<span class="mw-score-line ${won ? 'lead' : ''}">
+                <span class="mw-name">${escapeHtml(rosterName(m.roster_id, ctx))}${String(m.roster_id) === me(env) ? ' <span class="pill me">YOU</span>' : ''}</span>
+                <span class="mono mw-pts">${numberOrDash(pts, 2)}</span>
+                <span class="mono mw-pct">${final ? (won ? 'W' : pts === (m === a ? pb : pa) ? 'T' : 'L') : p === null ? '' : `${Math.round(p * 100)}%`}</span></span>`;
+              const mine = [a, b].some(m => String(m.roster_id) === me(env));
+              return `<button type="button" class="mw-row mw-score ${mine ? 'is-me' : ''}" data-route="matchup/${escapeHtml(week)}/${escapeHtml(mid)}">
+                ${side(a, pa, chance, final ? pa > pb : chance !== null && chance >= 0.5)}
+                ${side(b, pb, chance === null ? null : 1 - chance, final ? pb > pa : chance !== null && chance < 0.5)}
+              </button>`;
+            }).join('');
+            return section('League scoreboard', 'scoreboard', `<div class="mw-list-rows">${rows}</div><div class="small mw-note">% = estimated win chance. Tap a game for both lineups.</div>`);
+          } },
+        nflGames: { name: 'NFL games', icon: '📺', group: 'Game day', size: 1, desc: 'This week\'s NFL scores and kickoffs, with how many of your starters play in each.',
+          render: env => {
+            const ctx = env.ctx || env.base;
+            const games = [...(ctx.espnSchedule || [])].sort((x, y) => new Date(x.date) - new Date(y.date));
+            if (!games.length) return section('NFL games', 'nflgames', empty('NFL schedule unavailable right now.'));
+            const mine = (ctx.matchups || []).find(m => String(m.roster_id) === me(env));
+            const teamCount = {};
+            for (const id of mine?.starters || []) { const t = normalizeNflTeam(playerFromId(id).team); if (t) teamCount[t] = (teamCount[t] || 0) + 1; }
+            const rows = games.map(g => {
+              const state = g.completed ? 'final' : g.status_state === 'in' ? 'live' : 'pre';
+              const status = state === 'final' ? 'Final' : state === 'live' ? liveClockText(g) || 'Live' : g.date ? friendlyKickoff(new Date(g.date)) : '—';
+              const count = (teamCount[g.away] || 0) + (teamCount[g.home] || 0);
+              const score = state === 'pre' ? '' : `<span class="mono">${escapeHtml(g.away_score ?? '')}–${escapeHtml(g.home_score ?? '')}</span>`;
+              return `<div class="mw-row mw-game is-${state}">
+                <span class="mw-main"><strong class="mono">${escapeHtml(g.away)} @ ${escapeHtml(g.home)}</strong>${count ? `<span class="mw-mine">${count} of yours</span>` : ''}</span>
+                ${score}<span class="mw-game-status small">${escapeHtml(status)}</span></div>`;
+            }).join('');
+            return section('NFL games', 'nflgames', `<div class="mw-list-rows">${rows}</div>`);
+          } },
+        leaders: { name: 'Top scorers', icon: '🔥', group: 'Game day', size: 1, desc: 'The highest-scoring players this week and who owns them.',
+          render: () => {
+            const rows = (app.statsLeaders?.rows || []).filter(r => r.points > 0).slice(0, 6);
+            const body = rows.length ? `<div class="mw-list-rows">${rows.map((r, i) => `<button type="button" class="mw-row" data-player-id="${escapeHtml(r.player_id)}">
+                <span class="mw-rank mono">${i + 1}</span>
+                <span class="mw-main"><strong>${escapeHtml(r.full_name)}</strong><span class="small">${escapeHtml([r.position, r.team].filter(Boolean).join(' · '))} · ${escapeHtml(r.owner?.team_name || 'Free agent')}</span></span>
+                <span class="mono mw-val">${numberOrDash(r.points, 2)}</span></button>`).join('')}</div>`
+              : empty('Scores show up here once games kick off.');
+            return section('Top scorers', 'leaders', body + more('leaders', 'All leaders'));
+          } },
+
+        standings: { name: 'Standings', icon: '🏆', group: 'League', size: 1, desc: 'Every team\'s record and points for.',
+          render: env => {
+            const order = currentStandingsOrder(env.base.rosters || []);
+            const rows = order.map((r, i) => `<button type="button" class="mw-row ${String(r.roster_id) === me(env) ? 'is-me' : ''}" data-open-team="${escapeHtml(r.roster_id)}">
+              <span class="mw-rank mono">${i + 1}</span>
+              <span class="mw-main"><strong>${escapeHtml(rosterName(r.roster_id))}</strong></span>
+              <span class="mono mw-rec">${escapeHtml(teamModalRecordText(r.settings || {}))}</span>
+              <span class="mono mw-val small">${numberOrDash(getPoints(r.settings, 'fpts', 'fpts_decimal'), 1)}</span></button>`).join('');
+            return section('Standings', 'standings', `<div class="mw-list-rows">${rows}</div>${more('overview', 'Full standings')}`);
+          } },
+        playoffs: { name: 'Playoff odds', icon: '🎯', group: 'League', size: 1, desc: 'Every team\'s chance to make the playoffs, from simulated seasons.',
+          render: env => {
+            const state = app.playoff;
+            const r = state?.result;
+            if (!r && !state?.loading && !state?.error) setTimeout(ensurePlayoffOdds, 1200);
+            const marker = '<span data-playoff-tile hidden></span>';
+            if (r?.done) return section('Playoff odds', 'playoffs', marker + empty('The regular season is over, so the playoff field is set.'));
+            if (!r) return section('Playoff odds', 'playoffs', marker + (state?.error ? empty('Playoff odds are unavailable right now.') : '<div class="player-modal-loading">Simulating the rest of the season…</div>'));
+            const rows = r.rows.map((row, i) => `<button type="button" class="mw-row ${row.rid === me(env) ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
+              <span class="mw-rank mono">${i + 1}</span>
+              <span class="mw-main"><strong>${escapeHtml(rosterName(row.rid))}</strong><span class="small mono">Proj ${Math.round(row.w)}-${Math.round(row.l)}</span></span>
+              <span class="mw-bar" aria-hidden="true"><i style="width:${Math.round(row.playoff * 100)}%"></i></span>
+              <span class="mono mw-val">${pctText(row.playoff)}</span></button>`).join('');
+            return section('Playoff odds', 'playoffs', `${marker}<div class="mw-list-rows">${rows}</div>${more('league/playoffs', 'Details')}`);
+          } },
+        power: { name: 'Power rankings', icon: '⚡', group: 'League', size: 1, desc: 'Who is actually good: all-play record, recent form and luck.',
+          render: env => {
+            const power = powerRankings();
+            if (!power) return section('Power rankings', 'power', league31().historyLoading ? '<div class="player-modal-loading">Loading league history…</div>' : empty('Power rankings appear after Week 1 is complete.'));
+            const rows = power.rows.map(row => `<button type="button" class="mw-row ${row.rid === me(env) ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
+              <span class="mw-rank mono">${row.rank}</span>
+              <span class="mw-main"><strong>${escapeHtml(rosterName(row.rid))}</strong><span class="small mono">${row.luck > 0 ? '+' : ''}${numberOrDash(row.luck, 1)} luck</span></span>
+              <span class="mono mw-val">${numberOrDash(row.score, 1)}</span></button>`).join('');
+            return section('Power rankings', 'power', `<div class="mw-list-rows">${rows}</div>${more('league/power', 'Details')}`);
+          } },
+        awards: { name: 'Last week\'s awards', icon: '🥇', group: 'League', size: 2, desc: 'High score, blowout, bench blunder and more from the last finished week.',
+          render: env => {
+            const cur = league31().history?.current;
+            const week = cur?.weeks?.length ? cur.weeks[cur.weeks.length - 1].week : null;
+            const awards = week ? weeklyAwards(week) : [];
+            if (!awards.length) return section('Awards', 'awards', league31().historyLoading ? '<div class="player-modal-loading">Loading league history…</div>' : empty('Awards appear once Week 1 is final.'));
+            const rows = awards.map(a => `<${a.player ? `button type="button" data-player-id="${escapeHtml(a.player)}"` : `button type="button" data-open-team="${escapeHtml(a.rid)}"`} class="mw-row ${a.rid === me(env) ? 'is-me' : ''} ${a.tone === 'bad' ? 'is-bad' : ''}">
+              <span class="mw-main"><span class="mw-award-label">${escapeHtml(a.label)}</span><strong>${escapeHtml(a.player ? playerFromId(a.player).full_name : rosterName(a.rid))}</strong></span>
+              <span class="mono mw-val">${escapeHtml(a.value)}</span></button>`).join('');
+            return section(`Week ${week} awards`, 'awards', `<div class="mw-list-rows">${rows}</div>${more('league/awards', 'All weeks')}`);
+          } },
+        moves: { name: 'League moves', icon: '🔁', group: 'League', size: 1, desc: 'The latest adds, drops and trades this week.',
+          render: env => {
+            const txs = [...(env.base.transactions || [])].filter(tx => String(tx?.status || 'complete') === 'complete')
+              .sort((a, b) => Number(b?.created || 0) - Number(a?.created || 0)).slice(0, 5);
+            const names = obj => Object.keys(obj || {}).map(shortPlayerName).join(', ');
+            const rows = txs.map(tx => {
+              const teams = [...new Set((tx.roster_ids || []).map(Number))].map(id => transactionRosterName(id, env.base));
+              const adds = names(tx.adds), drops = names(tx.drops);
+              const mine = (tx.roster_ids || []).map(String).includes(me(env));
+              return `<div class="mw-row mw-move ${mine ? 'is-me' : ''}">
+                <span class="mw-move-type">${escapeHtml(transactionTypeLabel(String(tx.type || '').toLowerCase()).replace(' Claim', ''))}</span>
+                <span class="mw-main"><strong>${escapeHtml(teams.join(' ⇄ '))}</strong><span class="small">${adds ? `+ ${escapeHtml(adds)}` : ''}${adds && drops ? ' · ' : ''}${drops ? `− ${escapeHtml(drops)}` : ''}</span></span></div>`;
+            }).join('');
+            return section('League moves', 'moves', (rows ? `<div class="mw-list-rows">${rows}</div>` : empty('No moves yet this week.')) + more('transactions', 'All moves'));
+          } },
+        records: { name: 'Record book', icon: '📜', group: 'League', size: 1, desc: 'Your all-time record, titles and the league\'s biggest records.',
+          render: env => {
+            const st = league31();
+            if (!st.recordsAt && !st.recordsLoading) ensureRecordBook().then(() => { if (isTabActive('home')) renderHome(); });
+            const book = st.records;
+            if (!book) return section('Record book', 'records', st.recordsAt ? empty('The record book appears once the league data bot has run.') : '<div class="player-modal-loading">Loading the record book…</div>');
+            const owner = String((env.base.rosters || []).find(r => String(r.roster_id) === me(env))?.owner_id || '');
+            const career = (book.managers || []).find(m => String(m.owner) === owner);
+            const high = book.records?.high_score?.[0];
+            const champ = book.champions?.[0];
+            const tiles = [
+              career ? teamModalTile('Your all-time', `${career.w}-${career.l}${career.t ? `-${career.t}` : ''}`, `${Math.round(career.pct * 1000) / 10}% · ${career.playoffs} playoff trip${career.playoffs === 1 ? '' : 's'}`) : '',
+              career ? teamModalTile('Your titles', career.titles ? '🏆'.repeat(Math.min(career.titles, 3)) : '0', career.runner_up ? `${career.runner_up}× runner-up` : 'Still hunting') : '',
+              high ? teamModalTile('League high score', numberOrDash(high.value, 2), `${high.team} · ${high.season}`) : '',
+              champ ? teamModalTile('Reigning champ', `'${String(champ.season).slice(-2)}`, champ.team) : ''
+            ].filter(Boolean).join('');
+            return section('Record book', 'records', `<div class="team-stat-grid home-tiles">${tiles}</div>${more('league/records', 'Full record book')}`);
+          } },
+
+        trending: { name: 'Trending pickups', icon: '📈', group: 'Players', size: 1, desc: 'The most-added free agents across Sleeper today.',
+          render: env => {
+            if (!app.trending?.at && !app.trending?.loading) loadTrending();
+            const rows = waiverRows(env.base).filter(r => r.trend_adds).sort((a, b) => b.trend_adds - a.trend_adds).slice(0, 6);
+            const body = rows.length ? `<div class="mw-list-rows">${rows.map(r => `<button type="button" class="mw-row" data-player-id="${escapeHtml(r.player_id)}">
+                <span class="mw-main"><strong>${escapeHtml(r.full_name)}</strong><span class="small">${escapeHtml([r.position, r.team, r.opponent].filter(Boolean).join(' · '))}</span></span>
+                ${trendBadgeHtml(r)}</button>`).join('')}</div>`
+              : app.trending?.at ? empty('No trending free agents in this league right now.') : '<div class="player-modal-loading">Loading trending players…</div>';
+            return section('Trending pickups', 'trending', body + more('waivers', 'Free agents'));
+          } },
+        freeAgents: { name: 'Top free agents', icon: '🧲', group: 'Players', size: 1, desc: 'The best available players by projection, rank and health.',
+          render: env => {
+            const rows = waiverRows(env.base).sort((a, b) => b.relevance_score - a.relevance_score).slice(0, 6);
+            const body = rows.length ? `<div class="mw-list-rows">${rows.map(r => `<button type="button" class="mw-row" data-player-id="${escapeHtml(r.player_id)}">
+                <span class="mw-main"><strong>${escapeHtml(r.full_name)}</strong><span class="small">${escapeHtml([r.position, r.team, r.opponent].filter(Boolean).join(' · '))}${r.injury_status ? ` · ${escapeHtml(r.injury_status)}` : ''}</span></span>
+                <span class="mono mw-val">${r.projected_points === null ? '—' : numberOrDash(r.projected_points, 1)}</span></button>`).join('')}</div>`
+              : empty('No free agents to show yet.');
+            return section('Top free agents', 'freeagents', body + more('waivers', 'All free agents'));
+          } }
+      };
+    }
+
+    function myWeekLayouts() {
+      return {
+        classic: { name: 'Classic', icon: '🏠', desc: 'The standard My Week.', cards: [['keyNumbers', 3], ['matchup', 2], ['lineup', 1], ['startSit', 2], ['season', 1]] },
+        gameday: { name: 'Game day', icon: '🏈', desc: 'Live scores everywhere.', cards: [['matchup', 2], ['feed', 1], ['scoreboard', 2], ['nflGames', 1], ['lineup', 2], ['leaders', 1]] },
+        league: { name: 'League fan', icon: '🏆', desc: 'Standings, odds and bragging rights.', cards: [['keyNumbers', 3], ['standings', 1], ['playoffs', 1], ['power', 1], ['awards', 2], ['records', 1], ['moves', 3]] },
+        waivers: { name: 'Waiver hawk', icon: '🧲', desc: 'Pickups and lineup decisions.', cards: [['lineup', 2], ['trending', 1], ['freeAgents', 1], ['moves', 2], ['startSit', 3]] },
+        minimal: { name: 'Minimal', icon: '◽', desc: 'Just the essentials.', cards: [['keyNumbers', 3], ['matchup', 3], ['lineup', 3]] }
+      };
+    }
+
+    function myWeekFromLayout(key) {
+      return (myWeekLayouts()[key] || myWeekLayouts().classic).cards.map(([type, size]) => ({ type, size }));
+    }
+
+    function myWeekState() {
+      if (!app.myWeek) {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem('brojees_myweek_v1') || 'null'); } catch (_) { saved = null; }
+        const catalog = myWeekCatalog();
+        const seen = new Set();
+        const cards = Array.isArray(saved?.cards) ? saved.cards.filter(c => catalog[c?.type] && !seen.has(c.type) && seen.add(c.type))
+          .map(c => ({ type: c.type, size: [1, 2, 3].includes(Number(c.size)) ? Number(c.size) : catalog[c.type].size })) : null;
+        app.myWeek = { cards: cards || myWeekFromLayout('classic') };
+      }
+      return app.myWeek;
+    }
+
+    function saveMyWeek() {
+      try { localStorage.setItem('brojees_myweek_v1', JSON.stringify({ v: 1, cards: myWeekState().cards })); } catch (_) { /* still works this visit */ }
+    }
+
+    function myWeekHas(type) {
+      return myWeekState().cards.some(c => c.type === type);
+    }
+
+    function myWeekEditing() {
+      return Boolean(app.myWeekEditing);
+    }
+
+    function myWeekCurrentLayout() {
+      const now = JSON.stringify(myWeekState().cards);
+      return Object.keys(myWeekLayouts()).find(key => JSON.stringify(myWeekFromLayout(key)) === now) || null;
+    }
+
+    function setMyWeekEditing(on) {
+      app.myWeekEditing = Boolean(on);
+      document.body.classList.toggle('mw-editing', app.myWeekEditing);
+      renderHome();
+      const home = document.getElementById('home');
+      if (home) window.scrollTo(0, Math.max(0, window.scrollY + home.getBoundingClientRect().top - 90));
+      if (app.myWeekEditing) document.querySelector('#homeContent [data-mw="done"]')?.focus({ preventScroll: true });
+    }
+
+    // Normal view: the cards in a responsive grid, plus a Customize button at the end.
+    function myWeekGridHtml(env) {
+      const catalog = myWeekCatalog();
+      const cards = myWeekState().cards;
+      const cells = cards.map(card => {
+        let html = '';
+        try { html = catalog[card.type].render(env) || ''; } catch (err) { console.warn('My Week card failed:', card.type, err); html = homeSection(catalog[card.type].name, '<div class="empty mw-empty">This card hit a problem. Pull down to refresh.</div>'); }
+        return html ? `<div class="mw-cell size-${card.size}" data-mw-card="${escapeHtml(card.type)}">${html}</div>` : '';
+      }).join('');
+      const emptyState = cards.length ? '' : `<div class="mw-blank"><strong>Your My Week is empty.</strong><span class="small">Add the cards you want to see first.</span><button type="button" class="btn-primary" data-mw="edit">Add cards</button></div>`;
+      return `<div class="mw-grid">${cells}</div>${emptyState}
+        <div class="mw-foot"><button type="button" class="btn-ghost mw-customize" data-mw="edit"><span aria-hidden="true">✎</span> Customize My Week</button></div>`;
+    }
+
+    // Edit view: compact tiles you can reorder, resize and remove, plus layouts and the card gallery.
+    function myWeekEditorHtml() {
+      const catalog = myWeekCatalog();
+      const cards = myWeekState().cards;
+      const current = myWeekCurrentLayout();
+      const layouts = Object.entries(myWeekLayouts()).map(([key, l]) => `<button type="button" class="mw-layout ${current === key ? 'is-on' : ''}" data-mw-layout="${key}" aria-pressed="${current === key}">
+          <span class="mw-layout-icon" aria-hidden="true">${l.icon}</span><strong>${escapeHtml(l.name)}</strong><span class="small">${escapeHtml(l.desc)}</span></button>`).join('');
+      const sizeNames = ['Small', 'Medium', 'Large'];
+      const tiles = cards.map((card, i) => {
+        const def = catalog[card.type];
+        return `<li class="mw-tile" data-type="${escapeHtml(card.type)}">
+          <button type="button" class="mw-grip" data-mw-grip aria-label="Drag to move ${escapeHtml(def.name)}" title="Drag to move"><span aria-hidden="true">⠿</span></button>
+          <span class="mw-tile-icon" aria-hidden="true">${def.icon}</span>
+          <span class="mw-tile-text"><strong>${escapeHtml(def.name)}</strong><span class="small">${escapeHtml(def.desc)}</span></span>
+          <span class="mw-tile-actions">
+            <span class="mw-sizes" role="group" aria-label="${escapeHtml(def.name)} width">${[1, 2, 3].map(n => `<button type="button" class="${card.size === n ? 'is-on' : ''}" data-mw-size="${n}" aria-pressed="${card.size === n}" title="${sizeNames[n - 1]} width">${'SML'[n - 1]}</button>`).join('')}</span>
+            <button type="button" class="mw-icon-btn" data-mw-move="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move ${escapeHtml(def.name)} up">↑</button>
+            <button type="button" class="mw-icon-btn" data-mw-move="1" ${i === cards.length - 1 ? 'disabled' : ''} aria-label="Move ${escapeHtml(def.name)} down">↓</button>
+            <button type="button" class="mw-icon-btn danger" data-mw-remove aria-label="Remove ${escapeHtml(def.name)}">✕</button>
+          </span>
+        </li>`;
+      }).join('');
+      const groups = {};
+      for (const [type, def] of Object.entries(catalog)) if (!myWeekHas(type)) (groups[def.group] = groups[def.group] || []).push([type, def]);
+      const gallery = Object.keys(groups).length ? Object.entries(groups).map(([group, list]) => `
+        <div class="mw-group"><div class="mw-group-label">${escapeHtml(group)}</div>
+          <div class="mw-gallery">${list.map(([type, def]) => `<button type="button" class="mw-add" data-mw-add="${escapeHtml(type)}" aria-label="Add ${escapeHtml(def.name)}">
+            <span class="mw-tile-icon" aria-hidden="true">${def.icon}</span>
+            <span class="mw-tile-text"><strong>${escapeHtml(def.name)}</strong><span class="small">${escapeHtml(def.desc)}</span></span>
+            <span class="mw-plus" aria-hidden="true">+</span></button>`).join('')}</div></div>`).join('')
+        : '<div class="small mw-note">Every card is already on your My Week.</div>';
+      return `<div class="mw-editor">
+        <div class="mw-editbar" role="region" aria-label="Customize My Week">
+          <span class="mw-eb-dot" aria-hidden="true"></span>
+          <span class="mw-eb-text"><strong>Customize My Week</strong><span class="small">Drag ⠿ or use the arrows. Saved on this device.</span></span>
+          <button type="button" class="btn-primary" data-mw="done">Done</button>
+        </div>
+        <h3 class="mw-h">Start from a layout</h3>
+        <div class="mw-layouts">${layouts}</div>
+        <h3 class="mw-h">Your cards <span class="small">${cards.length} on My Week</span></h3>
+        ${cards.length ? `<ol class="mw-list" aria-label="Cards on My Week, in order">${tiles}</ol>` : '<div class="small mw-note">No cards yet. Add some below or pick a layout.</div>'}
+        <h3 class="mw-h">Add cards</h3>
+        ${gallery}
+        <div class="mw-editor-foot"><button type="button" class="btn-ghost" data-mw-layout="classic">Reset to Classic</button><button type="button" class="btn-primary" data-mw="done">Done</button></div>
+      </div>`;
+    }
+
+    function myWeekToast(message, undo) {
+      let toast = document.getElementById('mwToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'mwToast';
+        toast.className = 'mw-toast';
+        toast.setAttribute('role', 'status');
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>${undo ? '<button type="button" data-mw-undo>Undo</button>' : ''}`;
+      toast.onclick = event => {
+        if (!event.target.closest('[data-mw-undo]')) return;
+        undo();
+        toast.classList.remove('show');
+      };
+      toast.classList.add('show');
+      clearTimeout(myWeekToast.timer);
+      myWeekToast.timer = setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+
+    // Change the card list with an Undo.
+    function changeMyWeek(message, mutate, { undo = true } = {}) {
+      const before = JSON.parse(JSON.stringify(myWeekState().cards));
+      mutate(myWeekState().cards);
+      saveMyWeek();
+      renderHome();
+      if (message) myWeekToast(message, undo ? () => { app.myWeek.cards = before; saveMyWeek(); renderHome(); } : null);
+    }
+
+    document.addEventListener('click', event => {
+      const root = event.target.closest('#homeContent');
+      const t = event.target;
+      const action = t.closest('[data-mw]')?.dataset.mw;
+      if (action === 'edit') { setMyWeekEditing(true); return; }
+      if (action === 'done') { setMyWeekEditing(false); return; }
+      if (!root || !myWeekEditing()) return;
+      const catalog = myWeekCatalog();
+      const layoutBtn = t.closest('[data-mw-layout]');
+      if (layoutBtn) {
+        const key = layoutBtn.dataset.mwLayout;
+        if (myWeekCurrentLayout() === key) return;
+        changeMyWeek(`Switched to the ${myWeekLayouts()[key].name} layout`, cards => cards.splice(0, cards.length, ...myWeekFromLayout(key)));
+        return;
+      }
+      const addBtn = t.closest('[data-mw-add]');
+      if (addBtn) {
+        const type = addBtn.dataset.mwAdd;
+        changeMyWeek(`Added ${catalog[type].name}`, cards => cards.push({ type, size: catalog[type].size }));
+        const tile = document.querySelector(`#homeContent .mw-tile[data-type="${CSS.escape(type)}"]`);
+        tile?.classList.add('is-new');
+        tile?.scrollIntoView({ block: 'center', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        return;
+      }
+      const tile = t.closest('.mw-tile');
+      if (!tile) return;
+      const type = tile.dataset.type;
+      const index = myWeekState().cards.findIndex(c => c.type === type);
+      if (t.closest('[data-mw-remove]')) {
+        changeMyWeek(`Removed ${catalog[type].name}`, cards => cards.splice(index, 1));
+        return;
+      }
+      const sizeBtn = t.closest('[data-mw-size]');
+      if (sizeBtn) { changeMyWeek('', cards => { cards[index].size = Number(sizeBtn.dataset.mwSize); }); return; }
+      const moveBtn = t.closest('[data-mw-move]');
+      if (moveBtn) {
+        const dir = Number(moveBtn.dataset.mwMove);
+        const to = index + dir;
+        if (to < 0 || to >= myWeekState().cards.length) return;
+        changeMyWeek('', cards => cards.splice(to, 0, cards.splice(index, 1)[0]));
+        const again = document.querySelector(`#homeContent .mw-tile[data-type="${CSS.escape(type)}"] [data-mw-move="${dir}"]:not([disabled])`)
+          || document.querySelector(`#homeContent .mw-tile[data-type="${CSS.escape(type)}"] [data-mw-move="${-dir}"]`);
+        again?.focus({ preventScroll: true });
+      }
+    });
+
+    // Drag to reorder with a finger, mouse or pen. The tile follows the pointer; the others slide
+    // out of the way, and the page scrolls when you drag near the top or bottom edge.
+    (function setupMyWeekDrag() {
+      const slide = (el, mutate) => {
+        const before = el.offsetTop;
+        mutate();
+        if (prefersReducedMotion()) return;
+        const delta = before - el.offsetTop;
+        if (!delta) return;
+        el.style.transition = 'none';
+        el.style.transform = `translateY(${delta}px)`;
+        void el.offsetHeight;
+        el.style.transition = 'transform .16s ease';
+        el.style.transform = '';
+      };
+      const step = () => {
+        const d = app.myWeekDrag;
+        if (!d) return;
+        const { tile, list } = d;
+        const y = d.base + (d.lastY - d.startY) + (window.scrollY - d.startScroll);
+        let prev = tile.previousElementSibling;
+        while (prev && y < prev.offsetTop + prev.offsetHeight / 2) { const p = prev; slide(p, () => list.insertBefore(tile, p)); prev = tile.previousElementSibling; }
+        let next = tile.nextElementSibling;
+        while (next && y + tile.offsetHeight > next.offsetTop + next.offsetHeight / 2) { const n = next; slide(n, () => list.insertBefore(n, tile)); next = tile.nextElementSibling; }
+        tile.style.transform = `translateY(${y - tile.offsetTop}px)`;
+      };
+      const loop = () => {
+        const d = app.myWeekDrag;
+        if (!d) return;
+        const edge = 90;
+        const speed = d.lastY < edge ? -Math.ceil((edge - d.lastY) / 6) : d.lastY > window.innerHeight - edge ? Math.ceil((d.lastY - (window.innerHeight - edge)) / 6) : 0;
+        if (speed) { window.scrollBy(0, speed); step(); }
+        d.raf = requestAnimationFrame(loop);
+      };
+      document.addEventListener('pointerdown', event => {
+        const grip = event.target.closest('#homeContent [data-mw-grip]');
+        if (!grip || event.button > 0 || app.myWeekDrag) return;
+        const tile = grip.closest('.mw-tile');
+        event.preventDefault();
+        try { grip.setPointerCapture(event.pointerId); } catch (_) { /* fine */ }
+        app.myWeekDrag = { tile, list: tile.parentElement, pointer: event.pointerId, startY: event.clientY, lastY: event.clientY, startScroll: window.scrollY, base: tile.offsetTop, from: [...tile.parentElement.children].indexOf(tile) };
+        tile.classList.add('is-dragging');
+        tile.parentElement.classList.add('is-sorting');
+        navigator.vibrate?.(8);
+        app.myWeekDrag.raf = requestAnimationFrame(loop);
+      });
+      document.addEventListener('pointermove', event => {
+        const d = app.myWeekDrag;
+        if (!d || event.pointerId !== d.pointer) return;
+        d.lastY = event.clientY;
+        step();
+      });
+      const end = event => {
+        const d = app.myWeekDrag;
+        if (!d || (event && event.pointerId !== d.pointer)) return;
+        cancelAnimationFrame(d.raf);
+        app.myWeekDrag = null;
+        d.tile.classList.remove('is-dragging');
+        d.list.classList.remove('is-sorting');
+        [...d.list.children].forEach(el => { el.style.transform = ''; el.style.transition = ''; });
+        const order = [...d.list.children].map(el => el.dataset.type);
+        if ([...d.list.children].indexOf(d.tile) !== d.from) {
+          navigator.vibrate?.(12);
+          changeMyWeek('', cards => cards.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type)));
+        } else if (league31().homeDirty) renderHome();
+      };
+      document.addEventListener('pointerup', end);
+      document.addEventListener('pointercancel', end);
+    })();
+
     /* ---------- Trending pickups (Sleeper's most-added players, last 24h) ---------- */
     async function loadTrending({ force = false } = {}) {
       if (!app.trending) app.trending = { adds: {}, at: 0, loading: false, error: '' };
@@ -11582,6 +12161,7 @@
       } finally {
         t.loading = false;
         if (app.data && isTabActive('waivers')) renderWaivers(app.data);
+        if (app.data && isTabActive('home') && myWeekHas('trending')) renderHome();
       }
     }
 
