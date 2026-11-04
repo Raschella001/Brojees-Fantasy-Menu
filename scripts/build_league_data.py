@@ -30,7 +30,7 @@ import urllib.request
 API = "https://api.sleeper.app/v1"
 DEFAULT_LEAGUE_ID = "1388977201008877568"
 ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
-USER_AGENT = "BrojeesFantasyMenu-data/1.0 (+https://raschella001.github.io/Brojees-Fantasy-Menu/)"
+USER_AGENT = "BrojeesFantasyMenu-data/1.0 (+https://brojees.app/)"
 MAX_PAST_SEASONS = 6
 TOP_N = 5
 # Projections are refreshed once more inside this window before the week's first kickoff.
@@ -435,6 +435,36 @@ def build_records(seasons, positions):
     return records, career, champions
 
 
+# ---------- defense vs position (Start/Sit matchup difficulty) ----------
+
+def build_defense_vs_position(league, season, through_week):
+    """Average fantasy points (this league's scoring) each NFL defense allows per game to each
+    position, with a rank: 1 = allows the most = the easiest matchup."""
+    scoring = league.get("scoring_settings") or {}
+    positions = ("QB", "RB", "WR", "TE", "K", "DEF")
+    query = "&".join(f"position[]={p}" for p in positions)
+    totals, games = {}, {}
+    for week in range(1, max(0, through_week) + 1):
+        rows = fetch_or(f"https://api.sleeper.com/stats/nfl/{season}/{week}?season_type=regular&{query}", [])
+        for row in rows if isinstance(rows, list) else []:
+            stats = row.get("stats") or {}
+            opp = row.get("opponent")
+            pos = (row.get("player") or {}).get("position")
+            if not opp or pos not in positions or not num(stats.get("gp")):
+                continue
+            pts = projected_points(stats, scoring)
+            if pts is None:
+                continue
+            totals[(opp, pos)] = totals.get((opp, pos), 0.0) + pts
+            games.setdefault(opp, set()).add(week)
+    teams = {}
+    for pos in positions:
+        per = sorted(((opp, totals.get((opp, pos), 0.0) / len(weeks)) for opp, weeks in games.items() if weeks), key=lambda x: -x[1])
+        for rank, (opp, ppg) in enumerate(per, 1):
+            teams.setdefault(opp, {})[pos] = {"ppg": r2(ppg), "rank": rank}
+    return {"teams": teams, "defenses": len(games)}
+
+
 # ---------- frozen projections (mirrors loadOrCreateOriginalProjectionSnapshot) ----------
 
 def normalize_projections(raw):
@@ -497,7 +527,21 @@ def week_kickoffs(season, week):
         state = ((comp.get("status") or event.get("status") or {}).get("type") or {}).get("state")
         if state in ("in", "post"):
             started = True
-    return (min(times) if times else None), started
+    if times:
+        return min(times), started
+    # ESPN unavailable: Sleeper's schedule has dates but no times, so treat noon Eastern (16:00 UTC)
+    # on the week's first game day as kickoff. That is before every Thursday, Thanksgiving and
+    # Christmas game, so the freeze still happens before anyone plays.
+    schedule = fetch_or(f"https://api.sleeper.app/schedule/nfl/regular/{season}", [])
+    dates = sorted(str(g.get("date")) for g in schedule if isinstance(g, dict) and int(num(g.get("week")) or 0) == int(week) and g.get("date"))
+    if not dates:
+        return None, False
+    try:
+        first = dt.datetime.fromisoformat(dates[0][:10]).replace(hour=16, tzinfo=dt.timezone.utc)
+    except ValueError:
+        return None, False
+    log(f"  kickoff estimated from Sleeper's schedule: {iso(first)}")
+    return first, now_utc() >= first
 
 
 def freeze_projections(league, state, out_dir):
@@ -600,6 +644,15 @@ def main():
         "through": {"season": current["season"], "week": through},
         "records": records, "managers": career, "champions": champions,
     })
+
+    if str(state.get("season_type") or "regular").lower() == "regular" and str(league.get("season")) == str(state.get("season")):
+        log("Building defense vs position...")
+        dvp = build_defense_vs_position(league, current["season"], min(through, 18))
+        if dvp["defenses"]:
+            write_if_changed(os.path.join(args.out, "defense_vs_pos.json"), {
+                "generated_at": generated, "league_id": str(args.league), "season": current["season"],
+                "through_week": through, **dvp,
+            })
 
     freeze_projections(league, state, args.out)
     return 0
