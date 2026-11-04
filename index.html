@@ -3917,6 +3917,92 @@
       .pin-short { display: inline; }
     }
     .mw-cell.mw-flash > * { animation: mwFlash 1.4s ease-out; }
+
+    /* ===== V5.1 Start/Sit matchups & 3–4 players ===== */
+    .ss-slot { display: inline-block; padding: 0 5px; border-radius: 3px; font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--live-ink); border: 1.5px solid currentColor; vertical-align: 1px; }
+    .ss-matchup { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 4px; font-size: 12px; font-weight: 700; border: 1.5px solid currentColor; white-space: nowrap; }
+    .ss-matchup::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .ss-matchup.great { color: var(--good-ink); }
+    .ss-matchup.good { color: var(--data); }
+    .ss-matchup.tough { color: var(--warn-ink); }
+    .ss-matchup.bad { color: var(--danger); }
+    .ss-sub { display: block; font-family: var(--font-body, inherit); font-size: 12px; font-weight: 500; color: var(--muted); }
+    .ss-note { margin-top: 8px; }
+    .ss-pickers-many { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ss-pick-row { display: flex; gap: 6px; }
+    .ss-pick-row select { flex: 1 1 auto; min-width: 0; }
+    .ss-rank { display: grid; gap: 6px; margin-top: 12px; }
+    .ss-rank-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; background: var(--surface-2); border: 1.5px solid var(--line-strong); border-radius: 6px; }
+    .ss-rank-row.is-top { border-color: var(--good); box-shadow: inset 4px 0 0 var(--good); }
+    .ss-rank-n { font-size: 20px; font-weight: 800; color: var(--muted); }
+    .ss-rank-row.is-top .ss-rank-n { color: var(--good-ink); }
+    .ss-rank-main { display: grid; gap: 4px; min-width: 0; justify-items: start; }
+    .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ss-chip { padding: 1px 7px; font-size: 12px; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 4px; }
+    .ss-chip b { color: var(--text); }
+    .ss-rank-val { display: grid; justify-items: end; gap: 2px; }
+    .ss-rank-val b { font-size: 20px; }
+    .ss-rank-row.is-top .ss-rank-val b { color: var(--good-ink); }
+    .ss-gap { color: var(--muted); }
+
+    /* ===== V5.1 Matchups: who's left, projected margin, swipe ===== */
+    .mc-margin { display: grid; grid-template-columns: minmax(80px, 1fr) auto; align-items: center; gap: 8px; }
+    .mc-margin-track { position: relative; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+    .mc-margin-track i { position: absolute; top: 0; bottom: 0; background: var(--accent); }
+    .mc-margin-track b { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; margin-left: -1px; background: var(--text); opacity: .5; }
+    .mc-margin-text { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
+    .mc-margin-full { padding: 4px 16px 10px; }
+    .mc-swipe-hint { display: none; margin-top: 2px; }
+    html[data-layout="mobile"] .mc-swipe-hint { display: block; }
+    .mc-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-left { flex: 0 0 auto; font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+    html[data-layout="mobile"] .matchup-card.is-collapsed .mc-margin-full { display: none; }
+    html[data-layout="mobile"] .matchup-compact .mc-team { display: flex; align-items: baseline; gap: 6px; }
+    html[data-layout="mobile"] .matchup-compact .mc-margin { grid-row: 4; grid-column: 1 / 3; margin-top: 4px; }
+    html[data-layout="mobile"] .matchup-compact .mc-chev { grid-row: 1 / 5; }
+    .mc-in-right { animation: mcInRight .28s ease-out; }
+    .mc-in-left { animation: mcInLeft .28s ease-out; }
+    @keyframes mcInRight { from { transform: translateX(28px); opacity: .4; } }
+    @keyframes mcInLeft { from { transform: translateX(-28px); opacity: .4; } }
+
+    /* ===== V5.1 Playoffs: what if, clinched / eliminated / magic number ===== */
+    .po-badge { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; vertical-align: 2px; border: 1.5px solid currentColor; }
+    .po-badge.in { color: var(--good-ink); }
+    .po-badge.out { color: var(--danger); }
+    .po-badge.magic { color: var(--warn-ink); text-transform: none; }
+    .po-swing { display: block; color: var(--muted); }
+    .po-whatif { margin-bottom: 14px; padding: 12px; border: 2px solid var(--accent); border-radius: 8px; background: var(--surface); }
+    .po-whatif-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 8px 0; }
+    .po-wi { display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border: 1.5px solid var(--line-strong); border-radius: 6px; text-align: center; }
+    .po-wi b { font-size: 24px; font-weight: 800; }
+    .po-wi.win b { color: var(--good-ink); }
+    .po-wi.lose b { color: var(--danger); }
+    .po-wi.now { background: var(--surface-2); }
+    .team-stat-tile.is-good .team-stat-value, .team-stat-tile.is-good strong { color: var(--good-ink); }
+    @media (prefers-reduced-motion: reduce) { .mc-in-right, .mc-in-left { animation: none; } }
+
+    /* ===== V5.2 win-chance timeline (single line, 0–100%, 50% reference) ===== */
+    .wct { display: grid; gap: 6px; margin: 12px 0 4px; }
+    .wct-plot { position: relative; height: 120px; margin: 6px 46px 0 38px; touch-action: pan-y; cursor: crosshair; }
+    .wct.is-compact .wct-plot { height: 84px; }
+    .wct-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .wct-grid { stroke: var(--line); stroke-width: 1; }
+    .wct-mid { stroke: var(--line-strong); stroke-width: 1.5; }
+    .wct-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .wct-ylab { position: absolute; left: -38px; width: 32px; transform: translateY(-50%); text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--muted); pointer-events: none; }
+    .wct-dot, .wct-hover-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); pointer-events: none; }
+    .wct-end { position: absolute; right: -44px; width: 40px; transform: translateY(-50%); font-size: 14px; font-weight: 800; color: var(--text); pointer-events: none; }
+    .wct-cross { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--text); opacity: .45; pointer-events: none; }
+    .wct-tip {
+      position: absolute; bottom: calc(100% + 6px); transform: translateX(-50%); display: flex; gap: 8px; align-items: baseline; padding: 5px 9px; white-space: nowrap;
+      font-size: 12px; color: var(--text); background: var(--surface); border: 1.5px solid var(--ink-border); border-radius: 6px; box-shadow: var(--sh-sm); pointer-events: none; z-index: 2;
+    }
+    .wct-tip strong { font-size: 14px; }
+    .wct-x { display: flex; justify-content: space-between; margin: 0 46px 0 38px; color: var(--muted); }
+    .wct-summary { color: var(--muted); }
+    .wct-list summary { cursor: pointer; min-height: 36px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: var(--accent); }
+    .wct-list ol { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 3px; font-size: 13px; }
+    @media (forced-colors: active) { .wct-line { stroke: CanvasText; } .wct-dot, .wct-hover-dot { background: CanvasText; } }
     @media (prefers-reduced-motion: reduce) { .mw-cell.mw-flash > * { animation: none; } }
   </style>
   <style>
@@ -4213,6 +4299,7 @@
           <div>
             <h2>Weekly Matchups<button type="button" class="info-btn" data-info="matchups" aria-label="What does this mean?">i</button></h2>
             <div class="small" id="projectionStatus">Sleeper projections will load with the league update.</div>
+            <div class="small mc-swipe-hint">👆 Swipe left or right on a matchup to jump to the next one.</div>
           </div>
         </div>
         <div class="matchup-controls">
@@ -4521,9 +4608,11 @@
     const DEFAULT_LEAGUE_ID = '1388977201008877568';
     const DEFAULT_ESPN_PROJECTION_PROXY_URL = 'https://brojees-espn-proxy.nathanraschella.workers.dev/';
     const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-    const APP_VERSION = '5.0';
+    const APP_VERSION = '5.2';
     const PLAYER_ROW_SELECTOR = '[data-player-id].player-row, [data-player-id].match-player, [data-player-id].waiver-player-row, [data-player-id].projection-player-card, [data-player-id].transaction-player, [data-player-id].leader-row, [data-player-id].team-leader-player, [data-player-id].team-roster-row, [data-player-id].home-player, [data-player-id].stp-chip, [data-player-id].feed-item, [data-player-id].mw-row';
     const PATCH_NOTES = [
+      { version: '5.2', note: 'Win-chance timeline: a small line chart of your win chance through the day, right under the win bar in your matchup (or as its own My Week card). Touch it to see the time, win chance and score at any moment, with the day\'s high and low underneath. It records while the app is open on your phone.' },
+      { version: '5.1', note: 'Start/Sit shows each player\'s matchup (how many points that defense gives up to his position: Great, Good, Tough or Very tough), flags TNF / SNF / MNF games, and can rank up to four players at once. Matchups show who is left on each side ("3 left · +31.2") and a projected-margin bar, and on phones you can swipe left or right to jump between matchups. Playoff odds now show what this week means (your chance if you win vs if you lose), plus Clinched, Eliminated and a magic number late in the season.' },
       { version: '5.0', note: 'Foldables and tablets now get the mobile layout: an opened Galaxy Z Fold, iPad or Android tablet shows the same phone-style app (Menu button, My Week cards, swipe gestures), centered on the wider screen. New ⚙ Settings → Layout: Auto (the default), Mobile (the phone layout everywhere) or Desktop (the full desktop layout, even on a phone, like "Request desktop site").' },
       { version: '4.9.1', note: 'Pin to My Week: tap 📌 Pin on Standings, Playoff odds, Awards, Power rankings, Records, Matchups, League moves, Stats leaders or Free agents (or Trending) to add that card to My Week in one tap. Tap View in the pop-up to jump to it. Tap Pinned again to take it off.' },
       { version: '4.9', note: 'Make My Week yours: tap ✎ Customize My Week (bottom of My Week, or ⚙ Settings) to add, remove and reorder cards. Drag the ⠿ handle or use the arrows, and on tablets and computers pick S / M / L widths. 17 cards to choose from, including the league scoreboard, NFL games, standings, playoff odds, power rankings, last week\'s awards, league moves, the record book, trending pickups and top free agents. Start from a ready-made layout (Classic, Game day, League fan, Waiver hawk, Minimal), and undo any change. Your layout is saved on this device.' },
@@ -6266,7 +6355,33 @@
       if (counts.bye) bits.push(`${counts.bye} bye`);
       if (counts.canceled) bits.push(`${counts.canceled} canceled`);
       if (counts.unknown) bits.push(`${counts.unknown} unknown`);
+      // V5.1: how many points are still expected from players who haven't finished.
+      if (counts.live || counts.pre) {
+        const toCome = matchupLeftInfo(matchup, data).toCome;
+        if (toCome > 0.05) bits.push(`+${numberOrDash(toCome, 1)} still to come`);
+      }
       return bits.join(' · ');
+    }
+
+    // Starters who haven't finished, and the points still expected from them.
+    function matchupLeftInfo(matchup, data = app.data) {
+      const ids = (matchup?.starters || []).filter(id => id && String(id) !== '0');
+      const left = ids.filter(id => ['live', 'pre'].includes(playerGameInfo(id, data).key)).length;
+      const actual = Number(matchup?.custom_points ?? matchup?.points ?? 0);
+      const toCome = Math.max(0, adjustedMatchupProjectionTotal(matchup, data) - actual);
+      return { left, toCome: Math.round(toCome * 10) / 10 };
+    }
+
+    // A tug-of-war bar: the fill grows from the middle toward whoever leads on live estimate
+    // (full at a 40-point lead).
+    function projectedMarginBarHtml(aEst, bEst, aName = 'Team A', bName = 'Team B') {
+      if (!Number.isFinite(aEst) || !Number.isFinite(bEst)) return '';
+      const margin = Math.round((aEst - bEst) * 10) / 10;
+      const share = Math.min(1, Math.abs(margin) / 40) * 50;
+      const fill = margin >= 0 ? `right:50%;width:${share}%` : `left:50%;width:${share}%`;
+      const text = Math.abs(margin) < 0.05 ? 'Projected to finish even' : `${margin > 0 ? aName : bName} by ${numberOrDash(Math.abs(margin), 1)} (projected)`;
+      return `<span class="mc-margin" role="img" aria-label="${escapeHtml(text)}">
+        <span class="mc-margin-track"><i style="${fill}"></i><b></b></span><span class="mc-margin-text">${escapeHtml(text)}</span></span>`;
     }
 
     function gameProgressFraction(playerId, data = app.data) {
@@ -7754,13 +7869,18 @@
               <span class="mc-pin-team right ${bMe ? 'is-you' : ''}">${escapeHtml(bMe ? 'You' : br ? teamName(bo, br) : 'Bye')}</span>
               <span class="mc-pin-sub mono">Live estimate ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${winText ? ` · ${winText}` : ''}</span>
             </div></div>` : '';
+        // V5.1: who's left on each side, and a bar for the projected margin.
+        const leftTag = m => { const info = m ? matchupLeftInfo(m, data) : null; return info?.left ? `<small class="mc-left">${info.left} left · +${numberOrDash(info.toCome, 1)}</small>` : ''; };
+        const aName = ar ? teamName(ao, ar) : 'Bye', bName = br ? teamName(bo, br) : 'Bye';
+        const marginBar = a && b && !bothFinal ? projectedMarginBarHtml(aAdjusted, bAdjusted, aMe ? 'You' : aName, bMe ? 'You' : bName) : '';
         const compact = `<button type="button" class="matchup-compact" data-toggle-matchup="${escapeHtml(mid)}" aria-expanded="${open}" aria-label="${escapeHtml(`${ar ? teamName(ao, ar) : 'Bye'} vs ${br ? teamName(bo, br) : 'Bye'}, show lineups`)}">
-              <span class="mc-team">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</span>
+              <span class="mc-team"><span class="mc-name">${escapeHtml(ar ? teamName(ao, ar) : 'Bye')}</span>${leftTag(a)}</span>
               <span class="mc-score ${aPts !== null && bPts !== null && aPts > bPts ? 'lead' : ''}">${a ? numberOrDash(aPts, 1) : '—'}</span>
               <span class="mc-dash">–</span>
               <span class="mc-score ${aPts !== null && bPts !== null && bPts > aPts ? 'lead' : ''}">${b ? numberOrDash(bPts, 1) : '—'}</span>
-              <span class="mc-team right">${escapeHtml(br ? teamName(bo, br) : 'Bye')}</span>
+              <span class="mc-team right"><span class="mc-name">${escapeHtml(br ? teamName(bo, br) : 'Bye')}</span>${leftTag(b)}</span>
               <span class="mc-live">Live estimate ${a ? numberOrDash(aAdjusted, 1) : '—'} – ${b ? numberOrDash(bAdjusted, 1) : '—'}${liveCount ? ` · <span class="game-dot live"></span>${liveCount} playing` : ''}${winText ? ` · ${winText}` : ''}</span>
+              ${marginBar}
               <span class="mc-chev" aria-hidden="true">▾</span>
             </button>`;
         return `
@@ -7793,6 +7913,7 @@
               </div>
             </div>
             ${winLine}
+            ${marginBar ? `<div class="mc-margin-full">${marginBar}</div>` : ''}
             ${pinned}
             <div class="matchup-lineups">
               ${renderLineupSide(a, data)}
@@ -9548,7 +9669,9 @@
       </div>`;
       // The feed lives here unless it has its own card on My Week.
       const feed = myWeekHas('feed') ? '' : feedHtml();
-      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${feed}${h2hLine}${actions}`);
+      // V5.2: the win-chance timeline sits under the win bar unless it has its own card.
+      const timeline = myWeekHas('winTimeline') ? '' : winTimelineChartHtml({ compact: true });
+      return homeSection(title, `<div class="home-scoreboard">${homeSideHtml(mine, ctx, true)}<div class="home-vs">VS</div>${homeSideHtml(opp, ctx, false)}</div>${stillToPlayHtml(mine, opp, ctx)}${winHtml}${timeline}${feed}${h2hLine}${actions}`);
     }
 
     function homePlayerChip(id, value, ctx) {
@@ -9664,6 +9787,8 @@
           id => ['live', 'final', 'canceled'].includes(playerGameInfo(id, data).key));
         st.startSit = { rosterId, a, b, extra };
       }
+      // Players C and D (V5.1: compare up to four).
+      for (const k of ['c', 'd']) if (st.startSit[k] && !allowedB.has(String(st.startSit[k]))) st.startSit[k] = '';
       const starterSet = new Set((mine?.starters || roster.starters || []).map(String));
       const mineSet = new Set(ids);
       const hubReady = app.projectionHub.loaded && app.projectionHub.week === Number(data?.selectedWeek || data?.state?.week);
@@ -9685,9 +9810,12 @@
         const rank = positionRankForPlayer(id, data);
         return { id, p, info, opp: waiverOpponent(id, data), kickoff: playerKickoffInfo(id, data).display, rank,
           orig: orig(id), live: live(id), sleeper: comp?.sleeper ?? null, espn: comp?.espn ?? null, consensus: comp?.consensus ?? null, spread: comp?.spread ?? null,
-          locked: ['live', 'final', 'canceled'].includes(info.key), starter: starterSet.has(id) };
+          locked: ['live', 'final', 'canceled'].includes(info.key), starter: starterSet.has(id),
+          matchup: matchupDifficulty(id, data), slot: info.key === 'pre' ? primetimeSlot(id, data) : '' };
       };
       const A = col(st.startSit.a), B = col(st.startSit.b);
+      const extras = ['c', 'd'].filter(k => st.startSit[k]).map(k => ({ key: k, c: col(String(st.startSit[k])) }));
+      if (extras.length) return startSitManyHtml([A, B, ...extras.map(x => x.c)], { optionHtml, optionHtmlB, hubReady, mineSet, data, extras });
       const metric = (label, key, digits = 2, higherBetter = true) => {
         const a = A[key], b = B[key];
         const better = Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) > 0.004 ? ((a > b) === higherBetter ? 'a' : 'b') : '';
@@ -9696,7 +9824,8 @@
       const head = c => `<div class="ss-player">
         <button type="button" class="home-player ss-name" data-player-id="${escapeHtml(c.id)}"><span class="home-player-name">${escapeHtml(c.p.full_name)}</span></button>
         <div class="small">${escapeHtml([c.p.position, c.p.team || 'FA', c.opp].filter(Boolean).join(' · '))}</div>
-        <div class="small">${gameStatusBadge(c.info) || escapeHtml(c.kickoff || c.info.label)}${c.p.injury_status ? ` <span class="injury">${escapeHtml(c.p.injury_status)}</span>` : ''}</div>
+        <div class="small">${gameStatusBadge(c.info) || escapeHtml(c.kickoff || c.info.label)}${c.slot ? ` <span class="ss-slot" title="Prime-time game">${escapeHtml(c.slot)}</span>` : ''}${c.p.injury_status ? ` <span class="injury">${escapeHtml(c.p.injury_status)}</span>` : ''}</div>
+        ${c.matchup ? `<div class="small"><span class="ss-matchup ${c.matchup.tier}">${escapeHtml(c.matchup.label)}</span></div>` : ''}
         <div class="small">${escapeHtml(mineSet.has(c.id) ? (c.starter ? 'Starting' : 'On bench') : (playerRosterContext(c.id, data)?.team_name ? `On ${playerRosterContext(c.id, data).team_name}` : 'Free agent'))}${c.rank?.rank ? ` · ${escapeHtml(c.rank.position || c.p.position)} #${escapeHtml(c.rank.rank)} season` : ''}</div>
       </div>`;
       const basis = Number.isFinite(A.consensus) && Number.isFinite(B.consensus) ? ['consensus', 'consensus'] : ['live', 'live estimate'];
@@ -9710,6 +9839,13 @@
         : `Lean <strong>${escapeHtml((diff > 0 ? A : B).p.full_name)}</strong> by <span class="mono">${numberOrDash(Math.abs(diff), 2)}</span> on ${basis[1]}.`;
       const lockNote = !bothFinal && (A.locked || B.locked) ? `<div class="small">${escapeHtml([A, B].filter(c => c.locked).map(c => c.p.full_name).join(' and '))} ${A.locked && B.locked ? 'are' : 'is'} locked (game started).</div>` : '';
       const loadBtn = hubReady ? '' : `<button type="button" class="btn-ghost" data-action="load-consensus" ${app.projectionHub.loading ? 'disabled' : ''}>${app.projectionHub.loading ? 'Loading ESPN…' : 'Add ESPN + consensus'}</button>`;
+      // Matchup: points the opponent's defense allows to that position per game (more = easier).
+      const matchupRow = A.matchup || B.matchup ? (() => {
+        const a = A.matchup, b = B.matchup;
+        const better = a && b && a.rank !== b.rank ? (a.rank < b.rank ? 'a' : 'b') : '';
+        const cell = (m, side) => `<span class="mono ss-val ${better === side ? 'win' : ''}">${m ? `${numberOrDash(m.ppg, 1)}<small class="ss-sub">${escapeHtml(m.rankText)}</small>` : '—'}</span>`;
+        return `<div class="ss-row">${cell(a, 'a')}<span class="ss-key">Opp. allows</span>${cell(b, 'b')}</div>`;
+      })() : '';
       return homeSection('Start / sit', `
         <div class="ss-pickers">
           <div class="field"><label for="ssPlayerA">Player A</label><select id="ssPlayerA" data-startsit="a">${optionHtml(A.id)}</select></div>
@@ -9717,11 +9853,135 @@
         </div>
         <div class="ss-compare">
           <div class="ss-heads">${head(A)}${head(B)}</div>
-          ${metric('Projected', 'orig')}${metric('Live estimate', 'live')}${metric('Sleeper', 'sleeper')}${metric('ESPN', 'espn')}${metric('Consensus', 'consensus')}${metric('Source spread', 'spread', 2, false)}
+          ${metric('Projected', 'orig')}${metric('Live estimate', 'live')}${matchupRow}${metric('Sleeper', 'sleeper')}${metric('ESPN', 'espn')}${metric('Consensus', 'consensus')}${metric('Source spread', 'spread', 2, false)}
         </div>
-        <div class="ss-verdict">${lean}</div>${lockNote}
-        <div class="home-actions">${loadBtn}<span class="small">Projections use this league's scoring. A lean is a projection, not a sure thing.</span></div>`);
+        <div class="ss-verdict">${lean}</div>${lockNote}${startSitSlotNote([A, B])}
+        <div class="home-actions"><button type="button" class="btn-secondary" data-ss-add>+ Compare another player</button>${loadBtn}<span class="small">Projections use this league's scoring. A lean is a projection, not a sure thing.</span></div>`);
     }
+
+    /* ---------- V5.1 Start/Sit: matchup difficulty, prime-time games, 3–4 players ---------- */
+    function ordinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    // The data bot's table of points each NFL defense allows to each position (data/defense_vs_pos.json).
+    function defenseVsPosition() {
+      const leagueId = String(app.data?.league?.league_id || '');
+      if (app.dvp?.leagueId === leagueId) return app.dvp.teams;
+      if (!app.dvpLoading && leagueId) {
+        app.dvpLoading = true;
+        sharedFile('defense_vs_pos.json').then(file => {
+          const teams = {};
+          if (file && String(file.league_id) === leagueId) for (const [team, row] of Object.entries(file.teams || {})) teams[normalizeNflTeam(team)] = row;
+          app.dvp = { leagueId, teams: Object.keys(teams).length ? teams : null, defenses: Number(file?.defenses) || 32, through: file?.through_week };
+          app.dvpLoading = false;
+          if (isTabActive('home')) renderHome();
+        });
+      }
+      return null;
+    }
+
+    function playerOpponentTeam(id, data = app.data) {
+      const p = playerFromId(id);
+      const game = gameForTeam(p?.team, data);
+      if (!game) return null;
+      const team = normalizeNflTeam(p.team);
+      return normalizeNflTeam(game.home) === team ? normalizeNflTeam(game.away) : normalizeNflTeam(game.home);
+    }
+
+    function matchupDifficulty(id, data = app.data) {
+      const teams = defenseVsPosition();
+      const pos = playerFromId(id)?.position;
+      const opp = teams && pos ? playerOpponentTeam(id, data) : null;
+      const row = opp ? teams[opp]?.[pos] : null;
+      if (!row) return null;
+      const n = app.dvp.defenses || 32;
+      const tier = row.rank <= n / 4 ? ['great', 'Great matchup'] : row.rank <= n / 2 ? ['good', 'Good matchup'] : row.rank <= n * 0.75 ? ['tough', 'Tough matchup'] : ['bad', 'Very tough matchup'];
+      return { opp, pos, ppg: row.ppg, rank: row.rank, n, tier: tier[0],
+        label: `${tier[1]} vs ${opp}`, rankText: `${ordinal(row.rank)} most to ${pos === 'DEF' ? 'DEFs' : `${pos}s`}` };
+    }
+
+    // TNF / SNF / MNF (and Saturday games), using kickoff time in US Eastern.
+    function primetimeSlot(id, data = app.data) {
+      const iso = playerKickoffInfo(id, data).iso;
+      if (!iso) return '';
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', hourCycle: 'h23' }).formatToParts(new Date(iso));
+      const day = parts.find(p => p.type === 'weekday')?.value;
+      const hour = Number(parts.find(p => p.type === 'hour')?.value);
+      if (day === 'Thu') return 'TNF';
+      if (day === 'Mon') return 'MNF';
+      if (day === 'Sun' && hour >= 19) return 'SNF';
+      if (day === 'Sat') return 'SAT';
+      return '';
+    }
+
+    function startSitSlotNote(cols) {
+      const late = cols.filter(c => ['SNF', 'MNF'].includes(c.slot));
+      if (!late.length || late.length === cols.length) return '';
+      return `<div class="small ss-note">🌙 ${escapeHtml(late.map(c => c.p.full_name).join(' and '))} ${late.length === 1 ? 'plays' : 'play'} ${escapeHtml(late[0].slot === 'MNF' ? 'Monday night' : 'Sunday night')}: you'll see how the earlier games went before ${late.length === 1 ? 'his' : 'their'} game locks.</div>`;
+    }
+
+    // Three or four players: a ranked list instead of the side-by-side face-off.
+    function startSitManyHtml(cols, { optionHtml, optionHtmlB, hubReady, mineSet, data, extras }) {
+      const basis = cols.every(c => Number.isFinite(c.consensus)) ? ['consensus', 'Consensus'] : ['live', 'Live estimate'];
+      const val = c => Number.isFinite(c[basis[0]]) ? c[basis[0]] : -Infinity;
+      const ranked = [...cols].sort((x, y) => val(y) - val(x));
+      const top = ranked[0];
+      const allFinal = cols.every(c => c.info.key === 'final');
+      const rows = ranked.map((c, i) => {
+        // The ranking number is on the right, so leave its own chip out.
+        const chips = [
+          ['Proj', c.orig, 'orig'], ['Live', c.live, 'live'], hubReady ? ['Cons', c.consensus, 'consensus'] : null
+        ].filter(x => x && x[2] !== basis[0]).map(([k, v]) => `<span class="ss-chip"><span>${k}</span> <b class="mono">${Number.isFinite(v) ? numberOrDash(v, 1) : '—'}</b></span>`).join('');
+        const gap = i && Number.isFinite(val(c)) && Number.isFinite(val(top)) ? `<span class="small mono ss-gap">−${numberOrDash(val(top) - val(c), 1)}</span>` : '';
+        const where = mineSet.has(c.id) ? (c.starter ? 'Starting' : 'Bench') : (playerRosterContext(c.id, data)?.team_name ? `On ${playerRosterContext(c.id, data).team_name}` : 'Free agent');
+        return `<div class="ss-rank-row ${i === 0 ? 'is-top' : ''}">
+          <span class="ss-rank-n mono">${i + 1}</span>
+          <div class="ss-rank-main">
+            <button type="button" class="home-player ss-name" data-player-id="${escapeHtml(c.id)}"><span class="home-player-name">${escapeHtml(c.p.full_name)}</span></button>
+            <div class="small">${escapeHtml([c.p.position, c.p.team || 'FA', c.opp].filter(Boolean).join(' · '))} · ${gameStatusBadge(c.info) || escapeHtml(c.kickoff || c.info.label)}${c.slot ? ` <span class="ss-slot">${escapeHtml(c.slot)}</span>` : ''}${c.p.injury_status ? ` <span class="injury">${escapeHtml(c.p.injury_status)}</span>` : ''} · ${escapeHtml(where)}</div>
+            <div class="ss-chips">${chips}${c.matchup ? `<span class="ss-matchup ${c.matchup.tier}" title="${escapeHtml(`${c.matchup.opp} allows ${numberOrDash(c.matchup.ppg, 1)} per game to ${c.matchup.pos}s (${c.matchup.rankText})`)}">${escapeHtml(c.matchup.label)}</span>` : ''}</div>
+          </div>
+          <span class="ss-rank-val"><b class="mono">${Number.isFinite(val(c)) ? numberOrDash(val(c), 1) : '—'}</b>${gap}</span>
+        </div>`;
+      }).join('');
+      const pickers = [['a', 'Player A', optionHtml(cols[0].id)], ['b', 'Player B', optionHtmlB(cols[1].id)],
+        ...extras.map((x, i) => [x.key, `Player ${'CD'[i]}`, optionHtmlB(x.c.id)])].map(([key, label, opts]) => `
+        <div class="field ss-pick"><label for="ssPlayer${key.toUpperCase()}">${label}</label>
+          <div class="ss-pick-row"><select id="ssPlayer${key.toUpperCase()}" data-startsit="${key}">${opts}</select>${['c', 'd'].includes(key) ? `<button type="button" class="mw-icon-btn" data-ss-remove="${key}" aria-label="Remove ${label}">✕</button>` : ''}</div></div>`).join('');
+      const verdict = allFinal ? `Final: <strong>${escapeHtml(top.p.full_name)}</strong> scored the most.`
+        : Number.isFinite(val(top)) ? `Start <strong>${escapeHtml(top.p.full_name)}</strong> first: highest ${escapeHtml(basis[1].toLowerCase())} of the ${cols.length}.` : 'Not enough projection data to compare yet.';
+      const loadBtn = hubReady ? '' : `<button type="button" class="btn-ghost" data-action="load-consensus" ${app.projectionHub.loading ? 'disabled' : ''}>${app.projectionHub.loading ? 'Loading ESPN…' : 'Add ESPN + consensus'}</button>`;
+      return homeSection('Start / sit', `
+        <div class="ss-pickers ss-pickers-many">${pickers}</div>
+        <div class="ss-rank">${rows}</div>
+        <div class="ss-verdict">${verdict}</div>${startSitSlotNote(cols)}
+        <div class="home-actions">${extras.length < 2 ? '<button type="button" class="btn-secondary" data-ss-add>+ Compare another player</button>' : ''}${loadBtn}<span class="small">Ranked by ${escapeHtml(basis[1].toLowerCase())}. Matchup = points that defense allows to the position.</span></div>`);
+    }
+
+    document.addEventListener('click', event => {
+      const add = event.target.closest('[data-ss-add]');
+      const remove = event.target.closest('[data-ss-remove]');
+      if (!add && !remove) return;
+      const st = league31();
+      if (!st.startSit) return;
+      event.preventDefault();
+      if (remove) { st.startSit[remove.dataset.ssRemove] = ''; if (!st.startSit.c && st.startSit.d) { st.startSit.c = st.startSit.d; st.startSit.d = ''; } renderHome(); return; }
+      const key = !st.startSit.c ? 'c' : !st.startSit.d ? 'd' : null;
+      if (!key) return;
+      // Next best player at Player A's position who isn't already being compared.
+      const data = gameDayData() || app.data;
+      const roster = (data?.rosters || []).find(r => String(r.roster_id) === String(st.startSit.rosterId));
+      const taken = new Set([st.startSit.a, st.startSit.b, st.startSit.c, st.startSit.d].filter(Boolean).map(String));
+      const pos = playerPositions(st.startSit.a)[0];
+      const pool = [...(roster ? startSitCandidates(roster) : []), ...startSitFreeAgents(data)].filter(id => !taken.has(String(id)));
+      const proj = id => Number(originalProjectedPoints(id, data)) || 0;
+      const next = pool.filter(id => playerPositions(id).includes(pos)).sort((x, y) => proj(y) - proj(x))[0] || pool.sort((x, y) => proj(y) - proj(x))[0];
+      if (!next) return;
+      st.startSit[key] = String(next);
+      renderHome();
+    });
 
     function renderHome() {
       const root = document.getElementById('homeContent');
@@ -9744,6 +10004,7 @@
       const roster = (app.data.rosters || []).find(r => String(r.roster_id) === rosterId);
       if (!roster) { replaceLiveContent(root, homeTeamPickerHtml(app.data)); return; }
       const ctx = gameDayData();
+      recordWinTimeline(rosterId, ctx);
       replaceLiveContent(root, myWeekGridHtml({ base: app.data, rosterId, roster, ctx }));
       runInstrumentAnimations(root);
       maybeShowWelcome();
@@ -10588,7 +10849,9 @@
           '<strong>Live estimate</strong> = points scored so far plus what is still expected from players whose games aren\'t over. It moves during games.',
           '<strong>Win chance</strong> compares the two live estimates and how many points are still to come. It\'s an estimate, not a guarantee.'] },
         startsit: { title: 'Start / sit', body: [
-          'Pick any two of your players to compare them side by side.',
+          'Pick any two of your players to compare them side by side, or tap <strong>+ Compare another player</strong> to rank up to four.',
+          '<strong>Opp. allows</strong> / <strong>matchup</strong> = the fantasy points (this league\'s scoring) that this week\'s opponent gives up per game to that position. Great = one of the 8 defenses that allow the most; Very tough = one of the 8 that allow the least.',
+          '<strong>TNF / SNF / MNF</strong> = prime-time game. A Sunday or Monday night player lets you see the early results before his game locks.',
           '<strong>Projected</strong> and <strong>Live estimate</strong> use this league\'s scoring.',
           '<strong>Sleeper</strong> and <strong>ESPN</strong> are each site\'s projection (tap "Add ESPN + consensus"). <strong>Consensus</strong> is their average; <strong>Source spread</strong> is how much they disagree.',
           'The lean goes to whoever is higher on consensus, or on the live estimate if consensus isn\'t loaded.'] },
@@ -10622,6 +10885,10 @@
           '<strong>Pts</strong> = points scored. <strong>Proj</strong> = projected points. <strong>Live est.</strong> = points so far plus what\'s still expected.',
           'Score colour shows the game: <strong>yellow</strong> live, <strong>green</strong> final, <strong>grey</strong> not started, <strong>purple</strong> bye, <strong>red</strong> canceled.',
           '<strong>SFLEX</strong> = Superflex (QB, RB, WR or TE). <strong>FLEX</strong> = RB, WR or TE.'] },
+        wintimeline: { title: 'Win-chance timeline', body: [
+          'Your estimated win chance through the week, starting when the first player in your matchup kicks off.',
+          'Touch or hover the chart to see the time, win chance and score at any moment. The stronger middle line is 50%: above it you\'re favored.',
+          'It records each time the app updates while it\'s open on this device (about every 30 seconds during games). Times the app was closed are joined by a straight line.'] },
         feed: { title: 'What changed', body: [
           'A running list of what happened in your matchup since the last update: points scored (with TD, FG or INT when the stats show it), players kicking off and finishing, lead changes and win-chance swings of 5% or more.',
           '<strong>Green</strong> is good for you, <strong>red</strong> is good for your opponent. Tap a player line to open their card.',
@@ -10631,7 +10898,9 @@
           '<strong>Future weeks:</strong> each team gets its best possible lineup for that week: the highest projected players for each slot, using that week\'s projections and this league\'s scoring. A player whose NFL team is on bye scores 0 that week, so the next best player steps in. Players listed Out miss next week, Doubtful players count 25%, and players on IR or suspended count 0 for about 4 weeks.',
           '<strong>This week:</strong> lineups are already set, so each team uses its live estimate (points so far plus what\'s still expected).',
           'Each week\'s score gets realistic randomness (about ±20%), and the whole rest of the season is simulated thousands of times. Standings are ordered by record, then points for, the same as Sleeper.',
-          '<strong>Playoff chance</strong> = how often you finished in a playoff spot. Trades, pickups and lineup mistakes aren\'t predicted.'] },
+          '<strong>Playoff chance</strong> = how often you finished in a playoff spot. Trades, pickups and lineup mistakes aren\'t predicted.',
+          '<strong>If you win / If you lose</strong> = your playoff chance in the simulated seasons where you won this week\'s game vs the ones where you lost it.',
+          '<strong>Clinched</strong> and <strong>Eliminated</strong> are certain, not simulated: no combination of results can change them. <strong>Magic #</strong> (last few weeks) = any mix of your wins plus losses by the first team out that adds up to this number clinches a spot over that team.'] },
         standings: { title: 'Standings', body: [
           '<strong>Current Standings</strong>: records so far, ordered by wins then points for. Tap a team for its details.',
           '<strong>Live Projected Standings</strong>: where everyone would land if this week\'s live estimates hold, including projected record, projected points for, and rank movement (↑ / ↓).',
@@ -11662,21 +11931,29 @@
         const byes = playoffTeams === pow2 ? 0 : pow2 - playoffTeams;
         const divisions = Number(settings.divisions || 0);
         const divisionOf = Object.fromEntries(rosters.map(r => [String(r.roster_id), Number(r.settings?.division || 0)]));
-        const tally = Object.fromEntries(ids.map(id => [id, { playoff: 0, bye: 0, one: 0, seed: 0, w: 0, l: 0, t: 0, pf: 0 }]));
+        // V5.1 "what if": also count, for each team, the seasons where it won / lost this week's game.
+        const tally = Object.fromEntries(ids.map(id => [id, { playoff: 0, bye: 0, one: 0, seed: 0, w: 0, l: 0, t: 0, pf: 0, winN: 0, winP: 0, loseN: 0, loseP: 0 }]));
         for (let n = 0; n < N; n++) {
           const sim = Object.fromEntries(ids.map(id => [id, { ...rec[id] }]));
-          for (const wk of weeks) {
+          const first = {};
+          weeks.forEach((wk, wi) => {
             const scores = {};
             for (const id of ids) { const t = wk.teams[id]; scores[id] = t ? Math.max(0, t.mean + (t.sd ? t.sd * gaussian() : 0)) : 0; sim[id].pf += scores[id]; }
-            for (const [a, b] of wk.pairs) { if (sim[a] && sim[b]) { addResult(sim[a], scores[a], scores[b]); addResult(sim[b], scores[b], scores[a]); } }
+            for (const [a, b] of wk.pairs) {
+              if (!sim[a] || !sim[b]) continue;
+              addResult(sim[a], scores[a], scores[b]); addResult(sim[b], scores[b], scores[a]);
+              if (wi === 0) { first[a] = scores[a] > scores[b] ? 'W' : scores[a] < scores[b] ? 'L' : 'T'; first[b] = first[a] === 'W' ? 'L' : first[a] === 'L' ? 'W' : 'T'; }
+            }
             if (median) {
               const med = ids.map(id => scores[id]).sort((x, y) => x - y)[Math.floor(ids.length / 2)];
               for (const id of ids) addResult(sim[id], scores[id], med);
             }
-          }
+          });
           const order = seedOrder(ids, sim, divisions, divisionOf);
           order.forEach((id, i) => {
             const t = tally[id];
+            if (first[id] === 'W') { t.winN++; if (i < playoffTeams) t.winP++; }
+            else if (first[id] === 'L') { t.loseN++; if (i < playoffTeams) t.loseP++; }
             if (i < playoffTeams) t.playoff++;
             if (i < byes) t.bye++;
             if (i === 0) t.one++;
@@ -11684,9 +11961,29 @@
             t.w += sim[id].w; t.l += sim[id].l; t.t += sim[id].t; t.pf += sim[id].pf;
           });
         }
+        // Clinched / eliminated (certain, not simulated) and a magic number late in the season.
+        // Ties count as "could pass" because the points-for tiebreaker can't be known yet.
+        const gamesLeft = weeks.length * (median ? 2 : 1);
+        const winsOf = id => rec[id].w + rec[id].t / 2;
+        const nowOrder = seedOrder(ids, rec, 1, {});
+        const firstOut = nowOrder[playoffTeams] || null;
+        const certainty = {};
+        for (const id of ids) {
+          if (divisions > 1 || !weeks.length) break;
+          const cantCatch = ids.filter(o => o !== id && winsOf(o) > winsOf(id) + gamesLeft).length;
+          const couldPass = ids.filter(o => o !== id && winsOf(o) + gamesLeft >= winsOf(id)).length;
+          const status = cantCatch >= playoffTeams ? 'out' : couldPass < playoffTeams ? 'in' : null;
+          const inside = nowOrder.indexOf(id) < playoffTeams;
+          const magic = !status && inside && firstOut && weeks.length <= 5 ? Math.max(1, Math.ceil(winsOf(firstOut) + gamesLeft - winsOf(id) + 1)) : null;
+          certainty[id] = { status, magic: magic && magic <= gamesLeft * 2 ? magic : null };
+        }
+        const minSample = 60;
         const rows = ids.map(id => ({
           rid: id, playoff: tally[id].playoff / N, bye: tally[id].bye / N, one: tally[id].one / N, seed: tally[id].seed / N,
-          w: tally[id].w / N, l: tally[id].l / N, t: tally[id].t / N, pf: tally[id].pf / N, now: rec[id]
+          w: tally[id].w / N, l: tally[id].l / N, t: tally[id].t / N, pf: tally[id].pf / N, now: rec[id],
+          ifWin: tally[id].winN >= minSample ? tally[id].winP / tally[id].winN : null,
+          ifLose: tally[id].loseN >= minSample ? tally[id].loseP / tally[id].loseN : null,
+          status: certainty[id]?.status || null, magic: certainty[id]?.magic || null
         })).sort((a, b) => b.playoff - a.playoff || a.seed - b.seed);
 
         // Your path: each remaining week's matchup with an estimated win chance.
@@ -11700,7 +11997,7 @@
           return { week: wk.week, oppId, mine: a?.mean ?? null, theirs: b?.mean ?? null, p, byes: a?.byes || [], live: Boolean(liveCtx) && wk.week === currentWeek };
         }) : [];
 
-        const result = { rows, path, N, playoffTeams, byes, median, divisions, lastRegular, weeksLeft: weeks.length, computedAt: Date.now() };
+        const result = { rows, path, N, playoffTeams, byes, median, divisions, lastRegular, weeksLeft: weeks.length, whatIfWeek: weeks[0]?.week ?? null, firstOut, computedAt: Date.now() };
         app.playoff = { key, at: Date.now(), loading: false, result };
         return result;
       } catch (err) {
@@ -11754,11 +12051,13 @@
       if (!r) { el.innerHTML = '<div class="empty">Open this section to calculate playoff odds.</div>'; return; }
       if (r.done) { el.innerHTML = '<div class="empty">The regular season is over, so the playoff field is set.</div>'; return; }
       const me = String(els.myTeam.value || '');
+      const wk = r.whatIfWeek ? `Wk ${r.whatIfWeek}` : 'This week';
       const rows = r.rows.map((row, i) => `
         <button type="button" class="power-row playoff-row ${row.rid === me ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
           <span class="power-rank mono">${String(i + 1).padStart(2, '0')}</span>
-          <span class="power-main"><strong>${escapeHtml(rosterName(row.rid))}${row.rid === me ? ' <span class="pill me">YOU</span>' : ''}</strong>
-            <span class="small">Now <span class="mono">${row.now.w}-${row.now.l}${row.now.t ? `-${row.now.t}` : ''}</span> · Projected <span class="mono">${Math.round(row.w)}-${Math.round(row.l)}${Math.round(row.t) ? `-${Math.round(row.t)}` : ''}</span> · Avg seed <span class="mono">${row.seed.toFixed(1)}</span>${r.byes ? ` · Bye <span class="mono">${pctText(row.bye)}</span>` : ''}</span></span>
+          <span class="power-main"><strong>${escapeHtml(rosterName(row.rid))}${row.rid === me ? ' <span class="pill me">YOU</span>' : ''}${playoffBadgeHtml(row)}</strong>
+            <span class="small">Now <span class="mono">${row.now.w}-${row.now.l}${row.now.t ? `-${row.now.t}` : ''}</span> · Projected <span class="mono">${Math.round(row.w)}-${Math.round(row.l)}${Math.round(row.t) ? `-${Math.round(row.t)}` : ''}</span> · Avg seed <span class="mono">${row.seed.toFixed(1)}</span>${r.byes ? ` · Bye <span class="mono">${pctText(row.bye)}</span>` : ''}</span>
+            ${!row.status && row.ifWin !== null && row.ifLose !== null ? `<span class="small po-swing">${escapeHtml(wk)}: win <span class="mono">${pctText(row.ifWin)}</span> · lose <span class="mono">${pctText(row.ifLose)}</span></span>` : ''}</span>
           <span class="power-side"><span class="power-score mono">${pctText(row.playoff)}</span><span class="power-luck">make playoffs</span></span>
           <span class="meter power-meter" aria-hidden="true">${Array.from({ length: 10 }, (_, k) => `<i class="${k < Math.round(row.playoff * 10) ? 'on' : ''}"></i>`).join('')}</span>
         </button>`).join('');
@@ -11771,7 +12070,7 @@
             <span class="path-pct mono">${w.p === null ? '—' : pctText(w.p)}</span>
           </div>`).join('')}
         </div>` : '';
-      el.innerHTML = `${path}<div class="power-list playoff-list">${rows}</div>
+      el.innerHTML = `${playoffWhatIfHtml(r, me)}${path}<div class="power-list playoff-list">${rows}</div>
         <div class="small league-note">${r.N.toLocaleString()} simulated seasons · top ${r.playoffTeams} make the playoffs${r.byes ? ` · top ${r.byes} get a bye` : ''}${r.median ? ' · includes median games' : ''} · ${r.weeksLeft} week${r.weeksLeft === 1 ? '' : 's'} left through Week ${r.lastRegular} · updated ${new Date(r.computedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Tap ⓘ for how it works.</div>`;
     }
 
@@ -11788,11 +12087,34 @@
       renderHome();
     });
 
+    function playoffBadgeHtml(row) {
+      if (row.status === 'in') return ' <span class="po-badge in">Clinched</span>';
+      if (row.status === 'out') return ' <span class="po-badge out">Eliminated</span>';
+      if (row.magic) return ` <span class="po-badge magic" title="Any combination of your wins and losses by the first team out of the playoffs that adds up to this clinches a spot over them">Magic # ${row.magic}</span>`;
+      return '';
+    }
+
+    // "This week matters": your playoff chance if you win vs if you lose this week.
+    function playoffWhatIfHtml(r, me) {
+      const row = r.rows.find(x => x.rid === me);
+      if (!row || row.status || row.ifWin === null || row.ifLose === null) return '';
+      const opp = r.path?.[0]?.oppId;
+      const delta = p => { const d = Math.round((p - row.playoff) * 100); return d === 0 ? '±0' : d > 0 ? `+${d}` : `−${-d}`; };
+      const cell = (cls, label, p, showDelta) => `<div class="po-wi ${cls}"><span class="small">${label}</span><b class="mono">${pctText(p)}</b>${showDelta ? `<span class="small mono">${delta(p)} pts</span>` : ''}</div>`;
+      return `<div class="po-whatif">
+        <div class="feed-head"><span class="feed-label">This week matters · Week ${escapeHtml(r.whatIfWeek)}${opp ? ` vs ${escapeHtml(rosterName(opp))}` : ''}</span></div>
+        <div class="po-whatif-grid">${cell('win', 'If you win', row.ifWin, true)}${cell('now', 'Right now', row.playoff, false)}${cell('lose', 'If you lose', row.ifLose, true)}</div>
+        <div class="small">Your playoff chance in the simulated seasons where you won this week vs where you lost.</div>
+      </div>`;
+    }
+
     function playoffTileHtml(roster) {
       const r = app.playoff?.result;
       const row = r?.rows?.find(x => x.rid === String(roster.roster_id));
       if (!row && !app.playoff?.loading && !(app.playoff?.error)) setTimeout(ensurePlayoffOdds, 1200);
       const inner = r?.done ? teamModalTile('Playoffs', 'Set', 'Regular season over')
+        : row?.status ? teamModalTile('Playoffs', row.status === 'in' ? 'Clinched' : 'Eliminated', row.status === 'in' ? 'A playoff spot is locked up' : 'Out of the playoff race', row.status === 'in' ? 'is-good' : '')
+        : row && row.ifWin !== null && row.ifLose !== null ? teamModalTile('Playoff chance', pctText(row.playoff), `Win this week → ${pctText(row.ifWin)} · Lose → ${pctText(row.ifLose)}`)
         : row ? teamModalTile('Playoff chance', pctText(row.playoff), `Projected ${Math.round(row.w)}-${Math.round(row.l)}${Math.round(row.t) ? `-${Math.round(row.t)}` : ''} · tap for details`)
         : teamModalTile('Playoff chance', '…', app.playoff?.error ? 'Unavailable right now' : 'Calculating');
       return `<button type="button" class="tile-link" data-route="league/playoffs" data-playoff-tile aria-label="Open playoff odds">${inner}</button>`;
@@ -11857,6 +12179,8 @@
         season: { name: 'Season', icon: '📈', group: 'Your team', size: 1, desc: 'Playoff chance, points for and against, power rank and moves.',
           render: env => homeSeasonHtml(env.roster, env.base) },
 
+        winTimeline: { name: 'Win-chance timeline', icon: '📉', group: 'Game day', size: 2, desc: 'A line chart of your win chance through the day. Touch it to see any moment.',
+          render: () => section('Win-chance timeline', 'wintimeline', winTimelineChartHtml()) },
         feed: { name: 'What changed', icon: '⚡', group: 'Game day', size: 1, desc: 'Scores, lead changes and win-chance swings in your matchup.',
           render: () => section('What changed', 'feed', feedHtml() || empty('Nothing yet. During games, your scores, lead changes and win-chance swings show up here.')) },
         scoreboard: { name: 'League scoreboard', icon: '🏟️', group: 'Game day', size: 2, desc: 'Every matchup this week with live scores and win chances.',
@@ -11935,7 +12259,7 @@
             if (!r) return section('Playoff odds', 'playoffs', marker + (state?.error ? empty('Playoff odds are unavailable right now.') : '<div class="player-modal-loading">Simulating the rest of the season…</div>'));
             const rows = r.rows.map((row, i) => `<button type="button" class="mw-row ${row.rid === me(env) ? 'is-me' : ''}" data-open-team="${escapeHtml(row.rid)}">
               <span class="mw-rank mono">${i + 1}</span>
-              <span class="mw-main"><strong>${escapeHtml(rosterName(row.rid))}</strong><span class="small mono">Proj ${Math.round(row.w)}-${Math.round(row.l)}</span></span>
+              <span class="mw-main"><strong>${escapeHtml(rosterName(row.rid))}${playoffBadgeHtml(row)}</strong><span class="small mono">Proj ${Math.round(row.w)}-${Math.round(row.l)}${!row.status && row.ifWin !== null && row.ifLose !== null ? ` · W ${pctText(row.ifWin)} / L ${pctText(row.ifLose)}` : ''}</span></span>
               <span class="mw-bar" aria-hidden="true"><i style="width:${Math.round(row.playoff * 100)}%"></i></span>
               <span class="mono mw-val">${pctText(row.playoff)}</span></button>`).join('');
             return section('Playoff odds', 'playoffs', `${marker}<div class="mw-list-rows">${rows}</div>${more('league/playoffs', 'Details')}`);
@@ -12020,7 +12344,7 @@
     function myWeekLayouts() {
       return {
         classic: { name: 'Classic', icon: '🏠', desc: 'The standard My Week.', cards: [['keyNumbers', 3], ['matchup', 2], ['lineup', 1], ['startSit', 2], ['season', 1]] },
-        gameday: { name: 'Game day', icon: '🏈', desc: 'Live scores everywhere.', cards: [['matchup', 2], ['feed', 1], ['scoreboard', 2], ['nflGames', 1], ['lineup', 2], ['leaders', 1]] },
+        gameday: { name: 'Game day', icon: '🏈', desc: 'Live scores everywhere.', cards: [['matchup', 2], ['feed', 1], ['winTimeline', 3], ['scoreboard', 2], ['nflGames', 1], ['lineup', 2], ['leaders', 1]] },
         league: { name: 'League fan', icon: '🏆', desc: 'Standings, odds and bragging rights.', cards: [['keyNumbers', 3], ['standings', 1], ['playoffs', 1], ['power', 1], ['awards', 2], ['records', 1], ['moves', 3]] },
         waivers: { name: 'Waiver hawk', icon: '🧲', desc: 'Pickups and lineup decisions.', cards: [['lineup', 2], ['trending', 1], ['freeAgents', 1], ['moves', 2], ['startSit', 3]] },
         minimal: { name: 'Minimal', icon: '◽', desc: 'Just the essentials.', cards: [['keyNumbers', 3], ['matchup', 3], ['lineup', 3]] }
@@ -12276,6 +12600,160 @@
       };
       document.addEventListener('pointerup', end);
       document.addEventListener('pointercancel', end);
+    })();
+
+    /* ---------- V5.2 win-chance timeline ---------- */
+    // One sample per refresh while your matchup is in progress (at most every minute unless
+    // something changed), saved on this device for the current week.
+    function winTimelineKey(ctx, rosterId) {
+      const league = app.data?.league;
+      return `${league?.league_id}:${ctx?.state?.season || league?.season}:${ctx?.selectedWeek || ctx?.state?.week}:${rosterId}`;
+    }
+
+    function winTimelineState() {
+      if (!app.wct) {
+        try { app.wct = JSON.parse(localStorage.getItem('brojees_wintimeline_v1') || 'null'); } catch (_) { app.wct = null; }
+        if (!app.wct || !Array.isArray(app.wct.s)) app.wct = { key: null, s: [] };
+      }
+      return app.wct;
+    }
+
+    function recordWinTimeline(rosterId, ctx) {
+      if (!ctx || !rosterId) return;
+      const mine = (ctx.matchups || []).find(m => String(m.roster_id) === String(rosterId));
+      const opp = mine?.matchup_id == null ? null : (ctx.matchups || []).find(m => String(m.matchup_id) === String(mine.matchup_id) && String(m.roster_id) !== String(rosterId));
+      if (!mine || !opp) return;
+      const st = winTimelineState();
+      const key = winTimelineKey(ctx, rosterId);
+      if (st.key !== key) { st.key = key; st.s = []; }
+      const ids = [...(mine.starters || []), ...(opp.starters || [])].filter(id => id && String(id) !== '0');
+      if (!ids.some(id => ['live', 'final'].includes(playerGameInfo(id, ctx).key))) return;   // nobody has kicked off yet
+      const last = st.s[st.s.length - 1];
+      if (last?.f) return;   // already final
+      const a = Math.round(Number(mine.custom_points ?? mine.points ?? 0) * 100) / 100;
+      const b = Math.round(Number(opp.custom_points ?? opp.points ?? 0) * 100) / 100;
+      const final = matchupAllFinal(mine, ctx) && matchupAllFinal(opp, ctx);
+      const p = final ? (a > b ? 1 : a < b ? 0 : 0.5) : winChance(mine, opp, ctx);
+      if (p === null || !Number.isFinite(p)) return;
+      const now = Date.now();
+      if (last && !final && now - last.t < 60000 && Math.abs(last.p - p) < 0.02 && last.a === a && last.b === b) return;
+      st.s.push({ t: now, p: Math.round(p * 1000) / 1000, a, b, f: final ? 1 : 0 });
+      if (st.s.length > 400) st.s = st.s.filter((x, i, all) => i % 2 === 0 || i === all.length - 1);
+      try { localStorage.setItem('brojees_wintimeline_v1', JSON.stringify(st)); } catch (_) { /* kept for this visit */ }
+    }
+
+    // Samples for the matchup currently on My Week (empty if they belong to another week or team).
+    function winTimelineSamples() {
+      const ctx = gameDayData();
+      const st = winTimelineState();
+      return ctx && st.key === winTimelineKey(ctx, String(els.myTeam.value || '')) ? st.s : [];
+    }
+
+    function wctTime(t) {
+      return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    // A single line, 0–100%, with a 50% reference. The SVG stretches to the card; labels are HTML
+    // so they stay crisp at any width.
+    function winTimelineChartHtml({ compact = false } = {}) {
+      const s = winTimelineSamples();
+      if (s.length < 2) {
+        return compact ? '' : `<div class="empty mw-empty">The timeline starts when the first player in your matchup kicks off. It records while the app is open on this device.</div>`;
+      }
+      const t0 = s[0].t, t1 = Math.max(s[s.length - 1].t, t0 + 60000);
+      const x = t => (t - t0) / (t1 - t0) * 100;
+      const y = p => (1 - p) * 100;
+      const d = s.map((pt, i) => `${i ? 'L' : 'M'}${(x(pt.t) * 10).toFixed(1)},${y(pt.p).toFixed(2)}`).join(' ');
+      const lastPt = s[s.length - 1];
+      const hi = s.reduce((m, pt) => pt.p > m.p ? pt : m, s[0]);
+      const lo = s.reduce((m, pt) => pt.p < m.p ? pt : m, s[0]);
+      const pct = p => `${Math.round(p * 100)}%`;
+      const step = Math.max(1, Math.ceil(s.length / 12));
+      const listRows = s.filter((_, i) => i % step === 0 || i === s.length - 1)
+        .map(pt => `<li><span class="mono">${escapeHtml(wctTime(pt.t))}</span> · <strong class="mono">${pct(pt.p)}</strong> · <span class="mono">${numberOrDash(pt.a, 1)}–${numberOrDash(pt.b, 1)}</span></li>`).join('');
+      return `<div class="wct ${compact ? 'is-compact' : ''}">
+        <div class="wct-plot" data-wct-plot role="img" aria-label="${escapeHtml(`Win chance from ${pct(s[0].p)} at ${wctTime(s[0].t)} to ${pct(lastPt.p)} now. High ${pct(hi.p)}, low ${pct(lo.p)}.`)}">
+          <svg class="wct-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+            <line class="wct-grid" x1="0" x2="1000" y1="0" y2="0" vector-effect="non-scaling-stroke"></line>
+            <line class="wct-mid" x1="0" x2="1000" y1="50" y2="50" vector-effect="non-scaling-stroke"></line>
+            <line class="wct-grid" x1="0" x2="1000" y1="100" y2="100" vector-effect="non-scaling-stroke"></line>
+            <path class="wct-line" d="${d}" vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <span class="wct-ylab" style="top:0%">100%</span><span class="wct-ylab" style="top:50%">50%</span><span class="wct-ylab" style="top:100%">0%</span>
+          <span class="wct-dot" style="left:${x(lastPt.t)}%;top:${y(lastPt.p)}%"></span>
+          <span class="wct-end mono" style="top:${y(lastPt.p)}%">${pct(lastPt.p)}</span>
+          <span class="wct-cross" hidden></span><span class="wct-hover-dot" hidden></span>
+          <span class="wct-tip" hidden></span>
+        </div>
+        <div class="wct-x small mono"><span>${escapeHtml(wctTime(t0))}</span><span>${lastPt.f ? 'Final' : escapeHtml(wctTime(lastPt.t))}</span></div>
+        <div class="small wct-summary">High <strong class="mono">${pct(hi.p)}</strong> at ${escapeHtml(wctTime(hi.t))} · Low <strong class="mono">${pct(lo.p)}</strong> at ${escapeHtml(wctTime(lo.t))}${compact ? '' : ` · ${s.length} updates`}</div>
+        ${compact ? '' : `<details class="wct-list"><summary>Show as a list</summary><ol>${listRows}</ol></details>`}
+      </div>`;
+    }
+
+    // Touch or hover: crosshair + tooltip for the nearest moment.
+    (function setupWinTimelineHover() {
+      const show = (plot, clientX) => {
+        const s = winTimelineSamples();
+        if (s.length < 2) return;
+        const r = plot.getBoundingClientRect();
+        const frac = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+        const t0 = s[0].t, t1 = Math.max(s[s.length - 1].t, t0 + 60000);
+        const target = t0 + frac * (t1 - t0);
+        const pt = s.reduce((best, p) => Math.abs(p.t - target) < Math.abs(best.t - target) ? p : best, s[0]);
+        const left = (pt.t - t0) / (t1 - t0) * 100, top = (1 - pt.p) * 100;
+        const cross = plot.querySelector('.wct-cross'), dot = plot.querySelector('.wct-hover-dot'), tip = plot.querySelector('.wct-tip');
+        cross.hidden = dot.hidden = tip.hidden = false;
+        cross.style.left = `${left}%`;
+        dot.style.left = `${left}%`; dot.style.top = `${top}%`;
+        tip.innerHTML = `<span class="mono">${escapeHtml(wctTime(pt.t))}</span><strong class="mono">${Math.round(pt.p * 100)}%</strong><span class="mono">${numberOrDash(pt.a, 1)}–${numberOrDash(pt.b, 1)}</span>`;
+        tip.style.left = `${Math.max(14, Math.min(86, left))}%`;
+      };
+      const hide = plot => plot.querySelectorAll('.wct-cross, .wct-hover-dot, .wct-tip').forEach(el => { el.hidden = true; });
+      document.addEventListener('pointermove', event => {
+        const plot = event.target.closest?.('[data-wct-plot]');
+        if (plot) show(plot, event.clientX);
+      });
+      document.addEventListener('pointerdown', event => {
+        const plot = event.target.closest?.('[data-wct-plot]');
+        if (plot) show(plot, event.clientX);
+      });
+      document.addEventListener('pointerout', event => {
+        const plot = event.target.closest?.('[data-wct-plot]');
+        if (plot && !plot.contains(event.relatedTarget)) hide(plot);
+      });
+    })();
+
+    /* ---------- V5.1 swipe left / right between matchups (phone layout) ---------- */
+    (function setupMatchupSwipe() {
+      const page = document.getElementById('matchups');
+      if (!page) return;
+      let start = null;
+      page.addEventListener('touchstart', event => {
+        start = null;
+        if (event.touches.length !== 1 || !isPhoneLayout()) return;
+        if (event.target.closest('.table-wrap, select, input, textarea')) return;
+        const card = event.target.closest('.matchup-card');
+        if (card) start = { x: event.touches[0].clientX, y: event.touches[0].clientY, t: Date.now(), card };
+      }, { passive: true });
+      page.addEventListener('touchend', event => {
+        const s = start;
+        start = null;
+        if (!s) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - s.x, dy = touch.clientY - s.y;
+        if (Math.abs(dx) < 70 || Math.abs(dy) > 45 || Date.now() - s.t > 700) return;
+        const cards = [...page.querySelectorAll('.matchup-card')];
+        const target = cards[cards.indexOf(s.card) + (dx < 0 ? 1 : -1)];
+        if (!target) return;
+        if (!s.card.classList.contains('me')) setMatchupOpen(s.card, false);
+        setMatchupOpen(target, true);
+        window.scrollTo(0, Math.max(0, window.scrollY + target.getBoundingClientRect().top - 90));
+        const cls = dx < 0 ? 'mc-in-right' : 'mc-in-left';
+        target.classList.add(cls);
+        setTimeout(() => target.classList.remove(cls), 320);
+        navigator.vibrate?.(8);
+      }, { passive: true });
     })();
 
     /* ---------- Pin to My Week: a 📌 on sections that have a matching My Week card ---------- */
